@@ -1,0 +1,20 @@
+*.mdb
+*.ldb
+*.sln
+*.config
+
+
+
+#过滤文件夹Debug Release obj
+Debug/
+Release/
+obj/
+
+.cproject
+..models?et_normalized_28_20.txt
+..\..\models\net_normalized_28_20.txt
+..\models\net_normalized_28_20.txt
+.project
+.settings
+.
+..

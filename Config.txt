@@ -1,0 +1,163 @@
+/*
+*  Config File
+*/
+
+/********************************************************
+*
+*              General Parameters Config
+*
+*NON_LINEARITY = NL_SIGMOID, NL_TANH, NL_RELU
+********************************************************/
+
+BATCH_SIZE = 128;
+NORMALIZED_WIDTH = 0;
+IMAGES_SIZE = 28;
+CNANNELS = 1;
+EPOCHS = 4000;
+ITER_PER_EPO = 400;
+
+
+
+/********************************************************
+*
+*              Layers Config
+*
+********************************************************/
+[
+LAYER = DATA;
+NAME = data;
+]
+
+[
+LAYER = CONV;
+NAME = conv1;
+INPUT =data;
+KERNEL_SIZE = 5;
+KERNEL_AMOUNT = 32;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+NON_LINEARITY = NL_TANH;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation1;
+INPUT = conv1;
+]
+
+
+[
+LAYER = POOLING;
+NAME = pooling1;
+INPUT = activation1;
+POOLING_TYPE = POOL_MAX;
+POOLDIM = 2;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 2;
+STRIDE_W = 2;
+NON_LINEARITY = NL_TANH;
+]
+
+[
+LAYER = INCEPTION;
+NAME = inception1;
+INPUT = pooling1;
+ONE = 32;
+THREE = 32;
+FIVE = 16;
+THREE_REDUCE = 24;
+FIVE_REDUCE = 8;
+POOL_PROJ = 16;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+]
+
+[
+LAYER = CONV;
+NAME = conv2;
+INPUT = inception1;
+KERNEL_SIZE = 5;
+KERNEL_AMOUNT = 64;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+NON_LINEARITY = NL_TANH;
+]
+
+
+[
+LAYER = ACTIVATION;
+NAME = activation2;
+INPUT = conv2;
+]
+
+[
+LAYER = POOLING;
+NAME = pooling2;
+INPUT = activation2;
+POOLING_TYPE = POOL_MAX;
+POOLDIM = 2;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 2;
+STRIDE_W = 2;
+NON_LINEARITY = NL_TANH;
+]
+
+
+[
+LAYER = HIDDEN;
+NAME = hidden1;
+INPUT = pooling2;
+NUM_HIDDEN_NEURONS = 512;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+NON_LINEARITY = NL_TANH;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation3;
+INPUT = hidden1;
+]
+
+[
+LAYER = LRN;
+NAME = lrn;
+INPUT = activation3;
+LRNN = 5;
+LRNALPHA = 0.0001;
+LRNBETA = 0.75;
+]
+
+[
+LAYER = HIDDEN;
+NAME = hidden2;
+INPUT =lrn;
+NUM_HIDDEN_NEURONS = 10;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+NON_LINEARITY = NL_TANH;
+]
+
+
+[
+LAYER = SOFTMAX;
+NAME = softmax;
+INPUT = hidden2;
+NUM_CLASSES = 10;
+WEIGHT_DECAY = 1e-6;
+]

@@ -20,13 +20,16 @@ public:
 	InceptionLayer(string name, int sign);
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float Momentum);
-	void saveWeight(FILE* file);
-	void readWeight(FILE* file);
-	void Forward_cudaFree(){}
-	void Backward_cudaFree(){}
+	void saveWeight(FILE* file){};
+	void readWeight(FILE* file){};
+	void Forward_cudaFree();
+	void Backward_cudaFree();
 
 
-	~InceptionLayer(){};
+	~InceptionLayer()
+	{
+		delete inception;
+	};
 
 	int getOutputSize()
 	{

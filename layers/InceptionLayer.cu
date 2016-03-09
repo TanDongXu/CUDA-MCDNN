@@ -43,12 +43,19 @@ InceptionLayer::InceptionLayer(string name, int sign)
 
 }
 
+void InceptionLayer::Forward_cudaFree()
+{
+	MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
+}
+
 void InceptionLayer::forwardPropagation(string train_or_test)
 {
+	srcData = NULL;
 	number = prevLayer->number;
 	channels = _outputAmount;
 	height = prevLayer->height;
 	width = prevLayer->width;
+	srcData = prevLayer->dstData;
 
 	inception->forwardPropagation(train_or_test);
 	dstData = inception->getConcatData();
@@ -57,17 +64,13 @@ void InceptionLayer::forwardPropagation(string train_or_test)
 void InceptionLayer::backwardPropagation(float Momentum)
 {
 	inception->backwardPropagation(nextLayer->diffData, Momentum);
-	cout<<"inceptionLayer pos"<<endl;
 	diffData = inception->getInceptionDiffData();
 
 }
 
-void InceptionLayer::saveWeight(FILE* file)
+void InceptionLayer::Backward_cudaFree()
 {
-
+	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
 }
 
-void InceptionLayer::readWeight(FILE* file)
-{
-
-}

@@ -30,8 +30,6 @@ dataLayer::dataLayer(string name)
 	channels = config::instanceObjtce()->getChannels();
 	height = config::instanceObjtce()->get_imageSize();
 	width = config::instanceObjtce()->get_imageSize();
-
-	//Layers::instanceObject()->storLayers(_name, this);
 }
 
 /*数据层的前向传导*/
@@ -118,8 +116,7 @@ void dataLayer::RandomBatch_Images_Label(cuMatrixVector<float>&inputData, cuMatr
 
 void dataLayer::backwardPropagation(float Momentum)
 {
-//	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-//	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
+	//nothing
 }
 
 

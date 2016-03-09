@@ -23,10 +23,10 @@ class Inception
 {
 public:
 	typedef tuple<int, int, int, int, int, int, int, int, float, float, float>param_tuple;
-
 	Inception(convLayerBase* prevLayer, int sign, const param_tuple& args);
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float*& nextLayerDiffData, float Momemtum);
+
 	float* getConcatData()
 	{
 		return dstData;
@@ -38,7 +38,19 @@ public:
 		return diffData;
 	}
 
-
+   ~Inception()
+   {
+	   delete share_Layer;
+	   delete concat;
+	   delete InnerLayers;
+	   delete Conv_one;
+	   delete Conv_three_reduce;
+	   delete Conv_three;
+	   delete Conv_five;
+	   delete Conv_five_reduce;
+	   delete Conv_pool_proj;
+	   delete max_pool;
+   }
 
 private:
 	int one;

@@ -32,7 +32,7 @@ Concat::Concat(Layers*& Inner_Layers, const param_tuple& args)
 }
 
 
-float* Concat::forwardSetup()
+float*& Concat::forwardSetup()
 {
 	number = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->number;
 	height = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->height;
@@ -65,7 +65,7 @@ float* Concat::forwardSetup()
 }
 
 
-float* Concat::backwardSetup()
+float*& Concat::backwardSetup()
 {
 	/*the first share layer no need compute here*/
 	one_diff = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->diffData;

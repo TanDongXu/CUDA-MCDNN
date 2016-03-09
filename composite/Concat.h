@@ -19,8 +19,8 @@ class Concat
 public:
 	typedef tuple<int, int, int, int>param_tuple;
 	Concat(Layers*& Inner_Layers, const param_tuple& args);
-	float* forwardSetup();
-	float* backwardSetup();
+	float*& forwardSetup();
+	float*& backwardSetup();
 
 
 

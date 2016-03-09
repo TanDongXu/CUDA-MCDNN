@@ -8,15 +8,6 @@ Inception::Inception(convLayerBase* prevLayer, int sign, const param_tuple& args
 
 	InnerLayers = new Layers[4];
 
-//    first_ShareLayer = new ShareLayer("share1", prevLayer);
-//
-//    /*the first layer is share layer*/
-//	for(int i = 0; i < 4; i++)
-//	{
-//		sprintf(branch, "branch_%d", i);
-//		InnerLayers[i].storLayers(branch, new ShareLayer(branch, prevLayer));
-//	}
-
 	Conv_one = new convLayer("one", sign,
 			   convLayer::param_tuple(0, 0, 1, 1, 1, one, inputAmount, inputImageDim, epsilon, lrate, lambda));
 
@@ -51,7 +42,6 @@ Inception::Inception(convLayerBase* prevLayer, int sign, const param_tuple& args
 	/*the last layer is shared layer*/
 	for(int i = 0; i < 4; i++)
 	{
-		//InnerLayers[i].storLayers("share", share_Layer);
 	    InnerLayers[i].getLayer(InnerLayers[i].getLayersName(0))->prevLayer = prevLayer;
 	    InnerLayers[i].getLayer(InnerLayers[i].getLayersName(InnerLayers[i].getLayersNum() - 1))->nextLayer = share_Layer;
 	}
@@ -71,9 +61,10 @@ void Inception::forwardPropagation(string train_or_test)
 		for(int j = 0; j < InnerLayers[i].getLayersNum(); j++)
 		{
             layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
+
             layer->forwardPropagation(train_or_test);
 
-            if(j > 0)
+            if(j > 0 && train_or_test == "test")
             {
             	layer->Forward_cudaFree();
             }
@@ -83,16 +74,21 @@ void Inception::forwardPropagation(string train_or_test)
 
 	dstData = concat->forwardSetup();
 
-	for (int i = 0; i < 4; i++)
+	if (train_or_test == "test")
 	{
-		for (int j = 0; j < InnerLayers[i].getLayersNum(); j++)
+		for (int i = 0; i < 4; i++)
 		{
-			layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
-			if (j == InnerLayers[i].getLayersNum() - 1)
+			for (int j = 0; j < InnerLayers[i].getLayersNum(); j++)
 			{
-				MemoryMonitor::instanceObject()->freeGpuMemory(layer->dstData);
+				layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
+
+				if (j == InnerLayers[i].getLayersNum() - 1)
+				{
+					MemoryMonitor::instanceObject()->freeGpuMemory(layer->dstData);
+				}
 			}
 		}
+
 	}
 
 }
@@ -111,21 +107,13 @@ void Inception::backwardPropagation(float*& nextLayerDiffData, float Momentum)
 		for(int j = InnerLayers[i].getLayersNum() - 1; j >= 0; j--)
 		{
 	        layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
-
-	        if(layer->_name == "three")
-	        {
-	        	cout<<(share_Layer->diffData == NULL)<<endl;
-	        }
-
-	        cout<<layer->_name<<endl;
 	        layer->backwardPropagation(Momentum);
-
 
 	        if(i != 0 && j == 0)
 	        {
-
 	            layer->Backward_cudaFree();
 	        }
+
 		}
 	}
 
@@ -133,7 +121,12 @@ void Inception::backwardPropagation(float*& nextLayerDiffData, float Momentum)
 
 	for (int i = 0; i < 4; i++)
 	{
+		/*free first layer diffData*/
 		layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(0));
 		MemoryMonitor::instanceObject()->freeGpuMemory(layer->diffData);
+
+		/*free last layer dstData memory*/
+		layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(InnerLayers[i].getLayersNum()-1));
+		MemoryMonitor::instanceObject()->freeGpuMemory(layer->dstData);
 	}
 }

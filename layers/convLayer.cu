@@ -512,7 +512,7 @@ void convLayer::backwardPropagation(float Momentum)
 
 
 	MemoryMonitor::instanceObject()->freeGpuMemory(tmp_Wgrad);
-	MemoryMonitor::instanceObject()->freeGpuMemory(tmp_Bgrad);
+    MemoryMonitor::instanceObject()->freeGpuMemory(tmp_Bgrad);
 //	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
 //	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
 }

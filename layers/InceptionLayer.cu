@@ -37,10 +37,9 @@ InceptionLayer::InceptionLayer(string name, int sign)
 	outputSize = _outputAmount *  _outputImageDim * _outputImageDim;
 
 	/*create inception*/
-	inception = new Inception(prev_Layer, sign,
+	inception = new Inception(prev_Layer, sign, &lrate,
 			    Inception::param_tuple(one, three, five, three_reduce, five_reduce,
-			    pool_proj, _inputAmount, _inputImageDim, epsilon, lrate, lambda));
-
+			    pool_proj, _inputAmount, _inputImageDim, epsilon, lambda));
 }
 
 void InceptionLayer::Forward_cudaFree()
@@ -65,7 +64,6 @@ void InceptionLayer::backwardPropagation(float Momentum)
 {
 	inception->backwardPropagation(nextLayer->diffData, Momentum);
 	diffData = inception->getInceptionDiffData();
-
 }
 
 void InceptionLayer::Backward_cudaFree()

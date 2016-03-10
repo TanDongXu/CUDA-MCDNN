@@ -10,11 +10,13 @@
 
 
 #include<tuple>
+#include<time.h>
 #include"Concat.h"
 #include"../layers/convLayer.h"
 #include"../layers/poolLayer.h"
 #include"../layers/layersBase.h"
 #include"../layers/ShareLayer.h"
+#include"../tests/test_layer.h"
 
 
 using namespace std;
@@ -22,8 +24,8 @@ using namespace std;
 class Inception
 {
 public:
-	typedef tuple<int, int, int, int, int, int, int, int, float, float, float>param_tuple;
-	Inception(convLayerBase* prevLayer, int sign, const param_tuple& args);
+	typedef tuple<int, int, int, int, int, int, int, int, float, float>param_tuple;
+	Inception(convLayerBase* prevLayer, int sign, float* rate, const param_tuple& args);
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float*& nextLayerDiffData, float Momemtum);
 
@@ -60,7 +62,7 @@ private:
 	int five_reduce;
 	int pool_proj;
 	float epsilon;
-	float lrate;
+	float* lrate;
 	float lambda;
 	float* dstData;
 	float* diffData;

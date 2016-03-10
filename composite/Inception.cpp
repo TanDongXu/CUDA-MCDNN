@@ -1,32 +1,33 @@
 #include"Inception.h"
 
-Inception::Inception(convLayerBase* prevLayer, int sign, const param_tuple& args)
+Inception::Inception(convLayerBase* prevLayer, int sign, float* rate, const param_tuple& args)
 {
 	dstData = NULL;
+	lrate = rate;
 	std::tie(one, three, five, three_reduce, five_reduce, pool_proj,
-			inputAmount, inputImageDim, epsilon, lrate, lambda) = args;
+			inputAmount, inputImageDim, epsilon, lambda) = args;
 
 	InnerLayers = new Layers[4];
 
 	Conv_one = new convLayer("one", sign,
-			   convLayer::param_tuple(0, 0, 1, 1, 1, one, inputAmount, inputImageDim, epsilon, lrate, lambda));
+			   convLayer::param_tuple(0, 0, 1, 1, 1, one, inputAmount, inputImageDim, epsilon, *lrate, lambda));
 
 	Conv_three_reduce = new convLayer("three_reduce", sign,
-			            convLayer::param_tuple(0, 0, 1, 1, 1, three_reduce, inputAmount, inputImageDim, epsilon, lrate, lambda));
+			            convLayer::param_tuple(0, 0, 1, 1, 1, three_reduce, inputAmount, inputImageDim, epsilon, *lrate, lambda));
 
 	Conv_three = new convLayer("three", sign,
-			     convLayer::param_tuple(1, 1, 1, 1, 3, three, three_reduce, inputImageDim - 3 + 1, epsilon, lrate, lambda));
+			     convLayer::param_tuple(1, 1, 1, 1, 3, three, three_reduce, inputImageDim, epsilon, *lrate, lambda));
 
 	Conv_five_reduce = new convLayer("five_reduce", sign,
-			           convLayer::param_tuple(0, 0, 1, 1, 1, five_reduce, inputAmount, inputImageDim, epsilon, lrate, lambda));
+			           convLayer::param_tuple(0, 0, 1, 1, 1, five_reduce, inputAmount, inputImageDim, epsilon, *lrate, lambda));
 
 	Conv_five = new convLayer("five", sign,
-			    convLayer::param_tuple(2, 2, 1, 1, 5, five, five_reduce, inputImageDim - 5 + 1, epsilon, lrate, lambda));
+			    convLayer::param_tuple(2, 2, 1, 1, 5, five, five_reduce, inputImageDim, epsilon, *lrate, lambda));
 
-	max_pool = new poolLayer("max_pool", poolLayer::param_tuple("max", 3, 1, 1, 1, 1, inputAmount, inputImageDim));
+	max_pool = new poolLayer("max_pool", poolLayer::param_tuple("max", 3, 1, 1, 1, 1, inputImageDim, inputAmount));
 
 	Conv_pool_proj = new convLayer("pool_proj",sign,
-			         convLayer::param_tuple(0, 0, 1, 1, 1, pool_proj, inputAmount, inputImageDim/3, epsilon,lrate, lambda));
+			         convLayer::param_tuple(0, 0, 1, 1, 1, pool_proj, inputAmount, inputImageDim, epsilon, *lrate, lambda));
 
 	/*主要用于反向传导*/
 	share_Layer = new ShareLayer("share");
@@ -61,9 +62,8 @@ void Inception::forwardPropagation(string train_or_test)
 		for(int j = 0; j < InnerLayers[i].getLayersNum(); j++)
 		{
             layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
-
+            layer->lrate = *lrate;
             layer->forwardPropagation(train_or_test);
-
             if(j > 0 && train_or_test == "test")
             {
             	layer->Forward_cudaFree();
@@ -71,25 +71,18 @@ void Inception::forwardPropagation(string train_or_test)
 		}
 	}
 
-
 	dstData = concat->forwardSetup();
 
 	if (train_or_test == "test")
 	{
 		for (int i = 0; i < 4; i++)
 		{
-			for (int j = 0; j < InnerLayers[i].getLayersNum(); j++)
-			{
-				layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
-
-				if (j == InnerLayers[i].getLayersNum() - 1)
-				{
-					MemoryMonitor::instanceObject()->freeGpuMemory(layer->dstData);
-				}
-			}
+			layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(InnerLayers[i].getLayersNum() - 1));
+			MemoryMonitor::instanceObject()->freeGpuMemory(layer->dstData);
 		}
-
 	}
+
+
 
 }
 
@@ -99,24 +92,24 @@ void Inception::forwardPropagation(string train_or_test)
 
 void Inception::backwardPropagation(float*& nextLayerDiffData, float Momentum)
 {
-	share_Layer->diffData = nextLayerDiffData;
 	layersBase* layer;
+
 	/*the first layer no need compute diffData here*/
 	for(int i = 0; i < 4; i++)
 	{
+
+		concat->split_DiffData(i, nextLayerDiffData);
+
 		for(int j = InnerLayers[i].getLayersNum() - 1; j >= 0; j--)
 		{
 	        layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
 	        layer->backwardPropagation(Momentum);
-
-	        if(i != 0 && j == 0)
-	        {
-	            layer->Backward_cudaFree();
-	        }
+	        layer->Backward_cudaFree();
 
 		}
 	}
 
+	diffData = NULL;
 	diffData = concat->backwardSetup();
 
 	for (int i = 0; i < 4; i++)
@@ -124,9 +117,5 @@ void Inception::backwardPropagation(float*& nextLayerDiffData, float Momentum)
 		/*free first layer diffData*/
 		layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(0));
 		MemoryMonitor::instanceObject()->freeGpuMemory(layer->diffData);
-
-		/*free last layer dstData memory*/
-		layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(InnerLayers[i].getLayersNum()-1));
-		MemoryMonitor::instanceObject()->freeGpuMemory(layer->dstData);
 	}
 }

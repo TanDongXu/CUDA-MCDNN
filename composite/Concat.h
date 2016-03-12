@@ -11,7 +11,7 @@
 #include"../layers/layersBase.h"
 #include"../common/MemoryMonitor.h"
 #include"../common/checkError.h"
-#include"../common/utility.h"
+#include"../common/utility.cuh"
 #include"../cuDNN_netWork.h"
 #include"../tests/test_layer.h"
 #include<tuple>
@@ -36,19 +36,14 @@ private:
     int prev_channels;
     int prev_height;
     int prev_width;
+    int* offset;
+    int* separate_channels;
+    float** separate_dstData;
     int one;
     int three;
     int five;
     int pool_proj;
-    int oneDim;
-    int threeDim;
-    int fiveDim;
-    int pool_projDim;
-	float* one_outResult;
-	float* three_outResult;
-	float* five_outResult;
-	float* proj_outResult;
-	float* outputResult;
+	float* dstData;
 	float* prev_oneDiff;
 	float* prev_threeDiff;
 	float* prev_fiveDiff;

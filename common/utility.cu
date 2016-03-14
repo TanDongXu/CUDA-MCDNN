@@ -26,6 +26,7 @@ void showDevices()
 }
 
 /*
+ * 多通道数组合并
  * blockId.x表示batch的ID(样本id)
  * blockId.y表示分支个数（合并数组的个数）
  * offset 表示通道的下标
@@ -59,10 +60,63 @@ __global__ void MultiChannelsMerge(float** inputs, float* outputs, int* channels
 }
 
 
-
-__global__ void MultiArrayAdd(float* array1, float* array2, float* array3, float* array4, float* outputs)
+/*多通道的划分*/
+__global__ void MultiChannelsSplit(float* inputs, float**outputs, int* channels, int* indexs, int row, int inChannels)
 {
-	int idx = threadIdx.x + blockIdx.x * blockDim.x;
+	int batchId  = blockIdx.x;
+	int index = blockIdx.y;
+	int offset = indexs[index];
+	int curChannels = channels[index];
 
-	outputs[idx] = array1[idx] + array2[idx] + array3[idx];
+	float* output = outputs[index];
+	float* input = inputs + batchId * inChannels * row * row + offset;
+
+	int blockDo = curChannels * row * row;
+	for(int i = 0; i < blockDo; i += blockDim.x)
+	{
+		int j = i + threadIdx.x;
+		if(j < blockDo)
+		{
+			int pos = batchId * curChannels * row * row;
+			output[pos + j] = input[j];
+		}
+	}
+
+}
+
+
+/*从多通道中分出一个多通道分支*/
+__global__ void MultiChannelsSplit(float* inputs, float* outputs, int outChannels, int offset, int row, int inChannels)
+{
+	int  batchId = blockIdx.x;
+	float* input = inputs + batchId * inChannels * row * row + offset;
+
+	int blockDo  = outChannels * row * row;
+	for(int i = 0; i < blockDo; i += blockDim.x)
+	{
+		int j = i + threadIdx.x;
+		if(j < blockDo)
+		{
+			int pos = batchId * outChannels * row * row;
+			outputs[pos + j] = input[j];
+		}
+	}
+}
+
+
+/*多个数组相加*/
+__global__ void MultiArrayAdd(float** inputs, float* outputs, int number,int channels, int height, int width)
+{
+	int blockDo = number * channels * height * width;
+	for(int j = 0; j < 4; j++){
+		float* input = inputs[j];
+		for(int i = 0; i < blockDo; i += blockDim.x)
+		{
+			int idx = i + threadIdx.x;
+			if(idx < blockDo)
+			{
+				outputs[idx] = outputs[idx] + input[idx];
+			}
+		}
+	}
 }

@@ -30,5 +30,14 @@ void showDevices();
 /*多个数组合并*/
 __global__ void MultiChannelsMerge(float** inputs, float* outputs, int* channels, int* indexs, int row, int outChannels);
 /*计算三个数组之和*/
-__global__ void MultiArrayAdd(float* array1, float* array2, float* array3, float* array4, float* outputs);
+__global__ void MultiArrayAdd(float** inputs, float* outputs, int number,int channels, int height, int width);
+
+/*将一个多通道数组分为多个分支*/
+__global__ void MultiChannelsSplit(float* inputs, float**outputs, int* channels, int* indexs, int row, int inChannels);
+
+/*从多通道中分出一个多通道分支*/
+__global__ void MultiChannelsSplit(float* inputs, float* outputs, int outChannels, int offset, int row, int inChannels);
+
+
+
 #endif /* UTILITY_CUH_ */

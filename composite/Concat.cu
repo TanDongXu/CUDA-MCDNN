@@ -6,9 +6,6 @@ void Concat::concatInit()
 	host_offset = (int*)MemoryMonitor::instanceObject()->cpuMallocMemory(4 * sizeof(int));
 	separateDim = (int*)MemoryMonitor::instanceObject()->cpuMallocMemory(4 * sizeof(int));
 	host_channels = (int*)MemoryMonitor::instanceObject()->cpuMallocMemory(4 * sizeof(int));
-
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&lastDiff, 4 * sizeof(float*));
-
 }
 
 
@@ -19,6 +16,7 @@ Concat::Concat(Layers*& Inner_Layers, const param_tuple& args)
 	channels = 0;
 	height = 0;
 	width = 0;
+	size = 0;
 	prev_number = 0;
 	prev_channels = 0;
 	prev_height = 0;
@@ -28,7 +26,7 @@ Concat::Concat(Layers*& Inner_Layers, const param_tuple& args)
 	separateDim = NULL;
 	host_channels = NULL;
 	dev_channels = NULL;
-	lastDiff = NULL;
+	separate_diffData = NULL;
 	diffData = NULL;
 	dstData = NULL;
 
@@ -52,11 +50,12 @@ float* Concat::forwardSetup()
 	host_offset[2] = (one + three) * height * width ;
 	host_offset[3] = (one + three + five) * height * width;
 
-	//use in next function
+	//use in next next function
 	separateDim[0] = number * one * height * width;
 	separateDim[1] = number * three * height * width;
 	separateDim[2] = number * five * height * width;
 	separateDim[3] = number * pool_proj * height * width;
+
 
 	host_channels[0] = one;
 	host_channels[1] = three;
@@ -81,54 +80,47 @@ float* Concat::forwardSetup()
 
 	dim3 block(number, 4);
 	dim3 thread(1024);
-	MultiChannelsMerge<<<block,thread>>>(separate_dstData.hostPoint, dstData, dev_channels, dev_offset, height, channels);
+	MultiChannelsMerge<<<block,thread>>>(separate_dstData.devPoint, dstData, dev_channels, dev_offset, height, channels);
 	cudaThreadSynchronize();
-
-	cout<<number<<" "<<channels<<" "<<height<<" "<<width<<endl;
-	printf_DevParameter(number,channels,height,width,dstData);
-	cout<<"asdfadf"<<endl;
 
 	separate_dstData.vector_clear();
 	MemoryMonitor::instanceObject()->freeGpuMemory(dev_offset);
 	MemoryMonitor::instanceObject()->freeGpuMemory(dev_channels);
-
 	return dstData;
 }
 
 
 
-void Concat::split_DiffData(int index, float*& diffData)
+void Concat::split_DiffData(int index, float* diffData)
 {
-	if(0 == index)
-	{
-		lastDiff[0] = NULL;
-		MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&lastDiff[0], separateDim[0] * sizeof(float));
-		checkCudaErrors(cudaMemcpy(lastDiff[0], diffData, separateDim[0] * sizeof(float), cudaMemcpyDeviceToDevice ));
-		InnerLayers[0].getLayer("one")->nextLayer->diffData = lastDiff[0];
-		//printf_DevParameter(number, one, 12, 12, last_oneDiff);
 
-	}else if(1 == index)
-	{
-		lastDiff[1] = NULL;
-		MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&lastDiff[1], separateDim[1] * sizeof(float));
-		checkCudaErrors(cudaMemcpy(lastDiff[1], diffData + separateDim[0], separateDim[1] * sizeof(float), cudaMemcpyDeviceToDevice));
-		InnerLayers[1].getLayer("three")->nextLayer->diffData = lastDiff[1];
+	separate_diffData = NULL;
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&separate_diffData, separateDim[index] * sizeof(float));
 
-	}else if(2 == index)
+	if (0 == index)
 	{
-		lastDiff[2] = NULL;
-		MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&lastDiff[2], separateDim[2] * sizeof(float));
-		checkCudaErrors(cudaMemcpy(lastDiff[2], diffData + separateDim[0] + separateDim[1], separateDim[2] * sizeof(float), cudaMemcpyDeviceToDevice));
-		InnerLayers[2].getLayer("five")->nextLayer->diffData = lastDiff[2];
+		InnerLayers[0].getLayer("one")->nextLayer->diffData = separate_diffData;
 
-	}else
+	} else if (1 == index)
 	{
-		lastDiff[3] = NULL;
-        MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&lastDiff[3], separateDim[3] * sizeof(float));
-        checkCudaErrors(cudaMemcpy(lastDiff[3], diffData + separateDim[0] + separateDim[1] + separateDim[2], separateDim[3] * sizeof(float), cudaMemcpyDeviceToDevice));
-        InnerLayers[3].getLayer("pool_proj")->nextLayer->diffData = lastDiff[3];
-        //printf_DevParameter(number, pool_proj, height, width, last_projDiff);
+		InnerLayers[1].getLayer("three")->nextLayer->diffData = separate_diffData;
 	}
+	else if (2 == index)
+	{
+		InnerLayers[2].getLayer("five")->nextLayer->diffData = separate_diffData;
+	} else
+	{
+		InnerLayers[3].getLayer("pool_proj")->nextLayer->diffData = separate_diffData;
+	}
+
+
+	int curChannel = host_channels[index];
+	int curOffset = host_offset[index];
+
+	dim3 block(number);
+	dim3 thread(1024);
+	MultiChannelsSplit<<<block, thread>>>(diffData, separate_diffData, curChannel, curOffset, height, channels);
+	cudaThreadSynchronize();
 }
 
 
@@ -138,7 +130,6 @@ void Concat::split_DiffData(int index, float*& diffData)
 
 float* Concat::backwardSetup()
 {
-	/*the first share layer no need compute here*/
 	prevDiff.push_back(InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->diffData);
 	prevDiff.push_back(InnerLayers[1].getLayer(InnerLayers[1].getLayersName(0))->diffData);
 	prevDiff.push_back(InnerLayers[2].getLayer(InnerLayers[2].getLayersName(0))->diffData);
@@ -150,15 +141,15 @@ float* Concat::backwardSetup()
 	prev_height = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->prevLayer->height;
 	prev_width = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->prevLayer->width;
 
-	int size  = prev_number * prev_channels * prev_height * prev_width;
+	size  = prev_number * prev_channels * prev_height * prev_width;
 	diffData = NULL;
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, size * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(diffData, size * sizeof(float));
 
-    dim3 block(prev_number);
-    dim3 thread(prev_channels * prev_height * prev_width);
-    MultiArrayAdd<<<block, thread>>>(prevDiff.hostPoint[0], prevDiff.hostPoint[1], prevDiff.hostPoint[2], prevDiff.hostPoint[3], diffData);
-
+    dim3 block(1);
+    dim3 thread(1024);
+    MultiArrayAdd<<<block, thread>>>(prevDiff.devPoint, diffData, prev_number, prev_channels, prev_height, prev_width);
+    cudaThreadSynchronize();
     prevDiff.vector_clear();
 	return diffData;
 

@@ -25,15 +25,21 @@ public:
 	void concatInit();
 	float* forwardSetup();
 	float* backwardSetup();
-	void split_DiffData(int index, float*& diffData);
+	void split_DiffData(int index, float* diffData);
 
-
+	~Concat()
+	{
+		MemoryMonitor::instanceObject()->freeCpuMemory(host_offset);
+		MemoryMonitor::instanceObject()->freeCpuMemory(host_channels);
+		MemoryMonitor::instanceObject()->freeCpuMemory(separateDim);
+	}
 
 private:
 	int number;
 	int channels;
     int height;
     int width;
+    int size;
     int prev_number;
     int prev_channels;
     int prev_height;
@@ -47,13 +53,12 @@ private:
     int three;
     int five;
     int pool_proj;
-
-    cuBaseVector<float> separate_dstData;
-    cuBaseVector<float> prevDiff;
-	float** lastDiff;
+    float* separate_diffData;
 	float* dstData;
 	float* diffData;
 	Layers *InnerLayers;
+	cuBaseVector<float> separate_dstData;
+	cuBaseVector<float> prevDiff;
 
 
 };

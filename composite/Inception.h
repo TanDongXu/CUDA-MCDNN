@@ -19,6 +19,7 @@
 #include"../tests/test_layer.h"
 
 
+
 using namespace std;
 
 class Inception

@@ -92,20 +92,16 @@ void Inception::forwardPropagation(string train_or_test)
 
 void Inception::backwardPropagation(float*& nextLayerDiffData, float Momentum)
 {
-	layersBase* layer;
-
 	/*the first layer no need compute diffData here*/
+	layersBase* layer;
 	for(int i = 0; i < 4; i++)
 	{
-
 		concat->split_DiffData(i, nextLayerDiffData);
-
 		for(int j = InnerLayers[i].getLayersNum() - 1; j >= 0; j--)
 		{
 	        layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
 	        layer->backwardPropagation(Momentum);
 	        layer->Backward_cudaFree();
-
 		}
 	}
 

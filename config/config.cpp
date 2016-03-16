@@ -195,12 +195,8 @@ void config::get_layers_config(string &str)
 			float init_w = get_word_float(layers[i], "INIT_W");
 			float lrate = get_word_float(layers[i], "LEARN_RATE");
 			float weight_decay = get_word_float(layers[i], "WEIGHT_DECAY");
-			string non_linearity = get_word_type(layers[i], "NON_LINEARITY");
 
-			m_nonLinearity = new configNonLinearity(non_linearity);
-
-			layer = new configConv(type, name, input,
-					m_nonLinearity->getValue(), ks, pad_h, pad_w, stride_h,
+			layer = new configConv(type, name, input, ks, pad_h, pad_w, stride_h,
 					stride_w, ka, init_w, lrate, weight_decay);
 
 			cout << endl;
@@ -217,7 +213,6 @@ void config::get_layers_config(string &str)
 			cout << "       INIT_W : " << init_w << endl;
 			cout << "   LEARN_RATE : " << lrate << endl;
 			cout << " WEIGHT_DECAY : " << weight_decay << endl;
-			cout << "NON_LINEARITY : " << non_linearity << endl;
 
 		 }else if(type == string("POOLING"))
 		 {
@@ -227,11 +222,8 @@ void config::get_layers_config(string &str)
 			int pad_w = get_word_int(layers[i], "PAD_W");
 			int stride_h = get_word_int(layers[i], "STRIDE_H");
 			int stride_w = get_word_int(layers[i], "STRIDE_W");
-			string non_linearity = get_word_type(layers[i], "NON_LINEARITY");
-			m_nonLinearity = new configNonLinearity(non_linearity);
 
-			layer = new configPooling(type, name, input,
-					m_nonLinearity->getValue(), size, pad_h, pad_w, stride_h,
+			layer = new configPooling(type, name, input, size, pad_h, pad_w, stride_h,
 					stride_w, poolType);
 
 			cout << endl;
@@ -245,7 +237,6 @@ void config::get_layers_config(string &str)
 			cout << "        PAD_W : " << pad_w << endl;
 			cout << "     STRIDE_H : " << stride_h << endl;
 			cout << "     STRIDE_W : " << stride_w << endl;
-			cout << "NON_LINEARITY : " << non_linearity << endl;
 
 		 }else if(type == string("HIDDEN"))
 		 {
@@ -253,11 +244,8 @@ void config::get_layers_config(string &str)
 			 float init_w = get_word_float(layers[i], "INIT_W");
 			 float lrate = get_word_float(layers[i], "LEARN_RATE");
 			 float weight_decay = get_word_float(layers[i], "WEIGHT_DECAY");
-			 string non_linearity = get_word_type(layers[i], "NON_LINEARITY");
 
-			 m_nonLinearity = new configNonLinearity(non_linearity);
-
-			 layer = new configHidden(type, name, input, m_nonLinearity->getValue(), NumHidden, init_w, lrate, weight_decay );
+			 layer = new configHidden(type, name, input, NumHidden, init_w, lrate, weight_decay );
 
 			 cout << endl ;
 			 cout <<"***********************Hidden layer********************"<< endl;
@@ -267,7 +255,6 @@ void config::get_layers_config(string &str)
 			 cout <<"       INIT_W : " << init_w        << endl;
 			 cout <<"   LEARN_RATE : " << lrate         << endl;
 			 cout <<" WEIGHT_DECAY : " << weight_decay  << endl;
-			 cout <<"NON_LINEARITY : " << non_linearity << endl;
 
 		 }else if(type == string("SOFTMAX"))
 		 {
@@ -275,11 +262,7 @@ void config::get_layers_config(string &str)
 
 			 float weight_decay = get_word_float(layers[i], "WEIGHT_DECAY");
 
-			 string non_linearity = get_word_type(layers[i], "NON_LINEARITY");
-
-			 m_nonLinearity = new configNonLinearity(non_linearity);
-
-			 layer = new configSoftMax(type, name , input, m_nonLinearity->getValue(), nclasses, weight_decay);
+			 layer = new configSoftMax(type, name , input, nclasses, weight_decay);
 
 			 cout<< endl ;
 			 cout<<"***********************SoftMax layer*******************"<< endl;
@@ -288,7 +271,6 @@ void config::get_layers_config(string &str)
 			 cout <<"        INPUT : " << input << endl;
 			 cout <<"  NUM_CLASSES : " << nclasses      << endl;
 			 cout <<" WEIGHT_DECAY : " << weight_decay  << endl;
-			 cout <<"NON_LINEARITY : " << non_linearity << endl;
 			 cout << endl<<endl;
 
 		 }else if(type == string("DATA"))
@@ -300,11 +282,15 @@ void config::get_layers_config(string &str)
 
 		 }else if(type == string("ACTIVATION"))
 		 {
-			 layer = new configActivation(type, name, input);
-			 cout << endl;
+             string non_linearity = get_word_type(layers[i], "NON_LINEARITY");
+             m_nonLinearity = new configNonLinearity(non_linearity);
+			 layer = new configActivation(type, name, input, m_nonLinearity->getValue());
+			 
+             cout << endl;
 			 cout <<"********************Activation layer*******************"<< endl;
 			 cout <<"         NAME : " << name  <<endl;
 			 cout <<"        INPUT : " << input << endl;
+             cout <<"NON_LINEARITY : " << non_linearity << endl;
 
 		 }else if(type == string("LRN"))
 		 {

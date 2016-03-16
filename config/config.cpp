@@ -259,9 +259,7 @@ void config::get_layers_config(string &str)
 		 }else if(type == string("SOFTMAX"))
 		 {
 			 int nclasses = get_word_int(layers[i], "NUM_CLASSES");
-
 			 float weight_decay = get_word_float(layers[i], "WEIGHT_DECAY");
-
 			 layer = new configSoftMax(type, name , input, nclasses, weight_decay);
 
 			 cout<< endl ;
@@ -282,10 +280,10 @@ void config::get_layers_config(string &str)
 
 		 }else if(type == string("ACTIVATION"))
 		 {
-             string non_linearity = get_word_type(layers[i], "NON_LINEARITY");
+			 string non_linearity = get_word_type(layers[i], "NON_LINEARITY");
              m_nonLinearity = new configNonLinearity(non_linearity);
-			 layer = new configActivation(type, name, input, m_nonLinearity->getValue());
-			 
+             layer = new configActivation(type, name, input, m_nonLinearity->getValue());
+
              cout << endl;
 			 cout <<"********************Activation layer*******************"<< endl;
 			 cout <<"         NAME : " << name  <<endl;

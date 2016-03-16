@@ -94,10 +94,10 @@ public:
 
 public:
 	T** hostPoint;
-
+	T** devPoint;
 
 private:
-	T** devPoint;
+
 	vector<T*> m_vec;
 
 };

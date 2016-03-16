@@ -30,12 +30,14 @@ public:
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float*& nextLayerDiffData, float Momemtum);
 
+    /*get result*/
 	float* getConcatData()
 	{
 		return dstData;
 	}
 
 
+    /*get delta*/
 	float* getInceptionDiffData()
 	{
 		return diffData;
@@ -62,19 +64,17 @@ private:
 	int three_reduce;
 	int five_reduce;
 	int pool_proj;
-	float epsilon;
-	float* lrate;
-	float lambda;
-	float* dstData;
-	float* diffData;
 	int inputAmount;
 	int inputImageDim;
-	char branch[20];
-
+	float epsilon;
+	float lambda;
+	float* lrate;
+	float* dstData;
+	float* diffData;
 
 private:
-	ShareLayer* share_Layer;
 	Concat* concat;
+	ShareLayer* share_Layer;
 	Layers* InnerLayers;
 	convLayer* Conv_one;
 	convLayer* Conv_three_reduce;

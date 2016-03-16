@@ -40,6 +40,10 @@ private:
     int height;
     int width;
     int size;
+    int one;
+    int three;
+    int five;
+    int pool_proj;
     int prev_number;
     int prev_channels;
     int prev_height;
@@ -49,10 +53,6 @@ private:
     int* dev_offset;
     int* dev_channels;
     int* host_channels;
-    int one;
-    int three;
-    int five;
-    int pool_proj;
     float* separate_diffData;
 	float* dstData;
 	float* diffData;

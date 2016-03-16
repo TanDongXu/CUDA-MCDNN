@@ -8,7 +8,7 @@ void Concat::concatInit()
 	host_channels = (int*)MemoryMonitor::instanceObject()->cpuMallocMemory(4 * sizeof(int));
 }
 
-
+/*incetion concat*/
 Concat::Concat(Layers*& Inner_Layers, const param_tuple& args)
 {
 	std::tie(one, three, five, pool_proj) = args;
@@ -33,11 +33,12 @@ Concat::Concat(Layers*& Inner_Layers, const param_tuple& args)
 	channels = one + three + five + pool_proj;
 	InnerLayers = Inner_Layers;
 
+    //init
 	this->concatInit();
 
 }
 
-
+/*inception forwardPropagation*/
 float* Concat::forwardSetup()
 {
 	number = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->number;
@@ -80,7 +81,12 @@ float* Concat::forwardSetup()
 
 	dim3 block(number, 4);
 	dim3 thread(1024);
-	MultiChannelsMerge<<<block,thread>>>(separate_dstData.devPoint, dstData, dev_channels, dev_offset, height, channels);
+	MultiChannelsMerge<<<block,thread>>>(separate_dstData.devPoint, 
+                                         dstData, 
+                                         dev_channels, 
+                                         dev_offset, 
+                                         height, 
+                                         channels);
 	cudaThreadSynchronize();
 
 	separate_dstData.vector_clear();
@@ -90,7 +96,7 @@ float* Concat::forwardSetup()
 }
 
 
-
+/*split the delta*/
 void Concat::split_DiffData(int index, float* diffData)
 {
 
@@ -119,15 +125,17 @@ void Concat::split_DiffData(int index, float* diffData)
 
 	dim3 block(number);
 	dim3 thread(1024);
-	MultiChannelsSplit<<<block, thread>>>(diffData, separate_diffData, curChannel, curOffset, height, channels);
+	MultiChannelsSplit<<<block, thread>>>(diffData,
+                                          separate_diffData, 
+                                          curChannel, 
+                                          curOffset, 
+                                          height, 
+                                          channels);
 	cudaThreadSynchronize();
 }
 
 
-
-
-
-
+/*inception backwardPropagation*/
 float* Concat::backwardSetup()
 {
 	prevDiff.push_back(InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->diffData);
@@ -148,7 +156,12 @@ float* Concat::backwardSetup()
 
     dim3 block(1);
     dim3 thread(1024);
-    MultiArrayAdd<<<block, thread>>>(prevDiff.devPoint, diffData, prev_number, prev_channels, prev_height, prev_width);
+    MultiArrayAdd<<<block, thread>>>(prevDiff.devPoint, 
+                                     diffData,
+                                     prev_number, 
+                                     prev_channels, 
+                                     prev_height, 
+                                     prev_width);
     cudaThreadSynchronize();
     prevDiff.vector_clear();
 	return diffData;

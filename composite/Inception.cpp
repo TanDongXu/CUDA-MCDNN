@@ -1,37 +1,82 @@
 #include"Inception.h"
 
-Inception::Inception(convLayerBase* prevLayer, int sign, float* rate, const param_tuple& args)
+
+/*Inception constructor*/
+Inception::Inception(convLayerBase* prevLayer, 
+                     int sign, 
+                     float* rate, 
+                     const param_tuple& args)
 {
+	std::tie(one, three, five, three_reduce, five_reduce, pool_proj,
+		     inputAmount, inputImageDim, epsilon, lambda) = args;
+
 	dstData = NULL;
 	lrate = rate;
-	std::tie(one, three, five, three_reduce, five_reduce, pool_proj,
-			inputAmount, inputImageDim, epsilon, lambda) = args;
-
 	InnerLayers = new Layers[4];
 
 	Conv_one = new convLayer("one", sign,
-			   convLayer::param_tuple(0, 0, 1, 1, 1, one, inputAmount, inputImageDim, epsilon, *lrate, lambda));
+		       convLayer::param_tuple(0, 0, 1, 1, 1, 
+                                     one,
+					         inputAmount, 
+                             inputImageDim, 
+                             epsilon, 
+                             *lrate, 
+                             lambda));
 
 	Conv_three_reduce = new convLayer("three_reduce", sign,
-			            convLayer::param_tuple(0, 0, 1, 1, 1, three_reduce, inputAmount, inputImageDim, epsilon, *lrate, lambda));
+			            convLayer::param_tuple(0, 0, 1, 1, 1,
+                                      three_reduce,
+			            		       inputAmount, 
+                                      inputImageDim, 
+                                      epsilon, 
+                                      *lrate, 
+                                      lambda));
 
 	Conv_three = new convLayer("three", sign,
-			     convLayer::param_tuple(1, 1, 1, 1, 3, three, three_reduce, inputImageDim, epsilon, *lrate, lambda));
+			     convLayer::param_tuple(1, 1, 1, 1, 3,
+                               three,
+			    		       three_reduce, 
+                               inputImageDim, 
+                               epsilon, 
+                               *lrate, 
+                               lambda));
 
 	Conv_five_reduce = new convLayer("five_reduce", sign,
-			           convLayer::param_tuple(0, 0, 1, 1, 1, five_reduce, inputAmount, inputImageDim, epsilon, *lrate, lambda));
+			           convLayer::param_tuple(0, 0, 1, 1, 1, 
+                                     five_reduce,
+			        		         inputAmount, 
+                                     inputImageDim, 
+                                     epsilon, 
+                                     *lrate, 
+                                     lambda));
 
 	Conv_five = new convLayer("five", sign,
-			    convLayer::param_tuple(2, 2, 1, 1, 5, five, five_reduce, inputImageDim, epsilon, *lrate, lambda));
+			    convLayer::param_tuple(2, 2, 1, 1, 5, 
+                              five,
+			    		      five_reduce, 
+                              inputImageDim,
+                              epsilon, 
+                              *lrate, 
+                              lambda));
 
-	max_pool = new poolLayer("max_pool", poolLayer::param_tuple("max", 3, 1, 1, 1, 1, inputImageDim, inputAmount));
+	max_pool = new poolLayer("max_pool", 
+               poolLayer::param_tuple("max", 3, 1, 1, 1, 1, 
+                                      inputImageDim, 
+                                      inputAmount));
 
 	Conv_pool_proj = new convLayer("pool_proj",sign,
-			         convLayer::param_tuple(0, 0, 1, 1, 1, pool_proj, inputAmount, inputImageDim, epsilon, *lrate, lambda));
+			         convLayer::param_tuple(0, 0, 1, 1, 1,
+                                   pool_proj,
+			        		       inputAmount, 
+                                   inputImageDim, 
+                                   epsilon, 
+                                   *lrate, 
+                                   lambda));
 
-	/*主要用于反向传导*/
+	/*mainly use in backpropagation*/
 	share_Layer = new ShareLayer("share");
 
+   /*four branch*/
 	InnerLayers[0].storLayers("one", Conv_one);
 	InnerLayers[1].storLayers("three_reduce", Conv_three_reduce);
 	InnerLayers[1].storLayers("three", Conv_three);
@@ -47,12 +92,13 @@ Inception::Inception(convLayerBase* prevLayer, int sign, float* rate, const para
 	    InnerLayers[i].getLayer(InnerLayers[i].getLayersName(InnerLayers[i].getLayersNum() - 1))->nextLayer = share_Layer;
 	}
 
+
 	concat = new Concat(InnerLayers, Concat::param_tuple(one, three, five, pool_proj));
 
 }
 
 
-
+/*Inception forwardPropagation*/
 void Inception::forwardPropagation(string train_or_test)
 {
     layersBase* layer;
@@ -71,6 +117,8 @@ void Inception::forwardPropagation(string train_or_test)
 		}
 	}
 
+	/*get the inception result data*/
+	dstData = NULL;
 	dstData = concat->forwardSetup();
 
 	if (train_or_test == "test")
@@ -81,22 +129,17 @@ void Inception::forwardPropagation(string train_or_test)
 			MemoryMonitor::instanceObject()->freeGpuMemory(layer->dstData);
 		}
 	}
-
-
-
 }
 
 
-
-
-
+/*inception backwardPropagation*/
 void Inception::backwardPropagation(float*& nextLayerDiffData, float Momentum)
 {
-	/*the first layer no need compute diffData here*/
 	layersBase* layer;
 	for(int i = 0; i < 4; i++)
 	{
 		concat->split_DiffData(i, nextLayerDiffData);
+
 		for(int j = InnerLayers[i].getLayersNum() - 1; j >= 0; j--)
 		{
 	        layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
@@ -105,6 +148,7 @@ void Inception::backwardPropagation(float*& nextLayerDiffData, float Momentum)
 		}
 	}
 
+	/*get inception diff*/
 	diffData = NULL;
 	diffData = concat->backwardSetup();
 

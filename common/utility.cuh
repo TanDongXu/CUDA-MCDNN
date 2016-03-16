@@ -14,9 +14,10 @@
 #include"cuBaseVector.h"
 #include"checkError.h"
 
-#define NL_SIGMOID 0
-#define NL_TANH 1
-#define NL_RELU 2
+
+#define ACTIVATION_SIGMOID 0
+#define ACTIVATION_RELU 1
+#define ACTIVATION_TANH 2
 
 /*the ways of initial weight*/
 #define RANDOM 1

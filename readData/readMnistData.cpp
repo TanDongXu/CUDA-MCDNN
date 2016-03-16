@@ -109,28 +109,26 @@ void read_Mnist_label(string ypath, cuMatrix<int>* &image_label)
 Mat pad_image(Mat& input_mat, int end_size)
 {
 	Mat out_Mat;
-	//扩充边界使图像变为29*29
-	//扩充的大小
 	int pading = end_size - input_mat.cols;
-
-	//四舍五入填充上边或者左边的像素
 	 int left_top_pad = round(pading / 2);
-	//填充下边或者右边的像素
 	int right_down_pad = pading - left_top_pad;
-	//说明input_mat比29*29小
 	if(left_top_pad + right_down_pad > 0)
 	{
-	//边界拓展函数
-	   copyMakeBorder(input_mat, out_Mat, left_top_pad, right_down_pad, left_top_pad, right_down_pad, BORDER_REPLICATE);
+	   copyMakeBorder(input_mat, 
+                      out_Mat, 
+                      left_top_pad, 
+                      right_down_pad, 
+                      left_top_pad, 
+                      right_down_pad, 
+                      BORDER_REPLICATE);
 	}else{
 
 		int start_index = - left_top_pad;
 		int end_index = input_mat.cols + right_down_pad;
-		//切割input_mat,第一个Range()是行的范围，第二个是列的范围
 		out_Mat = input_mat(Range(start_index,end_index), Range(start_index,end_index));
 	}
 
-		return out_Mat;
+	return out_Mat;
 
 }
 
@@ -170,7 +168,11 @@ Mat normalized_digit(Mat &inputMat, int normalized_width, int end_size)
 
 
 /*normalized dataset*/
-void get_normalizedData(vector<Mat> &train_data, cuMatrix<int>* &data_label,cuMatrixVector<float> &normalizedData, int normalized_width, int end_size)
+void get_normalizedData(vector<Mat> &train_data, 
+                        cuMatrix<int>* &data_label,
+                        cuMatrixVector<float> &normalizedData, 
+                        int normalized_width, 
+                        int end_size)
 {
 	vector<Mat> tempTrainData;
 	if(normalized_width || end_size != 28)
@@ -198,7 +200,6 @@ void get_normalizedData(vector<Mat> &train_data, cuMatrix<int>* &data_label,cuMa
 
 	}else
 	{
-		//如果normalized像素为0并且最后输出大小是还是28*28，那么直接跳过
 		cout<<"... skipping digit normalization and image padding"<<endl;
 		tempTrainData = train_data;
 	}
@@ -222,7 +223,12 @@ void get_normalizedData(vector<Mat> &train_data, cuMatrix<int>* &data_label,cuMa
 
 
 /*read the data and label*/
-void readMnistData(cuMatrixVector<float>& normalizedData, cuMatrix<int>*& dataY, string Xpath, string Ypath, int normalized_width, int out_imageSize)
+void readMnistData(cuMatrixVector<float>& normalizedData, 
+                   cuMatrix<int>*& dataY, 
+                   string Xpath, 
+                   string Ypath, 
+                   int normalized_width, 
+                   int out_imageSize)
 {
 	/*read mnist images into vector<Mat>*/
 	vector<Mat> trainData;
@@ -232,6 +238,10 @@ void readMnistData(cuMatrixVector<float>& normalizedData, cuMatrix<int>*& dataY,
     read_Mnist_label(Ypath,dataY);
 
     /*normalized data set*/
-    get_normalizedData(trainData, dataY,normalizedData,normalized_width,out_imageSize);
+    get_normalizedData(trainData, 
+                       dataY,
+                       normalizedData,
+                       normalized_width,
+                       out_imageSize);
 
 }

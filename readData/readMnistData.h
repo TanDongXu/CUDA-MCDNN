@@ -12,7 +12,12 @@
 #include"../common/cuMatrix.h"
 #include<string>
 
-void readMnistData(cuMatrixVector<float>& normalizedData, cuMatrix<int>*& dataY, string Xpath, string Ypath, int normalized_width, int imageSize);
+void readMnistData(cuMatrixVector<float>& normalizedData, 
+                   cuMatrix<int>*& dataY, 
+                   string Xpath, 
+                   string Ypath, 
+                   int normalized_width, 
+                   int imageSize);
 
 
 #endif /* READMNISTDATA_H_ */

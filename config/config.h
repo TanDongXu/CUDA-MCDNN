@@ -23,13 +23,15 @@ public:
 	{
 		if(method == string("NL_SIGMOID"))
 		{
-			m_nonLinearity = NL_SIGMOID;
+			m_nonLinearity = ACTIVATION_SIGMOID;
+
 		}else if(method == string("NL_TANH"))
 		{
-			m_nonLinearity = NL_TANH;
+			m_nonLinearity = ACTIVATION_TANH;
+
 		}else if(method == string("NL_RELU"))
 		{
-			m_nonLinearity = NL_RELU;
+			m_nonLinearity = ACTIVATION_RELU;
 		}else
 		{
 			m_nonLinearity = -1;
@@ -52,8 +54,6 @@ public:
 	string _input;
 	configBase* _next;
 	configBase* _prev;
-	int _non_linearity;
-
 };
 
 
@@ -219,14 +219,13 @@ public:
 class configConv : public configBase
 {
 public:
-	configConv(string type, string name, string input, int non_linearity,
+	configConv(string type, string name, string input,
 			int kernelSize, int pad_h, int pad_w, int stride_h, int stride_w,
 			int kernelAmount, float init_w, float lrate, float weight_decay)
     {
 		_type = type;
 		_name = name;
 		_input = input;
-		_non_linearity = non_linearity;
 		_kernelSize = kernelSize;
 		_pad_h = pad_h;
 		_pad_w = pad_w;
@@ -255,13 +254,12 @@ public:
 class configPooling : public configBase
 {
 public:
-	configPooling(string type, string name, string input, int non_linearity, int size,
+	configPooling(string type, string name, string input, int size,
 			      int pad_h, int pad_w, int stride_h, int stride_w, string poolType)
     {
 		_type = type;
 		_name = name;
 		_input = input;
-		_non_linearity = non_linearity;
 		_size = size;
 		_pad_h = pad_h;
 		_pad_w = pad_w;
@@ -320,13 +318,12 @@ public:
 class configHidden :public configBase
 {
 public:
-	configHidden(string type, string name, string input, int non_linearity, 
+	configHidden(string type, string name, string input, 
                  int NumHiddenNeurons, float init_w, float lrate, float weight_decay)
     {
 		_type = type;
 		_name = name;
 		_input = input;
-		_non_linearity = non_linearity;
 		_NumHiddenNeurons = NumHiddenNeurons;
 		_init_w = init_w;
 		_lrate = lrate;
@@ -364,12 +361,15 @@ public:
 class configActivation : public configBase
 {
 public:
-	configActivation(string type, string name, string input)
+	configActivation(string type, string name, string input, int non_linearity)
 {
 		_type = type;
 		_name = name;
         _input = input;
+        _non_linearity = non_linearity; 
 }
+
+    int _non_linearity;
 };
 
 /*LRN layer config*/
@@ -399,12 +399,11 @@ public:
 class configSoftMax : public configBase
 {
 public:
-	configSoftMax(string type, string name, string input, int non_linearity, int nclasses, float weight_decay)
+	configSoftMax(string type, string name, string input, int nclasses, float weight_decay)
     {
 		_type = type;
 		_name = name;
 		_input = input;
-		_non_linearity = non_linearity;
 		_nclasses = nclasses;
 		_weight_decay = weight_decay;
     }

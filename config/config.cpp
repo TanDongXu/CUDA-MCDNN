@@ -349,7 +349,17 @@ void config::get_layers_config(string &str)
 			 cout <<"       INIT_W : " << init_w       <<endl;
 			 cout <<"   LEARN_RATE : " << lrate        <<endl;
 			 cout <<" WEIGHT_DECAY : " << weight_decay <<endl;
+		 }else if(type == string("DROPOUT"))
+		 {
+			 float rate = get_word_float(layers[i], "DROP_RATE");
+			 layer = new configDropOut(type, name, input, rate);
+			 cout << endl;
+			 cout <<"*********************DropOut layer********************"<< endl;
+			 cout <<"         NAME : " << name  <<endl;
+			 cout <<"        INPUT : " << input << endl;
+			 cout <<"    DROP_RATE : " << rate  << endl;
 		 }
+
 
 		 insertLayerByName(name, layer);
 

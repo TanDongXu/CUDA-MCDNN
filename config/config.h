@@ -8,7 +8,7 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#include"../common/utility.h"
+#include"../common/utility.cuh"
 #include<string>
 #include<vector>
 #include<iostream>
@@ -43,7 +43,7 @@ private:
 };
 
 
-
+/*the base of config*/
 class configBase
 {
 public:
@@ -148,7 +148,7 @@ configBase* getLayersByName(std::string name)
 	}
 }
 
-
+//insert layer
 void insertLayerByName(std::string name, configBase* layer)
 {
 	if(_layerMaps.find(name) == _layerMaps.end()){
@@ -202,7 +202,8 @@ private:
 
 
 
-
+/*Each layer config*/
+/*data layer config */
 class configData : public configBase
 {
 public:
@@ -214,7 +215,7 @@ public:
 }
 };
 
-
+/*conv layer config*/
 class configConv : public configBase
 {
 public:
@@ -249,6 +250,8 @@ public:
 	float _lrate;
 };
 
+
+/*pool layer config*/
 class configPooling : public configBase
 {
 public:
@@ -276,7 +279,7 @@ public:
 
 };
 
-
+/*inception layer config*/
 class configInception : public configBase
 {
 public:
@@ -313,11 +316,12 @@ public:
 
 };
 
-
+/*hidden layer config*/
 class configHidden :public configBase
 {
 public:
-	configHidden(string type, string name, string input, int non_linearity, int NumHiddenNeurons, float init_w, float lrate, float weight_decay)
+	configHidden(string type, string name, string input, int non_linearity, 
+                 int NumHiddenNeurons, float init_w, float lrate, float weight_decay)
     {
 		_type = type;
 		_name = name;
@@ -337,6 +341,26 @@ public:
 
 };
 
+
+/*dropout layer config*/
+class configDropOut : public configBase
+{
+public:
+	configDropOut(string type, string name, string input, float rate){
+		_type = type;
+		_name = name;
+		_input = input;
+		dropOut_rate = rate;
+
+	}
+
+public:
+	float dropOut_rate;
+
+};
+
+
+/*activation layer config*/
 class configActivation : public configBase
 {
 public:
@@ -348,7 +372,7 @@ public:
 }
 };
 
-
+/*LRN layer config*/
 class configLRN : public configBase
 {
 public:
@@ -370,6 +394,8 @@ public:
 
 };
 
+
+/*softmax layer config*/
 class configSoftMax : public configBase
 {
 public:

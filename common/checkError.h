@@ -14,34 +14,31 @@
 #include<sstream>
 
 
-/*__FILE__用以指示本行语句所在源文件的文件名
- * __LINE__用以指示本行语句在源文件中的位置信息
- * */
 #define FatalError(s){                                                    \
 	std::stringstream _where, _message;                                   \
 	_where << __FILE__<<':'<<__LINE__;                                    \
 	_message << std::string(s) + "\n" <<__FILE__ <<':'<<__LINE__;         \
 	std::cerr << _message.str() <<"\nAboring..\n";                        \
-    cudaDeviceReset();                                                   \
+    cudaDeviceReset();                                                    \
     exit(EXIT_FAILURE);                                                   \
 }
 
-
-#define checkCudaErrors(status){                                                  \
-	std::stringstream _error;                                                     \
-	if(status != 0)                                                               \
-	{                                                                             \
+//cuda error check
+#define checkCudaErrors(status){                                                   \
+	std::stringstream _error;                                                      \
+	if(status != 0)                                                                \
+	{                                                                              \
 		_error<<"Cuda faliure: "<<cudaGetErrorString(status)<<" ERROR"<<std::endl; \
-	    FatalError(_error.str());                                                 \
-   }                                                                              \
-}                                                                                 \
+	    FatalError(_error.str());                                                  \
+   }                                                                               \
+}                                                                                  \
 
 
-
-#define checkCUDNN(status){                                                 \
-    std:: stringstream _error;                                              \
-    if(status != CUDNN_STATUS_SUCCESS)                                      \
-    {                                                                       \
+//cudnn error check
+#define checkCUDNN(status){                                                  \
+    std:: stringstream _error;                                               \
+    if(status != CUDNN_STATUS_SUCCESS)                                       \
+    {                                                                        \
     	_error << "CUDNN failure ERROR: "<<cudnnGetErrorString(status)<<endl;\
     	FatalError(_error.str());                                            \
     }                                                                        \
@@ -52,8 +49,8 @@
    std::stringstream _error;                                                  \
    if(status != 0)                                                            \
    {                                                                          \
-	   _error<<"Cublas failure ERROR Code: "<<status;\
-	   FatalError(_error.str());                                                \
+	   _error<<"Cublas failure ERROR Code: "<<status;                         \
+	   FatalError(_error.str());                                              \
    }                                                                          \
 }
 

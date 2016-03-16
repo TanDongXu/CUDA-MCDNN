@@ -6,73 +6,63 @@
 #include"./layers/poolLayer.h"
 #include"./layers/InceptionLayer.h"
 #include"./layers/hiddenLayer.h"
+#include"./layers/dropOutLayer.h"
 #include"./layers/activationLayer.h"
 #include"./layers/LRNLayer.h"
 #include"./layers/softMaxLayer.h"
 #include"./common/cuMatrixVector.h"
 #include"./common/cuMatrix.h"
-#include"./common/utility.h"
-
-
+#include"./common/utility.cuh"
 #include<iostream>
 #include<time.h>
 #include"math.h"
 
 using namespace std;
 
-const double FLAGS_lr_gamma = 0.0001;   //learning rate policy
-const double FLAGS_lr_power = 0.75;     //Learing rate policy power
-
+/*create netWork*/
 void creatColumnNet(int sign)
 {
 	layersBase* baseLayer;
-	/*get the number of layers*/
 	int layerNum = config::instanceObjtce()->getLayersNum();
-
-	/*get the first layer*/
 	configBase *layer = config::instanceObjtce()->getFirstLayers();
 
 	for(int i=0; i<layerNum; i++)
 	{
-		//cout<<layer->_name<<endl;
 		if((layer->_type) == "DATA")
 		{
-			//configData* data = (configData*) layer;
 			baseLayer = new dataLayer(layer->_name);
 
 		}else if((layer->_type) == "CONV")
 		{
-			//configConv* conv = (configConv*)layer;
 			baseLayer = new convLayer (layer->_name, sign);
 
 		}else if((layer->_type == "POOLING"))
 		{
-			//configPooling* pooling = (configPooling*)layer;
 			baseLayer = new poolLayer (layer->_name);
 
 		}else if((layer->_type) == "HIDDEN")
 		{
-			//configHidden* hidden = (configHidden*)layer;
 			baseLayer = new hiddenLayer(layer->_name, sign);
 
 		}else if((layer->_type) == "SOFTMAX")
 		{
-			//configSoftMax* softmax = (configSoftMax*) layer;
 			baseLayer = new softMaxLayer(layer->_name);
 
 		}else if((layer->_type) == "ACTIVATION")
 		{
-			//configActivation* activation = (configActivation*)layer;
 			baseLayer = new activationLayer(layer->_name);
 
 		}else if((layer->_type) == "LRN")
 		{
-			//configLRN* LRN = (configLRN*)layer;
 			baseLayer = new LRNLayer(layer->_name);
 
 		}else if((layer->_type) == "INCEPTION")
 		{
 			baseLayer = new InceptionLayer(layer->_name, sign);
+
+		}else if((layer->_type) == "DROPOUT")
+		{
+			baseLayer = new dropOutLayer(layer->_name);
 		}
 
 		Layers::instanceObject()->storLayers(layer->_name, baseLayer);
@@ -94,7 +84,6 @@ void resultPredict(string train_or_test)
 	{
 		layersBase * layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
 		layer->forwardPropagation(train_or_test);
-		//cout<<layer->_name<<endl;
 		if(train_or_test == "test")
 		{
 			layer->Forward_cudaFree();
@@ -118,7 +107,7 @@ void predictTestData(cuMatrixVector<float>&testData, cuMatrix<int>* &testLabel, 
 }
 
 
-
+/*train netWork*/
 void getNetWorkCost(float&Momentum)
 {
 	resultPredict("train");
@@ -138,8 +127,13 @@ void getNetWorkCost(float&Momentum)
 
 
 /*training netWork*/
-void cuTrainNetWork(cuMatrixVector<float> &trainData, cuMatrix<int>* &trainLabel, cuMatrixVector<float> &testData, cuMatrix<int>*&testLabel,
-		           int batchSize, int imageSize, int normalized_width)
+void cuTrainNetWork(cuMatrixVector<float> &trainData, 
+                    cuMatrix<int>* &trainLabel, 
+                    cuMatrixVector<float> &testData,
+                    cuMatrix<int>*&testLabel,
+		            int batchSize, 
+                    int imageSize, 
+                    int normalized_width)
 {
 
 	cout<<"TestData Forecast The Result..."<<endl;
@@ -151,7 +145,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData, cuMatrix<int>* &trainLabel
 	int epochs = config::instanceObjtce()->get_trainEpochs();
 	int iter_per_epo = config::instanceObjtce()->get_iterPerEpo();
 	int layerNum = Layers::instanceObject()->getLayersNum();
-	double nMomentum[]={0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99};//调整动量
+	double nMomentum[]={0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99};
 	int epoCount[]={80,80,80,80,80,80,80,80,80,80};
 	float Momentum = 0.9;
 	int id = 0;

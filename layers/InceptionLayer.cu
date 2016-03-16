@@ -42,10 +42,12 @@ InceptionLayer::InceptionLayer(string name, int sign)
 			    pool_proj, _inputAmount, _inputImageDim, epsilon, lambda));
 }
 
+
 void InceptionLayer::Forward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
 }
+
 
 void InceptionLayer::forwardPropagation(string train_or_test)
 {
@@ -60,11 +62,13 @@ void InceptionLayer::forwardPropagation(string train_or_test)
 	dstData = inception->getConcatData();
 }
 
+
 void InceptionLayer::backwardPropagation(float Momentum)
 {
 	inception->backwardPropagation(nextLayer->diffData, Momentum);
 	diffData = inception->getInceptionDiffData();
 }
+
 
 void InceptionLayer::Backward_cudaFree()
 {

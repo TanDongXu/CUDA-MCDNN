@@ -11,7 +11,12 @@
 #include"layersBase.h"
 #include"../common/cuMatrix.h"
 #include"../common/cuMatrixVector.h"
-
+#include"../common/utility.cuh"
+#include"../config/config.h"
+#include"../cuDNN_netWork.h"
+#include"../tests/test_layer.h"
+#include<cuda_runtime.h>
+#include<math.h>
 #include "curand.h"
 
 class hiddenLayer: public layersBase
@@ -55,7 +60,6 @@ private:
 	float* dev_Bias, *host_Bias;
 	float* dev_Wgrad,*dev_Bgrad;
 	float epsilon;
-	//VectorOnes为一个batch大小全1矩阵
 	float* VectorOnes;
 	int inputSize;
 	int outputSize;
@@ -67,7 +71,6 @@ private:
 private:
 	curandGenerator_t curandGenerator_W;
 	curandGenerator_t curandGenerator_B;
-	curandGenerator_t curandGenerator_DropOut;
 
 };
 

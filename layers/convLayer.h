@@ -11,9 +11,12 @@
 #include"./layersBase.h"
 #include"../common/cuMatrixVector.h"
 #include"../common/cuMatrix.h"
-#include"../common/utility.h"
+#include"../common/utility.cuh"
 #include "../cuDNN_netWork.h"
-
+#include"../config/config.h"
+#include"../common/MemoryMonitor.h"
+#include"../common/checkError.h"
+#include<time.h>
 #include<tuple>
 #include<cudnn.h>
 #include<curand.h>

@@ -78,7 +78,7 @@ public:
 	/*get layers name by index*/
 	string getLayersName(int index);
 
-	/*获取层的数量*/
+	/*get layer num*/
 	int getLayersNum()
 	{
 		return _layersMaps.size();

@@ -1,26 +1,17 @@
 #include"poolLayer.h"
-#include"../config/config.h"
-#include"../cuDNN_netWork.h"
-
-#include"../tests/test_layer.h"
-#include"opencv2/highgui.hpp"
-#include"opencv2/core/core.hpp"
-#include"opencv2/imgproc/imgproc.hpp"
-using namespace cv;
 
 
 void poolLayer:: createHandles()
-	{
-		/*cudnnCreateTensorDescriptor创建一个tensor对象（并没有初始化）*/
-		checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
-		checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
-		checkCUDNN(cudnnCreatePoolingDescriptor(&poolingDesc));
-		checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
-		checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
-	}
+{
+	checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
+	checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
+	checkCUDNN(cudnnCreatePoolingDescriptor(&poolingDesc));
+	checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
+	checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
+}
 
 
-
+/*constructor*/
 poolLayer::poolLayer(string name)
 {
 	_name = name;
@@ -48,8 +39,8 @@ poolLayer::poolLayer(string name)
 	stride_h =  curConfig->_stride_h;
 	stride_w = curConfig->_stride_w;
     _inputImageDim = prev_Layer->_outputImageDim;
-	/*池化后的大小*/
-	_outputImageDim = _inputImageDim / poolDim;
+	/*the size after pool*/
+	_outputImageDim = static_cast<int>(ceil(static_cast<float>(_inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
 	_inputAmount = prev_Layer->_outputAmount;
 	_outputAmount = _inputAmount;
 	outputSize = _outputAmount * _outputImageDim * _outputImageDim;
@@ -57,8 +48,8 @@ poolLayer::poolLayer(string name)
 	this->createHandles();
 }
 
-
- poolLayer::poolLayer(string name, const param_tuple& args)
+/*constructor overload*/
+poolLayer::poolLayer(string name, const param_tuple& args)
 {
 	std::tie(poolType, poolDim, pad_h, pad_w, stride_h,
 			stride_w, _inputImageDim, _inputAmount) = args;
@@ -76,7 +67,7 @@ poolLayer::poolLayer(string name)
 	prevLayer = NULL;
 	nextLayer = NULL;
 
-	_outputImageDim = _inputImageDim / poolDim;
+	_outputImageDim = static_cast<int>(ceil(static_cast<float>(_inputImageDim + 2 * pad_h - poolDim) / stride_h)) + 1;
 	_outputAmount = _inputAmount;
 	outputSize = _outputAmount * _outputImageDim * _outputImageDim;
 
@@ -102,8 +93,6 @@ void poolLayer::forwardPropagation(string train_or_test)
 			                               stride_h,
 			                               stride_w));//stride
 
-
-	/*根据池化设置相应的数据tensor*/
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
@@ -112,14 +101,9 @@ void poolLayer::forwardPropagation(string train_or_test)
 			                              height,
 			                              width));
 
-    checkCUDNN(cudnnGetPooling2dForwardOutputDim(poolingDesc,
-    		                                     srcTensorDesc,
-    		                                     &number,
-    		                                     &channels,
-    		                                     &height,
-    		                                     &width));
+	height = static_cast<int>(ceil(static_cast<float>(height + 2 * pad_h - poolDim) / stride_h)) + 1;
+	width = static_cast<int>(ceil(static_cast<float>(width + 2 * pad_w - poolDim) / stride_w)) + 1;
 
-	/*设置输出tensor*/
 
     checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
     		                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
@@ -135,8 +119,6 @@ void poolLayer::forwardPropagation(string train_or_test)
 
 	float alpha = 1.0;
 	float beta = 0.0;
-
-	/*进行池化*/
 	checkCUDNN(cudnnPoolingForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 			                       poolingDesc,
 			                       &alpha,
@@ -146,15 +128,15 @@ void poolLayer::forwardPropagation(string train_or_test)
 			                       dstTensorDesc,
 			                       dstData));
 
-
-//	if(train_or_test == "test")
-//		MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
 }
 
+/*free forwardPropagation memory*/
 void poolLayer::Forward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
 }
+
+
 
 void poolLayer::backwardPropagation(float Momentum)
 {
@@ -165,6 +147,7 @@ void poolLayer::backwardPropagation(float Momentum)
 		                                 channels,
 		                                 height,
 		                                 width));
+
    checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
 		                                cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 		                                cuDNN_netWork<float>::instanceObject()->GetDataType(),
@@ -197,11 +180,11 @@ void poolLayer::backwardPropagation(float Momentum)
 
 
    diffData = NULL;
-   MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, prevlayer_n * prevlayer_c * prevlayer_h * prevlayer_w * sizeof(float));
+   MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, 
+                                                    prevlayer_n * prevlayer_c * prevlayer_h * prevlayer_w * sizeof(float));
 
    float alpha = 1.0f;
    float beta = 0.0;
-
    checkCUDNN(cudnnPoolingBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 		                           poolingDesc,
 		                           &alpha,
@@ -215,9 +198,6 @@ void poolLayer::backwardPropagation(float Momentum)
 		                           dstDiffTensorDesc,
 		                           diffData));
 
-
-   //MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-   //MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
 }
 
 
@@ -230,7 +210,6 @@ void poolLayer::Backward_cudaFree()
 
 void poolLayer:: destroyHandles()
 {
-	/*销毁创建的描述符  逆向销毁*/
 	checkCUDNN(cudnnDestroyPoolingDescriptor(poolingDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(dstTensorDesc))

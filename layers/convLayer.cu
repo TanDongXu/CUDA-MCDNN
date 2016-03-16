@@ -1,39 +1,25 @@
-#include<iostream>
 #include"convLayer.h"
-#include"../config/config.h"
-#include"../common/cuMatrix.h"
-#include"../common/MemoryMonitor.h"
-#include"../common/checkError.h"
-#include<time.h>
 
-#include"opencv2/highgui.hpp"
-#include"opencv2/core/core.hpp"
-#include"opencv2/imgproc/imgproc.hpp"
-#include"../tests/test_layer.h"
 
-using namespace cv;
 
 void convLayer::createHandles()
 	{
-		/*cudnnCreateTensorDescriptor创建一个tensor对象（并没有初始化）*/
 		checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
 		checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
 		checkCUDNN(cudnnCreateTensorDescriptor(&biasTensorDesc));
 		checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
 		checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
-		/*cudnnFilterDescriptor创建一个过滤器对象（没有初始化）*/
 		checkCUDNN(cudnnCreateFilterDescriptor(&filterDesc));
-		/*cudnnCreateConvolutionDescriptor创建一个卷积层对象（没初始化）*/
 		checkCUDNN(cudnnCreateConvolutionDescriptor(&convDesc));
 
-		//创建一个新的目标类型（参考 触发器类型）触发器
 		curandCreateGenerator(&curandGenerator_W, CURAND_RNG_PSEUDO_MTGP32);
 		curandCreateGenerator(&curandGenerator_B, CURAND_RNG_PSEUDO_MTGP32);
 	}
 
 void convLayer::initRandom()
 {
-    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, kernelAmount * _inputAmount * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, 
+                                                     kernelAmount * _inputAmount * kernelSize * kernelSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
 	//set seed
 	curandSetPseudoRandomGeneratorSeed(curandGenerator_W, time(NULL));
@@ -80,19 +66,20 @@ convLayer::convLayer(string name, int sign)
     stride_w = curConfig->_stride_w;
     lambda = curConfig->_weight_decay;
 
-    /*inputAmount和outputAmount和本曾的channels相同*/
     _inputAmount = prev_Layer->_outputAmount;
     _outputAmount = kernelAmount;
     _inputImageDim = prev_Layer->_outputImageDim;
-    _outputImageDim = _inputImageDim - kernelSize + 1;
+    _outputImageDim = (_inputImageDim + 2 * pad_h - kernelSize)/stride_h + 1;
 
     outputSize = _outputAmount * _outputImageDim * _outputImageDim;
     non_linearity = curConfig->_non_linearity;
 
 
-    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Wgrad, kernelAmount * _inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Wgrad, 
+                                                     kernelAmount * _inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
-    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, kernelAmount * _inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, 
+                                                     kernelAmount * _inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
 
     this->createHandles();
@@ -100,6 +87,8 @@ convLayer::convLayer(string name, int sign)
     	this->initRandom();
 }
 
+
+/*conv constructor overload*/
 convLayer::convLayer(string name, int sign, const param_tuple& args)
 {
 	std::tie(pad_h, pad_w, stride_h, stride_w, kernelSize,
@@ -125,12 +114,14 @@ convLayer::convLayer(string name, int sign, const param_tuple& args)
 	nextLayer = NULL;
 
 	_outputAmount = kernelAmount;
-	_outputImageDim = _inputImageDim - kernelSize + 1;
+	_outputImageDim = (_inputImageDim + 2 * pad_h - kernelSize)/stride_h + 1;
 	outputSize = _outputAmount * _outputImageDim * _outputImageDim;
 
-	 MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Wgrad, kernelAmount * _inputAmount * kernelSize * kernelSize * sizeof(float));
+	 MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Wgrad, 
+                                                      kernelAmount * _inputAmount * kernelSize * kernelSize * sizeof(float));
 	 MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
-	 MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, kernelAmount * _inputAmount * kernelSize * kernelSize * sizeof(float));
+	 MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, 
+                                                      kernelAmount * _inputAmount * kernelSize * kernelSize * sizeof(float));
 	 MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
 
 	 this->createHandles();
@@ -139,34 +130,28 @@ convLayer::convLayer(string name, int sign, const param_tuple& args)
 }
 
 
-/*加上偏置*/
 void convLayer::addBias(const cudnnTensorDescriptor_t& dstTensorDesc, int c, float *data )
 {
-		/*设置偏置的维度*/
-		checkCUDNN(cudnnSetTensor4dDescriptor(biasTensorDesc,
-				                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-				                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
-				                              1,c,
-				                              1,
-				                              1));
+    
+    checkCUDNN(cudnnSetTensor4dDescriptor(biasTensorDesc,
+			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+				                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
+				                          1,
+                                          c,
+				                          1,
+				                          1));
 
-		/*scaling参数*/
-		float alpha = 1.0;
-		/*指数*/
-		float beta = 1.0;
-		/*增加一个tensor的缩放值到另一个tensor,意思就是卷积后以某种方式加上偏置
-		 * 第二个参数是添加的模式
-		 * 第四个参数是偏置的tensor,第五个参数是偏置在内存中的位置
-		 * 第七个参数是偏置要添加到的tensor，第八个是偏置要添加到的数据
-		 * */
-		checkCUDNN(cudnnAddTensor(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-				                  CUDNN_ADD_SAME_C,
-				                  &alpha,
-				                  biasTensorDesc,
-				                  dev_Bias,
-				                  &beta,
-				                  dstTensorDesc,
-				                  data));
+
+	float alpha = 1.0;
+	float beta = 1.0;
+	checkCUDNN(cudnnAddTensor(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
+			                  CUDNN_ADD_SAME_C,
+			                  &alpha,
+			                  biasTensorDesc,
+			                  dev_Bias,
+			                  &beta,
+			                  dstTensorDesc,
+			                  data));
 }
 
 
@@ -180,7 +165,6 @@ void convLayer::forwardPropagation(string train_or_test)
 	width = prevLayer->width;
 	srcData = prevLayer->dstData;
 
-    /*设置srcTensorDesc的维度*/
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
@@ -190,7 +174,6 @@ void convLayer::forwardPropagation(string train_or_test)
 			                              width));
 
 
-	/*卷积核的配置*/
 	checkCUDNN(cudnnSetFilter4dDescriptor(filterDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
 			                              kernelAmount,
@@ -285,16 +268,12 @@ void convLayer::forwardPropagation(string train_or_test)
 	}
 
 
-	/*给dstDataGPU分配内存,用来存储结果,分配GPU是一定确保指向为空*/
 	this->dstData = NULL;
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width *sizeof(float));
 
 	size_t sizeInBytes = 0;
 	void* workSpace =NULL;
 
-	/*该函数返回用户根据指定算法需要的分配的GPU内存工作区
-	 * 最后一个参数存储算法所需要GPU内存的数量,
-	 * */
 
 	checkCUDNN(cudnnGetConvolutionForwardWorkspaceSize(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 					                                   srcTensorDesc,
@@ -313,13 +292,6 @@ void convLayer::forwardPropagation(string train_or_test)
 
 	float alpha = 1.0f;
 	float beta = 0.0f;
-	/*执行卷积运算，根据指定的src数据和srctensor以及卷积核进行运算
-	 * 结果返回存储在dst中，alpha通常用来缩放输入tensor，
-	 * beta通常用来缩放输出tensor
-	 * 第三个参数开始依次是：原数据tensor，原数据在GPU地址，卷积核tensor,卷积核权重正在GPU地址
-	 * 卷积描述符，指定的卷积算法，执行指定算法所需要的内存，workSpace大小，beta，
-	 * 目的tensor，卷积后的结果
-	 * */
 	checkCUDNN(cudnnConvolutionForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 					                   &alpha,
 					                   srcTensorDesc,
@@ -335,7 +307,7 @@ void convLayer::forwardPropagation(string train_or_test)
 					                   dstData));
 
 
-	/*加上偏置*/
+	/*add bias*/
 	addBias(dstTensorDesc, channels, dstData);
 
 	if (sizeInBytes != 0)
@@ -343,12 +315,9 @@ void convLayer::forwardPropagation(string train_or_test)
 		checkCudaErrors(cudaFree(workSpace));
 	}
 
-//	if(train_or_test == "test")
-//	    MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
-
 }
 
-
+/*free forward memory*/
 void convLayer::Forward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
@@ -357,9 +326,9 @@ void convLayer::Forward_cudaFree()
 
 void convLayer::backwardPropagation(float Momentum)
 {
-	/*使用Moment用*/
 	float *tmp_Wgrad = NULL , *tmp_Bgrad = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Wgrad, kernelAmount * _inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Wgrad, 
+                                                     kernelAmount * _inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
 
 	checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
@@ -369,6 +338,7 @@ void convLayer::backwardPropagation(float Momentum)
 			                              channels,
 			                              height,
 			                              width));
+
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
@@ -392,6 +362,8 @@ void convLayer::backwardPropagation(float Momentum)
 			                              prevlayer_c,
 			                              prevlayer_h,
 			                              prevlayer_w));
+
+
 	checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
@@ -400,7 +372,7 @@ void convLayer::backwardPropagation(float Momentum)
 			                              prevlayer_h,
 			                              prevlayer_w));
 
-	/*计算偏置的梯度*/
+
 	float alpha = 1.0f;
 	float beta = 0.0f;
 	checkCUDNN(cudnnConvolutionBackwardBias(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
@@ -413,7 +385,6 @@ void convLayer::backwardPropagation(float Momentum)
 			                                ));
 
 
-	/*计算权重梯度*/
 	checkCUDNN(cudnnConvolutionBackwardFilter(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 			                                  &alpha,
 			                                  srcTensorDesc,
@@ -425,7 +396,6 @@ void convLayer::backwardPropagation(float Momentum)
 			                                  filterDesc,
 			                                  tmp_Wgrad));
 
-	/*加上权重衰减项:这是根据公式做的变化，因为下面跟新参数又除以batchSize,所以这里要乘*/
 	alpha = lambda * batchSize;
 	int size =  kernelAmount * _inputAmount * kernelSize * kernelSize;
 	checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
@@ -438,9 +408,10 @@ void convLayer::backwardPropagation(float Momentum)
 
 
 
-	/*计算本曾残差*/
+	/*compute diff*/
 	diffData = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, prevlayer_n * prevlayer_c * prevlayer_h * prevlayer_w * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, 
+                                                     prevlayer_n * prevlayer_c * prevlayer_h * prevlayer_w * sizeof(float));
 
 	alpha = 1.0f;
 	beta = 0.0f;
@@ -470,7 +441,6 @@ void convLayer::backwardPropagation(float Momentum)
 							      dev_Bgrad,
 							      1));
 
-	/*权重更新，新W= 旧W-rate*(1/m)*偏导数*/
 	scalVal =lrate * 1.0f / batchSize;
 	size =  kernelAmount * _inputAmount * kernelSize * kernelSize;
 	checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
@@ -489,8 +459,8 @@ void convLayer::backwardPropagation(float Momentum)
 					              1,
 					              dev_Bgrad,
 					              1));
-	/*更新w = w - wgrad*/
-	alpha = -1.0f;
+	
+    alpha = -1.0f;
 	size =  kernelAmount * _inputAmount * kernelSize * kernelSize;
     checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
 					                  size,
@@ -510,15 +480,12 @@ void convLayer::backwardPropagation(float Momentum)
 					                  1));
 
 
-
 	MemoryMonitor::instanceObject()->freeGpuMemory(tmp_Wgrad);
     MemoryMonitor::instanceObject()->freeGpuMemory(tmp_Bgrad);
-//	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
-//	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
 }
 
 
-
+/*free backwardPropagation memory*/
 void convLayer::Backward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
@@ -594,7 +561,6 @@ void convLayer::readWeight(FILE*file)
 
 void convLayer:: destroyHandles()
 {
-	/*销毁创建的描述符  逆向销毁*/
 	checkCUDNN(cudnnDestroyConvolutionDescriptor(convDesc));
 	checkCUDNN(cudnnDestroyFilterDescriptor(filterDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));

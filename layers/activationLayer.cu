@@ -10,14 +10,13 @@ using namespace cv;
 
 void activationLayer::createHandles()
 	{
-		/*cudnnCreateTensorDescriptor创建一个tensor对象（并没有初始化）*/
 		checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
 		checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
 		checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
 		checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
 	}
 
-
+/*activation layer constructor*/
 activationLayer::activationLayer(string name)
 {
 	_name = name;
@@ -91,15 +90,12 @@ void activationLayer::forwardPropagation(string train_or_test)
 			                          dstTensorDesc,
 			                          dstData));
 
-//	/*如果是测试集的，就释放源输入，因为没有反向传导*/
-//	if(train_or_test == "test")
-//		MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
-
 }
 
+
+/*free forwardPropagation memory*/
 void activationLayer::Forward_cudaFree()
 {
-	/*如果是测试集的，就释放源输入，因为没有反向传导*/
 	MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
 }
 
@@ -150,7 +146,6 @@ void activationLayer::backwardPropagation(float Momentum)
 
 	float alpha = 1.0f;
 	float beta = 0.0f;
-	/*计算神经元激活函数的梯度*/
 	checkCUDNN(cudnnActivationBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 			                           CUDNN_ACTIVATION_RELU,
 			                           &alpha,
@@ -164,12 +159,10 @@ void activationLayer::backwardPropagation(float Momentum)
 			                           dstDiffTensorDesc,
 			                           diffData));
 
-//	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-//	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
 }
 
 
-
+/*free backwardPropagation memory*/
 void activationLayer::Backward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
@@ -179,7 +172,6 @@ void activationLayer::Backward_cudaFree()
 
 void activationLayer::destroyHandles()
 {
-	/*销毁创建的描述符  逆向销毁*/
 	checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(dstTensorDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));

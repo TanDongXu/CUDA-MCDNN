@@ -1,19 +1,8 @@
 #include"softMaxLayer.h"
-#include"dataLayer.h"
-#include"../config/config.h"
-#include"../cuDNN_netWork.h"
-#include"../tests/test_layer.h"
-#include"../saveData/saveNetWork.h"
-
-#include"opencv2/imgproc/imgproc.hpp"
-#include"opencv2/highgui/highgui.hpp"
-
-using namespace cv;
 
 
 void softMaxLayer::createHandles()
 {
-	/*cudnnCreateTensorDescriptor创建一个tensor对象（并没有初始化）*/
 	checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
 	checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
 	checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
@@ -21,7 +10,7 @@ void softMaxLayer::createHandles()
 }
 
 
-
+/*get the datasize and label*/
 void softMaxLayer::GetDataSize_BatchLabel()
 {
 	dataLayer* data_Layer = (dataLayer*) Layers::instanceObject()->getLayer("data");
@@ -30,6 +19,7 @@ void softMaxLayer::GetDataSize_BatchLabel()
 
 }
 
+/*constructor*/
 softMaxLayer::softMaxLayer(string name)
 {
 	_name = name;
@@ -65,7 +55,7 @@ softMaxLayer::softMaxLayer(string name)
 
 }
 
-
+/*classification results*/
 void softMaxLayer::ClassificationResults()
 {
 	if(flag == 1)
@@ -83,7 +73,6 @@ void softMaxLayer::ClassificationResults()
 	{
 		float max = result[i * max_digit];
 		int labelIndex =0;
-		/*选出10个中最大的一个代表该数字的输出*/
 		for(int j=1; j<max_digit;j++)
 		{
 			if(max < result[i * max_digit + j])
@@ -104,16 +93,12 @@ void softMaxLayer::ClassificationResults()
 		if(cur_correctSize > CorrectSize)
 		{
 			CorrectSize = cur_correctSize;
-            saveNetWork();
+            //saveNetWork();
 		}
 		flag = 1;
 	}
 
-	/*测试集的话把源输入释放，因为没有反向传导*/
-	//MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
-	//MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
 	MemoryMonitor::instanceObject()->freeCpuMemory(result);
-	//MemoryMonitor::instanceObject()->freeCpuMemory(srcLabel);
 }
 
 
@@ -185,7 +170,7 @@ __global__ void SoftmaxLossBackprop(const int* label, int num_labels, int batch_
 
 
 
-/*求残差*/
+/*compute diff*/
 void softMaxLayer::getBackPropDiffData()
 {
 	int *devLabel;
@@ -205,7 +190,6 @@ void softMaxLayer::getBackPropDiffData()
 
 void softMaxLayer::backwardPropagation(float Momentum)
 {
-	/*获取残差*/
 	getBackPropDiffData();
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
@@ -242,9 +226,6 @@ void softMaxLayer::backwardPropagation(float Momentum)
 			                        &beta,
 			                        dstDiffTensorDesc,
 			                        diffData));
-
-	//MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	//MemoryMonitor::instanceObject()->freeGpuMemory(srcDiff);
 }
 
 
@@ -257,7 +238,6 @@ void softMaxLayer::Backward_cudaFree()
 
 void softMaxLayer:: destroyHandles()
 {
-	/*销毁创建的描述符  逆向销毁*/
 	checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(dstTensorDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));

@@ -11,6 +11,13 @@
 #include<cudnn.h>
 #include"layersBase.h"
 #include"../common/cuMatrix.h"
+#include"dataLayer.h"
+#include"../config/config.h"
+#include"../cuDNN_netWork.h"
+#include"../tests/test_layer.h"
+#include"../saveData/saveNetWork.h"
+
+
 
 class softMaxLayer : public layersBase
 {
@@ -39,7 +46,7 @@ public:
 
 	int getOutputSize()
 	{
-		return NULL;
+		return 0;
 	}
 
 public:
@@ -55,8 +62,6 @@ private:
 	int cur_correctSize;
 	int CorrectSize;
 	int flag;
-
-	//计算cost用
 	float lambda;
 	float *srcDiff;
 

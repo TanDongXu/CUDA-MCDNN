@@ -11,8 +11,11 @@
 #include<tuple>
 #include<string>
 #include<cudnn.h>
+#include<math.h>
 #include"layersBase.h"
-
+#include"../config/config.h"
+#include"../cuDNN_netWork.h"
+#include"../tests/test_layer.h"
 
 using namespace std;
 

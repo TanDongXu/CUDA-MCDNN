@@ -1,12 +1,7 @@
 #include"dataLayer.h"
-#include"../config/config.h"
-#include"layersBase.h"
-#include"../cuDNN_netWork.h"
 
-#include"opencv2/highgui/highgui.hpp"
-#include<cstring>
 
-using namespace cv;
+/*constructor*/
 dataLayer::dataLayer(string name)
 {
 	_name = name;
@@ -32,7 +27,7 @@ dataLayer::dataLayer(string name)
 	width = config::instanceObjtce()->get_imageSize();
 }
 
-/*数据层的前向传导*/
+
 void dataLayer::forwardPropagation(string train_or_test)
 {
     //nothing
@@ -41,7 +36,9 @@ void dataLayer::forwardPropagation(string train_or_test)
 
 
 /*get batch size image*/
-void dataLayer::getBatch_Images_Label(int index, cuMatrixVector<float>&inputData, cuMatrix<int>* &inputLabel)
+void dataLayer::getBatch_Images_Label(int index, 
+                                      cuMatrixVector<float>&inputData, 
+                                      cuMatrix<int>* &inputLabel)
 {
 
 	dataSize = inputData.size();
@@ -54,7 +51,6 @@ void dataLayer::getBatch_Images_Label(int index, cuMatrixVector<float>&inputData
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
 	srcLabel = (int*) MemoryMonitor::instanceObject()->cpuMallocMemory(batchSize * 1 * 1 * 1 * sizeof(int));
 
-	/*k保证batchImage大小都在一个batch大小内*/
 	int k = 0;
 	for (int i = start;i< (start + batchSize > inputData.size() ? inputData.size() : (start + batchSize)); i++) {
 		for (int c = 0; c < channels; c++) {
@@ -119,7 +115,7 @@ void dataLayer::backwardPropagation(float Momentum)
 	//nothing
 }
 
-
+/*free backwardPropagation memory*/
 void dataLayer::Backward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);

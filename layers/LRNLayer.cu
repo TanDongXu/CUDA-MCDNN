@@ -50,6 +50,7 @@ LRNLayer::LRNLayer(string name)
 
 void LRNLayer::forwardPropagation(string train_or_test)
 {
+    srcData = NULL;
 	number = prevLayer->number;
 	channels = prevLayer->channels;
 	height = prevLayer->height;
@@ -97,12 +98,7 @@ void LRNLayer::forwardPropagation(string train_or_test)
 			                               dstTensorDesc,
 			                               dstData));
 
-
-//	if(train_or_test == "test")
-//		MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
-
 }
-
 
 
 void LRNLayer::Forward_cudaFree()
@@ -166,8 +162,6 @@ void LRNLayer::backwardPropagation(float Momentum)
 			                                dstDiffTensorDesc,
 			                                diffData));
 
-   //MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-  // MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
 }
 
 

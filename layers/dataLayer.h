@@ -10,7 +10,11 @@
 
 #include"layersBase.h"
 #include"../common/cuMatrixVector.h"
+#include"../tests/test_layer.h"
 #include<cuda_runtime_api.h>
+#include"../config/config.h"
+#include"../cuDNN_netWork.h"
+#include<cstring>
 
 
 

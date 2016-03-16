@@ -10,23 +10,31 @@
 
 #include"./layers/convLayer.h"
 #include"./layers/hiddenLayer.h"
-
-
 #include<cuda_runtime.h>
 #include<cudnn.h>
 #include<cublas.h>
 #include<cublas_v2.h>
 #include"./common/checkError.h"
 
-void setTensorDesc(cudnnTensorDescriptor_t& tensorDesc, cudnnTensorFormat_t& tensorFormat, cudnnDataType_t& dataType,
+void setTensorDesc(cudnnTensorDescriptor_t& tensorDesc, 
+                   cudnnTensorFormat_t& tensorFormat, 
+                   cudnnDataType_t& dataType,
 		           int n,
 		           int c,
 		           int h,
 		           int w);
 
 
-void matrixMulti(cublasHandle_t cublasHandle, int m, int n, int batchSize, float alpha,
-		  const float*A, const float*x, float beta, float *y);
+void matrixMulti(cublasHandle_t cublasHandle, 
+                 int m, 
+                 int n, 
+                 int batchSize, 
+                 float alpha,
+		  const float*A, 
+                 const float*x, 
+                 float beta, 
+                 float *y);
+
 
 
 template <class T>
@@ -67,17 +75,14 @@ public:
 
 private:
 	int convAlgorithm;
-	/*枚举类型包括三个：float32、double64、float16*/
+	/*inlcude 3 type：float32、double64、float16*/
 	cudnnDataType_t dataType;
-	/*枚举类型：指定数据的结构不同类型,通常用cudnnSetTensor4dDescriptor来创建tensor*/
 	cudnnTensorFormat_t tensorFormat;
-	/*用于保存cudnn库的上下文,使用cudnnCreate创建*/
 	cudnnHandle_t cudnnHandle;
 	cublasHandle_t cublasHandle;
 
 	void createHandles()
 	{
-		/*cudnnCreate初始化cudnn的库，创建一个handle保存cudnn上下文*/
 		checkCUDNN(cudnnCreate(&cudnnHandle));
 		checkCublasErrors(cublasCreate(&cublasHandle));
 	}
@@ -115,7 +120,7 @@ public:
 		default:FatalError("Unsupported data type");
 		}
 
-		/*定义format的类型*/
+		/*format type*/
 		tensorFormat = CUDNN_TENSOR_NCHW;
 		createHandles();
 	}
@@ -125,10 +130,6 @@ public:
 	{
 		destroyHandles();
 	}
-
-
-
-
 
 };
 

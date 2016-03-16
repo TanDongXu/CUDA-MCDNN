@@ -6,13 +6,12 @@
  */
 #include<iostream>
 #include<cudnn.h>
-
 #include"common/cuMatrixVector.h"
 #include"common/cuMatrix.h"
 #include"readData/readMnistData.h"
 #include"config/config.h"
 #include"columnNet.cuh"
-#include"common/utility.h"
+#include"./common/utility.cuh"
 
 /*use cuDNN Acceleration*/
 

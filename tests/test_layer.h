@@ -9,6 +9,7 @@
 #define TEST_LAYER_H_
 
 #include<iostream>
+#include"../layers/layersBase.h"
 
 
 void CHECK_HOST_MATRIX_EQ(float* A, int sizeA, float* B, int sizeB);
@@ -18,5 +19,5 @@ void printf_DevParameter(int number, int channels, int height,int width, float*A
 
 void copy_DeviceToHost(float*devData, float*&hostData, int number, int channels, int height, int width);
 void copy_HostToDevice(float*hostData, float*&devData, int number, int channels, int height, int width);
-
+void printfLayersParameter(convLayerBase* layer);
 #endif /* TEST_LAYER_H_ */

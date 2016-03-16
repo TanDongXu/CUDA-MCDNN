@@ -1,19 +1,12 @@
 #include<iostream>
 #include<cuda_runtime.h>
-
 #include"test_layer.h"
 #include"../common/checkError.h"
 #include"../common/MemoryMonitor.h"
 
-
-#include"opencv2/imgproc/imgproc.hpp"
-#include"opencv2/highgui/highgui.hpp"
-
-using namespace cv;
-
 using namespace std;
 
-/*检测两个本地矩阵是否相等*/
+/*judge array equal or not*/
 
 void CHECK_HOST_MATRIX_EQ(float*A, int sizeA, float*B, int sizeB)
 {
@@ -26,7 +19,7 @@ void CHECK_HOST_MATRIX_EQ(float*A, int sizeA, float*B, int sizeB)
 	}
 }
 
-/*检测个GPU矩阵和cpu矩阵是否相等，A为cpu端*/
+/*judge cpu data and GPU data equal or not*/
 void CHECK_DEV_HOST_MATRIX_EQ(float* A, int sizeA, float* B, int sizeB)
 {
 	float* tmpB;
@@ -37,7 +30,7 @@ void CHECK_DEV_HOST_MATRIX_EQ(float* A, int sizeA, float* B, int sizeB)
 }
 
 
-/*打印数组参数，channels,height,width*/
+/*printf hostdata，channels,height,width*/
 //template<class T>
 void printf_HostParameter(int number, int channels, int height,int width, float*A)
 {
@@ -57,13 +50,12 @@ void printf_HostParameter(int number, int channels, int height,int width, float*
 		}
 	}
 
-	waitKey(0);
-	waitKey(0);
-	waitKey(0);
+	cout<<"over"<<endl;
+	for(;;){}
 }
 
 
-/*打印GPU数组*/
+/*printf devData*/
 void printf_DevParameter(int number, int channels, int height,int width, float*A)
 {
 	float*tmpA;
@@ -86,9 +78,8 @@ void printf_DevParameter(int number, int channels, int height,int width, float*A
 		}
 	}
 
-	waitKey(0);
-    waitKey(0);
-    waitKey(0);
+	cout<<"sdfhdgggfhfhdfhdfgh"<<endl;
+	for(;;){}
 }
 
 
@@ -104,4 +95,25 @@ void copy_HostToDevice(float*hostData, float*&devData, int number, int channels,
 {
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&devData, number * channels * height * width * sizeof(float));
 	checkCudaErrors(cudaMemcpy(devData, hostData, number * channels * height * width * sizeof(float), cudaMemcpyHostToDevice));
+}
+
+
+
+void printfLayersParameter(convLayerBase* layer)
+{
+	cout<<"name: "<<layer->_name<<endl;
+	cout<<"Input: "<<layer->_inputName<<endl;
+	cout<<"number: "<<layer->number<<endl;
+	cout<<"channels: "<<layer->channels<<endl;
+	cout<<"height: "<<layer->height<<endl;
+	cout<<"width: "<<layer->width<<endl;
+	cout<<"InputAmount: "<<layer->_inputAmount<<endl;
+	cout<<"InputImageDim: "<<layer->_inputImageDim<<endl;
+	cout<<"outputAmout: "<<layer->_outputAmount<<endl;
+	cout<<"outputImageDim: "<<layer->_outputImageDim<<endl;
+
+	//
+	printf_DevParameter(layer->number, layer->channels, layer->height, layer->width, layer->dstData);
+
+	for(;;){}
 }

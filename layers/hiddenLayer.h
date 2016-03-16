@@ -64,7 +64,6 @@ private:
 	int inputSize;
 	int outputSize;
 	int batchSize;
-	int nonLinearity;
 	float lambda;
 
 

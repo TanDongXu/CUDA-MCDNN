@@ -68,7 +68,6 @@ hiddenLayer::hiddenLayer(string name, int sign)
 	lrate = curConfig->_lrate;
 	inputSize = prev_Layer->getOutputSize();
 	outputSize = curConfig->_NumHiddenNeurons;
-	nonLinearity = curConfig->_non_linearity;
 	batchSize = config::instanceObjtce()->get_batchSize();
 	lambda = curConfig->_weight_decay;
 

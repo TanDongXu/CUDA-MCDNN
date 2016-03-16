@@ -38,6 +38,7 @@ public:
 private:
 	int inputSize;
 	int outputSize;
+    cudnnActivationMode_t ActivationMode;
 
 
 

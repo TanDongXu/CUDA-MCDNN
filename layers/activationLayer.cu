@@ -42,9 +42,10 @@ activationLayer::activationLayer(string name)
     _outputAmount = _inputAmount;
 	_inputImageDim = prev_Layer->_outputImageDim;
 	_outputImageDim = _inputImageDim;
-
 	inputSize = prev_Layer->getOutputSize();
     outputSize =inputSize;
+
+    ActivationMode = (cudnnActivationMode_t)curConfig->_non_linearity;
 
     this->createHandles();
 }
@@ -82,7 +83,7 @@ void activationLayer::forwardPropagation(string train_or_test)
 	float alpha = 1.0f;
 	float beta = 0.0f;
 	checkCUDNN(cudnnActivationForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-			                          CUDNN_ACTIVATION_RELU,
+			                          ActivationMode,
 			                          &alpha,
 			                          srcTensorDesc,
 			                          srcData,
@@ -147,7 +148,7 @@ void activationLayer::backwardPropagation(float Momentum)
 	float alpha = 1.0f;
 	float beta = 0.0f;
 	checkCUDNN(cudnnActivationBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-			                           CUDNN_ACTIVATION_RELU,
+			                           ActivationMode,
 			                           &alpha,
 			                           dstTensorDesc,
 			                           dstData,

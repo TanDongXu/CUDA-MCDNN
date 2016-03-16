@@ -73,7 +73,6 @@ private:
 	int stride_h;
 	int stride_w;
 	int kernelAmount;
-	int non_linearity;
 	int outputSize;
 	int batchSize;
 

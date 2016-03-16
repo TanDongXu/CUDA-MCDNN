@@ -54,7 +54,6 @@ private:
 	int pad_w;
 	int stride_h;
 	int stride_w;
-	int nonLinearity;
 	int outputSize;
 
 

@@ -31,7 +31,6 @@ poolLayer::poolLayer(string name)
 	string prevLayerName = curConfig->_input;
 	convLayerBase* prev_Layer = (convLayerBase*) Layers::instanceObject()->getLayer(prevLayerName);
 
-	nonLinearity = curConfig->_non_linearity;
 	poolType = curConfig->_poolType;
 	poolDim = curConfig->_size;
 	pad_h = curConfig->_pad_h;

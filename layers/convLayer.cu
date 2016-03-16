@@ -72,7 +72,6 @@ convLayer::convLayer(string name, int sign)
     _outputImageDim = (_inputImageDim + 2 * pad_h - kernelSize)/stride_h + 1;
 
     outputSize = _outputAmount * _outputImageDim * _outputImageDim;
-    non_linearity = curConfig->_non_linearity;
 
 
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Wgrad, 

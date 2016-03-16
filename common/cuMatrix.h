@@ -94,6 +94,7 @@ public:
 		return hostData;
 	}
 
+    /*get device data*/
 	T* &getDeviceData()
 	{
 		return devData;
@@ -134,6 +135,7 @@ private:
 	}
 
 
+    /*allocate device memory*/
 	void mallocDeviceMemory()
 	{
 		if(devData == NULL)

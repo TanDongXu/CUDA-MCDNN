@@ -13,7 +13,6 @@
 class MemoryMonitor
 {
 public:
-	/*定义个静态函数，返回一个自身静态对象*/
 	static MemoryMonitor *instanceObject(){
 		static MemoryMonitor *monitor=new MemoryMonitor();
 		return monitor;

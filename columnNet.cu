@@ -131,9 +131,8 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
                     cuMatrix<int>* &trainLabel, 
                     cuMatrixVector<float> &testData,
                     cuMatrix<int>*&testLabel,
-		            int batchSize, 
-                    int imageSize, 
-                    int normalized_width)
+		            int batchSize
+                    )
 {
 
 	cout<<"TestData Forecast The Result..."<<endl;

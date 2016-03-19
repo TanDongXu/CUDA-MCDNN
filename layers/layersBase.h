@@ -31,6 +31,13 @@ public:
 		lrate = static_cast<float>(lrate * pow((1.0 + lr_gamma * index), (-lr_power)));
 		//lrate *= scale;
 	}
+public:
+    void insertPrevLayer(layersBase* layer){
+        prevLayer.push_back(layer);
+    }
+    void insertNextlayer(layersBase* layer){
+        nextLayer.push_back(layer);
+    }
 
 public:
 	string _name;
@@ -41,9 +48,9 @@ public:
 	int width;
 	float lrate;
 	float *diffData;
-	float *srcData , *dstData ;
-	layersBase* prevLayer;
-	layersBase* nextLayer;
+	float *srcData , *dstData;
+    vector<layersBase*>prevLayer;
+    vector<layersBase*>nextLayer;
 };
 
 

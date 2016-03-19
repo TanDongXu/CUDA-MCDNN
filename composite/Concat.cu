@@ -105,18 +105,18 @@ void Concat::split_DiffData(int index, float* diffData)
 
 	if (0 == index)
 	{
-		InnerLayers[0].getLayer("one")->nextLayer->diffData = separate_diffData;
+		InnerLayers[0].getLayer("one")->nextLayer[0]->diffData = separate_diffData;
 
 	} else if (1 == index)
 	{
-		InnerLayers[1].getLayer("three")->nextLayer->diffData = separate_diffData;
+		InnerLayers[1].getLayer("three")->nextLayer[0]->diffData = separate_diffData;
 	}
 	else if (2 == index)
 	{
-		InnerLayers[2].getLayer("five")->nextLayer->diffData = separate_diffData;
+		InnerLayers[2].getLayer("five")->nextLayer[0]->diffData = separate_diffData;
 	} else
 	{
-		InnerLayers[3].getLayer("pool_proj")->nextLayer->diffData = separate_diffData;
+		InnerLayers[3].getLayer("pool_proj")->nextLayer[0]->diffData = separate_diffData;
 	}
 
 
@@ -144,10 +144,10 @@ float* Concat::backwardSetup()
 	prevDiff.push_back(InnerLayers[3].getLayer(InnerLayers[3].getLayersName(0))->diffData);
 	prevDiff.toGpu();
 
-	prev_number = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->prevLayer->number;
-	prev_channels = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->prevLayer->channels;
-	prev_height = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->prevLayer->height;
-	prev_width = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->prevLayer->width;
+	prev_number = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->prevLayer[0]->number;
+	prev_channels = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->prevLayer[0]->channels;
+	prev_height = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->prevLayer[0]->height;
+	prev_width = InnerLayers[0].getLayer(InnerLayers[0].getLayersName(0))->prevLayer[0]->width;
 
 	size  = prev_number * prev_channels * prev_height * prev_width;
 	diffData = NULL;

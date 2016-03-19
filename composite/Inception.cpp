@@ -88,13 +88,11 @@ Inception::Inception(convLayerBase* prevLayer,
 	/*the last layer is shared layer*/
 	for(int i = 0; i < 4; i++)
 	{
-	    InnerLayers[i].getLayer(InnerLayers[i].getLayersName(0))->prevLayer = prevLayer;
-	    InnerLayers[i].getLayer(InnerLayers[i].getLayersName(InnerLayers[i].getLayersNum() - 1))->nextLayer = share_Layer;
+	    InnerLayers[i].getLayer(InnerLayers[i].getLayersName(0))->insertPrevLayer( prevLayer);
+	    InnerLayers[i].getLayer(InnerLayers[i].getLayersName(InnerLayers[i].getLayersNum() - 1))->insertNextlayer(share_Layer);
 	}
 
-
 	concat = new Concat(InnerLayers, Concat::param_tuple(one, three, five, pool_proj));
-
 }
 
 

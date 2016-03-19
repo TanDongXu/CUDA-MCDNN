@@ -47,8 +47,8 @@ convLayer::convLayer(string name, int sign)
 	channels = 0;
 	height = 0;
 	width = 0;
-	prevLayer = NULL;
-	nextLayer = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
 
     /*can use class member prevLayer, because it has not assignment*/
 	configConv* curConfig = (configConv*) config::instanceObjtce()->getLayersByName(_name);
@@ -109,8 +109,8 @@ convLayer::convLayer(string name, int sign, const param_tuple& args)
 	channels = 0;
 	height = 0;
 	width = 0;
-	prevLayer = NULL;
-	nextLayer = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
 
 	_outputAmount = kernelAmount;
 	_outputImageDim = (_inputImageDim + 2 * pad_h - kernelSize)/stride_h + 1;
@@ -158,11 +158,11 @@ void convLayer::addBias(const cudnnTensorDescriptor_t& dstTensorDesc, int c, flo
 void convLayer::forwardPropagation(string train_or_test)
 {
 	srcData = NULL;
-	number = prevLayer->number;
-	channels = prevLayer->channels;
-	height = prevLayer->height;
-	width = prevLayer->width;
-	srcData = prevLayer->dstData;
+	number = prevLayer[0]->number;
+	channels = prevLayer[0]->channels;
+	height = prevLayer[0]->height;
+	width = prevLayer[0]->width;
+	srcData = prevLayer[0]->dstData;
 
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
@@ -348,10 +348,10 @@ void convLayer::backwardPropagation(float Momentum)
 
 
 	int prevlayer_n, prevlayer_c, prevlayer_h, prevlayer_w;
-	prevlayer_n = prevLayer->number;
-	prevlayer_c = prevLayer->channels;
-	prevlayer_h = prevLayer->height;
-	prevlayer_w = prevLayer->width;
+	prevlayer_n = prevLayer[0]->number;
+	prevlayer_c = prevLayer[0]->channels;
+	prevlayer_h = prevLayer[0]->height;
+	prevlayer_w = prevLayer[0]->width;
 
 
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
@@ -377,7 +377,7 @@ void convLayer::backwardPropagation(float Momentum)
 	checkCUDNN(cudnnConvolutionBackwardBias(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 			                                &alpha,
 			                                srcDiffTensorDesc,
-			                                nextLayer->diffData,
+			                                nextLayer[0]->diffData,
 			                                &beta,
 			                                biasTensorDesc,
 			                                tmp_Bgrad
@@ -389,7 +389,7 @@ void convLayer::backwardPropagation(float Momentum)
 			                                  srcTensorDesc,
 			                                  srcData,
 			                                  srcDiffTensorDesc,
-			                                  nextLayer->diffData,
+			                                  nextLayer[0]->diffData,
 			                                  convDesc,
 			                                  &beta,
 			                                  filterDesc,
@@ -419,7 +419,7 @@ void convLayer::backwardPropagation(float Momentum)
 			                                filterDesc,
 			                                dev_Weight,
 			                                srcDiffTensorDesc,
-			                                nextLayer->diffData,
+			                                nextLayer[0]->diffData,
 			                                convDesc,
 			                                &beta,
 			                                dstDiffTensorDesc,
@@ -487,7 +487,7 @@ void convLayer::backwardPropagation(float Momentum)
 /*free backwardPropagation memory*/
 void convLayer::Backward_cudaFree()
 {
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
+	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
 	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
 }
 

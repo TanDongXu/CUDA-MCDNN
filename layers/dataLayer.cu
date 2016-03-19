@@ -11,8 +11,8 @@ dataLayer::dataLayer(string name)
 	srcLabel = NULL;
 	dataSize = 0;
 	lrate = 0.0f;
-	prevLayer = NULL;
-	nextLayer = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
 
 	batchSize = config::instanceObjtce()->get_batchSize();
 	_inputAmount = config::instanceObjtce()->getChannels();
@@ -119,5 +119,5 @@ void dataLayer::backwardPropagation(float Momentum)
 void dataLayer::Backward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
+	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
 }

@@ -1,6 +1,5 @@
 #include"dropOutLayer.h"
 
-
 dropOutLayer::dropOutLayer(string name)
 {
 	_name = name;
@@ -12,8 +11,10 @@ dropOutLayer::dropOutLayer(string name)
 	lrate = 0.0f;
 	srcData = NULL;
 	dstData = NULL;
-	prevLayer = NULL;
-	nextLayer = NULL;
+
+    nextLayer.clear();
+    prevLayer.clear();
+
 	outputPtr = NULL;
 
 	configDropOut* curConfig = (configDropOut*) config::instanceObjtce()->getLayersByName(_name);
@@ -27,13 +28,10 @@ dropOutLayer::dropOutLayer(string name)
 	this->createHandles();
 }
 
-
 void dropOutLayer::createHandles()
 {
 	curandCreateGenerator(&curandGenerator_DropOut, CURAND_RNG_PSEUDO_MTGP32);
 }
-
-
 
 __global__ void dropout_train(float* data, float* outputPtr, int size, float probability)
 {
@@ -44,7 +42,6 @@ __global__ void dropout_train(float* data, float* outputPtr, int size, float pro
 			data[idx] = 0;
 	}
 }
-
 
 __global__ void dropout_test(float* data, int size, float probability)
 {
@@ -63,7 +60,6 @@ void dropOutLayer::CreateUniform(int size)
 	curandGenerateUniform(curandGenerator_DropOut, outputPtr, size);
 }
 
-
 void dropOutLayer::Dropout_TrainSet(float* data, int size, float dropout_rate)
 {
 	int threadsPerBlock = 256;
@@ -71,7 +67,6 @@ void dropOutLayer::Dropout_TrainSet(float* data, int size, float dropout_rate)
 	dropout_train<<<blocksPerGrid, threadsPerBlock>>>(data, outputPtr, size, dropout_rate);
 
 }
-
 
 void dropOutLayer::Dropout_TestSet(float* data, int size, float dropout_rate)
 {
@@ -82,11 +77,11 @@ void dropOutLayer::Dropout_TestSet(float* data, int size, float dropout_rate)
 
 void dropOutLayer::forwardPropagation(string train_or_test)
 {
-	number = prevLayer->number;
-	channels =  prevLayer->channels;
-	height = prevLayer->height;
-	width = prevLayer->width;
-	srcData =prevLayer->dstData;
+	number = prevLayer[0]->number;
+	channels =  prevLayer[0]->channels;
+	height = prevLayer[0]->height;
+	width = prevLayer[0]->width;
+	srcData =prevLayer[0]->dstData;
 	dstData = srcData;
 
 	/*use dropout in training, when testing multiply probability*/
@@ -103,7 +98,7 @@ void dropOutLayer::forwardPropagation(string train_or_test)
 
 void dropOutLayer::backwardPropagation(float Momemtum)
 {
-	diffData = nextLayer->diffData;
+	diffData = nextLayer[0]->diffData;
 	Dropout_TrainSet(diffData, number * channels * height * width, DropOut_rate);
 	MemoryMonitor::instanceObject()->freeGpuMemory(outputPtr);
 }

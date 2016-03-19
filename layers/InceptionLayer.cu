@@ -13,8 +13,8 @@ InceptionLayer::InceptionLayer(string name, int sign)
 	srcData = NULL;
 	dstData = NULL;
 	diffData = NULL;
-	prevLayer = NULL;
-	nextLayer = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
 
     configInception* curConfig = (configInception*) config::instanceObjtce()->getLayersByName(_name);
     string prevLayerName = curConfig->_input;
@@ -52,11 +52,11 @@ void InceptionLayer::Forward_cudaFree()
 void InceptionLayer::forwardPropagation(string train_or_test)
 {
 	srcData = NULL;
-	number = prevLayer->number;
+	number = prevLayer[0]->number;
 	channels = _outputAmount;
-	height = prevLayer->height;
-	width = prevLayer->width;
-	srcData = prevLayer->dstData;
+	height = prevLayer[0]->height;
+	width = prevLayer[0]->width;
+	srcData = prevLayer[0]->dstData;
 
 	inception->forwardPropagation(train_or_test);
 	dstData = inception->getConcatData();
@@ -65,7 +65,7 @@ void InceptionLayer::forwardPropagation(string train_or_test)
 
 void InceptionLayer::backwardPropagation(float Momentum)
 {
-	inception->backwardPropagation(nextLayer->diffData, Momentum);
+	inception->backwardPropagation(nextLayer[0]->diffData, Momentum);
 	diffData = inception->getInceptionDiffData();
 }
 
@@ -73,6 +73,6 @@ void InceptionLayer::backwardPropagation(float Momentum)
 void InceptionLayer::Backward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
+	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
 }
 

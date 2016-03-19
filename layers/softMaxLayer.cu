@@ -34,8 +34,8 @@ softMaxLayer::softMaxLayer(string name)
 	width =0 ;
 	dataSize = 0;
 	srcLabel = NULL;
-	nextLayer = NULL;
-	prevLayer = NULL;
+    nextLayer.clear();
+    prevLayer.clear();
 	flag = 1;
 	lrate = 0.0f;
 	CorrectSize = 0;
@@ -105,12 +105,12 @@ void softMaxLayer::ClassificationResults()
 void softMaxLayer::forwardPropagation(string train_or_test)
 {
 	GetDataSize_BatchLabel();
-	number = prevLayer->number;
-	channels = prevLayer->channels;
-	height = prevLayer->height;
-	width = prevLayer->width;
+	number = prevLayer[0]->number;
+	channels = prevLayer[0]->channels;
+	height = prevLayer[0]->height;
+	width = prevLayer[0]->width;
 	srcData = NULL;
-	srcData = prevLayer->dstData;
+	srcData = prevLayer[0]->dstData;
 
 	dstData = NULL;
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));

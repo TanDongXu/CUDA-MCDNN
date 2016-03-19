@@ -25,8 +25,6 @@ int main(void)
 		cout<<"DataSet select Error!"<<endl;
 		exit(0);
 	}
-
-
 	return 0;
 }
 

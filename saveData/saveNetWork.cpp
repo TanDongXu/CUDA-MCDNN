@@ -1,4 +1,7 @@
 #include"saveNetWork.h"
+#include <queue>
+#include <set>
+using namespace std;
 
 /*save network parameter*/
 void saveNetWork()
@@ -10,16 +13,27 @@ void saveNetWork()
 
 	sprintf(fileName,"models/net_normalized_%d_%d.txt", imageSize, normalized_width);
 	FILE *file = fopen(fileName, "w");
+    queue<configBase*> que;
+    set<configBase*> hash;
 
 	if (file != NULL)
 	{
 		configBase *config = (configBase*) config::instanceObjtce()->getFirstLayers();
-		for (int i = 0; i < layerNum; i++) {
+        que.push( config );
+        hash.insert( config );
+        while( !que.empty() ){
+            config = que.front();
+            que.pop();
 			layersBase *layer = (layersBase*) Layers::instanceObject()->getLayer(config->_name);
 			layer->saveWeight(file);
-			config = config->_next;
+            for(int i = 0; i < config->_next.size(); i++){
+                configBase* tmp = config->_next[i];
+                if( hash.find( tmp ) != hash.end() ){
+                    hash.insert( tmp );
+                    que.push( tmp);
+                }
+            }
 		}
-
 	}else{
 		cout<<"savaNetWork:: Open Failed"<<endl;
 		exit(0);

@@ -15,7 +15,6 @@
 #include<map>
 using namespace std;
 
-
 class configNonLinearity
 {
 public:
@@ -52,10 +51,10 @@ public:
 	string _type;
 	string _name;
 	string _input;
-	configBase* _next;
-	configBase* _prev;
+	string _sub_input;
+	vector<configBase*>_next;
+    vector<configBase*>_prev;
 };
-
 
 /*configure file in the config.txt*/
 class config
@@ -207,11 +206,12 @@ private:
 class configData : public configBase
 {
 public:
-	configData(string type, string name)
+	configData(string type, string name, string input, string sub_input)
 {
 		_type = type;
 		_name = name;
-        _input = "NULL";
+        _input = input;
+        _sub_input = sub_input;
 }
 };
 
@@ -219,13 +219,14 @@ public:
 class configConv : public configBase
 {
 public:
-	configConv(string type, string name, string input,
+	configConv(string type, string name, string input, string sub_input,
 			int kernelSize, int pad_h, int pad_w, int stride_h, int stride_w,
 			int kernelAmount, float init_w, float lrate, float weight_decay)
     {
 		_type = type;
 		_name = name;
 		_input = input;
+		_sub_input = sub_input;
 		_kernelSize = kernelSize;
 		_pad_h = pad_h;
 		_pad_w = pad_w;
@@ -254,12 +255,13 @@ public:
 class configPooling : public configBase
 {
 public:
-	configPooling(string type, string name, string input, int size,
+	configPooling(string type, string name, string input, string sub_input, int size,
 			      int pad_h, int pad_w, int stride_h, int stride_w, string poolType)
     {
 		_type = type;
 		_name = name;
 		_input = input;
+		_sub_input = sub_input;
 		_size = size;
 		_pad_h = pad_h;
 		_pad_w = pad_w;
@@ -281,13 +283,14 @@ public:
 class configInception : public configBase
 {
 public:
-	configInception(string type, string name, string input,
+	configInception(string type, string name, string input, string sub_input,
 			        int one, int three, int five, int three_reduce, int five_reduce,
 			        int pool_proj, float init_w, float lrate, float weight_decay)
     {
 		_type = type;
 		_name = name;
 		_input = input;
+		_sub_input = sub_input;
 		_one = one;
 		_three = three;
 		_five = five;
@@ -297,10 +300,7 @@ public:
 		_init_w = init_w;
 		_weight_decay = weight_decay;
 		_lrate = lrate;
-
-
     }
-
 
 	int _one;
 	int _three;
@@ -311,19 +311,38 @@ public:
 	float _weight_decay;
 	float _init_w;
 	float _lrate;
-
 };
+
+
+/*branch layer config*/
+class configBranch : public configBase
+{
+public:
+	configBranch(string type, string name, string input, string sub_input, vector<string>outputs)
+    {
+		_type = type;
+		_name = name;
+		_input = input;
+		_sub_input = sub_input;
+		m_outputs = outputs;
+	}
+
+
+	vector<string> m_outputs;
+};
+
 
 /*hidden layer config*/
 class configHidden :public configBase
 {
 public:
-	configHidden(string type, string name, string input, 
+	configHidden(string type, string name, string input, string sub_input,
                  int NumHiddenNeurons, float init_w, float lrate, float weight_decay)
     {
 		_type = type;
 		_name = name;
 		_input = input;
+		_sub_input = sub_input;
 		_NumHiddenNeurons = NumHiddenNeurons;
 		_init_w = init_w;
 		_lrate = lrate;
@@ -343,10 +362,11 @@ public:
 class configDropOut : public configBase
 {
 public:
-	configDropOut(string type, string name, string input, float rate){
+	configDropOut(string type, string name, string input, string sub_input, float rate){
 		_type = type;
 		_name = name;
 		_input = input;
+		_sub_input = sub_input;
 		dropOut_rate = rate;
 
 	}
@@ -361,11 +381,12 @@ public:
 class configActivation : public configBase
 {
 public:
-	configActivation(string type, string name, string input, int non_linearity)
+	configActivation(string type, string name, string input, string sub_input, int non_linearity)
 {
 		_type = type;
 		_name = name;
         _input = input;
+        _sub_input = sub_input;
         _non_linearity = non_linearity; 
 }
 
@@ -376,11 +397,12 @@ public:
 class configLRN : public configBase
 {
 public:
-	configLRN(string type, string name, string input, unsigned lrnN, float lrnAlpha,float lrnBeta)
+	configLRN(string type, string name, string input, string sub_input, unsigned lrnN, float lrnAlpha,float lrnBeta)
     {
 		_type = type;
 		_name = name;
 		_input = input;
+		_sub_input = sub_input;
 		_lrnN = lrnN;
 		_lrnAlpha = lrnAlpha;
 		_lrnBeta = lrnBeta;
@@ -399,11 +421,12 @@ public:
 class configSoftMax : public configBase
 {
 public:
-	configSoftMax(string type, string name, string input, int nclasses, float weight_decay)
+	configSoftMax(string type, string name, string input, string sub_input, int nclasses, float weight_decay)
     {
 		_type = type;
 		_name = name;
 		_input = input;
+		_sub_input = sub_input;
 		_nclasses = nclasses;
 		_weight_decay = weight_decay;
     }

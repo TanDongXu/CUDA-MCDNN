@@ -21,8 +21,8 @@ void runMnist()
 	imageSize = config::instanceObjtce()->get_imageSize();
 
 	/*read Mnist dataSet*/
-	readMnistData(trainSetX, trainSetY, "data/mnist/train-images.idx3-ubyte", "data/mnist/train-labels.idx1-ubyte", normalized_width, imageSize);
-    readMnistData(testSetX, testSetY, "data/mnist/t10k-images.idx3-ubyte", "data/mnist/t10k-labels.idx1-ubyte", normalized_width, imageSize);
+	readMnistData(trainSetX, trainSetY, "data/mnist/train-images-idx3-ubyte", "data/mnist/train-labels-idx1-ubyte", normalized_width, imageSize);
+    readMnistData(testSetX, testSetY, "data/mnist/t10k-images-idx3-ubyte", "data/mnist/t10k-labels-idx1-ubyte", normalized_width, imageSize);
     cout<<"*******************************************************"<<endl;
     cout<<"     Train_set : "<< trainSetX[0]->rows * trainSetX[0]->cols <<" features and "<< trainSetX.size() <<" samples"<<endl;
     cout<<"   Train_label :   "<< trainSetY->cols                       <<" features and "<< trainSetY->rows  <<" samples"<<endl;

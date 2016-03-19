@@ -30,13 +30,14 @@ void Layers::storLayers(string name, layersBase* layer)
 		/*create a linked list*/
 		if(_layersMaps.size() == 1)
 		{
-			_layersMaps[name]->prevLayer = NULL;
+			_layersMaps[name]->prevLayer.clear();
 			_layersMaps[name]->_inputName = " ";
 		}else
 		{
 			_layersMaps[name]->_inputName = _layersMaps[_layersName[_layersName.size() - 2]]->_name;
-			_layersMaps[_layersName[_layersName.size() -2 ]]->nextLayer = _layersMaps[name];
-			_layersMaps[name]->prevLayer = _layersMaps[_layersName[_layersName.size() - 2]];
+
+			_layersMaps[_layersName[_layersName.size() -2 ]]->insertNextlayer( _layersMaps[name] );
+			_layersMaps[name]->insertPrevLayer(_layersMaps[_layersName[_layersName.size() - 2]]);
 		}
 
 	}else

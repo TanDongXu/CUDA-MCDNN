@@ -24,8 +24,8 @@ poolLayer::poolLayer(string name)
 	height =0;
 	width =0;
 	lrate =  0.0f;
-	prevLayer = NULL;
-	nextLayer = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
 
 	configPooling* curConfig = (configPooling*) config::instanceObjtce()->getLayersByName(_name);
 	string prevLayerName = curConfig->_input;
@@ -63,8 +63,8 @@ poolLayer::poolLayer(string name, const param_tuple& args)
 	height = 0;
 	width = 0;
 	lrate = 0.0f;
-	prevLayer = NULL;
-	nextLayer = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
 
 	_outputImageDim = static_cast<int>(ceil(static_cast<float>(_inputImageDim + 2 * pad_h - poolDim) / stride_h)) + 1;
 	_outputAmount = _inputAmount;
@@ -77,11 +77,11 @@ poolLayer::poolLayer(string name, const param_tuple& args)
 void poolLayer::forwardPropagation(string train_or_test)
 {
 	srcData = NULL;
-	number = prevLayer->number;
-	channels = prevLayer->channels;
-	height = prevLayer->height;
-	width = prevLayer->width;
-	srcData = prevLayer->dstData;
+	number = prevLayer[0]->number;
+	channels = prevLayer[0]->channels;
+	height = prevLayer[0]->height;
+	width = prevLayer[0]->width;
+	srcData = prevLayer[0]->dstData;
 
 	checkCUDNN(cudnnSetPooling2dDescriptor(poolingDesc,
 			                               CUDNN_POOLING_MAX,
@@ -156,10 +156,10 @@ void poolLayer::backwardPropagation(float Momentum)
 		                                width));
 
    int prevlayer_n, prevlayer_c, prevlayer_h,prevlayer_w;
-   prevlayer_n = prevLayer->number;
-   prevlayer_c = prevLayer->channels;
-   prevlayer_h = prevLayer->height;
-   prevlayer_w = prevLayer->width;
+   prevlayer_n = prevLayer[0]->number;
+   prevlayer_c = prevLayer[0]->channels;
+   prevlayer_h = prevLayer[0]->height;
+   prevlayer_w = prevLayer[0]->width;
 
    checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 		                               cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
@@ -190,7 +190,7 @@ void poolLayer::backwardPropagation(float Momentum)
 		                           dstTensorDesc,
 		                           dstData,
 		                           srcDiffTensorDesc,
-		                           nextLayer->diffData,
+		                           nextLayer[0]->diffData,
 		                           srcTensorDesc,
 		                           srcData,
 		                           &beta,
@@ -204,7 +204,7 @@ void poolLayer::backwardPropagation(float Momentum)
 void poolLayer::Backward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
+	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
 }
 
 void poolLayer:: destroyHandles()

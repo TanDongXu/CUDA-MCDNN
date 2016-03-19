@@ -29,12 +29,11 @@ activationLayer::activationLayer(string name)
 	height = 0;
 	width = 0;
 	lrate = 0.0f;
-	prevLayer = NULL;
-	nextLayer = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
 
 	configActivation * curConfig = (configActivation*) config::instanceObjtce()->getLayersByName(_name);
 	string preLayerName = curConfig->_input;
-	//layersBase* prelayer = (layersBase*) Layers::instanceObject()->getLayer(preLayerName);
 
 	convLayerBase* prev_Layer = (convLayerBase*) Layers::instanceObject()->getLayer(preLayerName);
 
@@ -53,11 +52,11 @@ activationLayer::activationLayer(string name)
 
 void activationLayer::forwardPropagation(string train_or_test)
 {
-	number = prevLayer->number;
-	channels = prevLayer->channels;
-	height = prevLayer->height;
-	width = prevLayer->width;
-	srcData = prevLayer->dstData;
+	number = prevLayer[0]->number;
+	channels = prevLayer[0]->channels;
+	height = prevLayer[0]->height;
+	width = prevLayer[0]->width;
+	srcData = prevLayer[0]->dstData;
 
 	dstData = NULL;
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
@@ -153,7 +152,7 @@ void activationLayer::backwardPropagation(float Momentum)
 			                           dstTensorDesc,
 			                           dstData,
 			                           srcDiffTensorDesc,
-			                           nextLayer->diffData,
+			                           nextLayer[0]->diffData,
 			                           srcTensorDesc,
 			                           srcData,
 			                           &beta,
@@ -167,7 +166,7 @@ void activationLayer::backwardPropagation(float Momentum)
 void activationLayer::Backward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
+	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
 }
 
 

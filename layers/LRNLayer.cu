@@ -27,8 +27,8 @@ LRNLayer::LRNLayer(string name)
 	height = 0;
 	width = 0;
 	lrate = 0.0f;
-	prevLayer = NULL;
-	nextLayer = NULL;
+	prevLayer.clear();
+	nextLayer.clear();
 
 	configLRN* curConfig = (configLRN*)config::instanceObjtce()->getLayersByName(_name);
 	string prevLayerName = curConfig->_input;
@@ -51,11 +51,11 @@ LRNLayer::LRNLayer(string name)
 void LRNLayer::forwardPropagation(string train_or_test)
 {
     srcData = NULL;
-	number = prevLayer->number;
-	channels = prevLayer->channels;
-	height = prevLayer->height;
-	width = prevLayer->width;
-	srcData = prevLayer->dstData;
+	number = prevLayer[0]->number;
+	channels = prevLayer[0]->channels;
+	height = prevLayer[0]->height;
+	width = prevLayer[0]->width;
+	srcData = prevLayer[0]->dstData;
 
 
 	checkCUDNN(cudnnSetLRNDescriptor(normDesc,
@@ -155,7 +155,7 @@ void LRNLayer::backwardPropagation(float Momentum)
 			                                dstTensorDesc,
 			                                dstData,
 			                                srcDiffTensorDesc,
-			                                nextLayer->diffData,
+			                                nextLayer[0]->diffData,
 			                                srcTensorDesc,
 			                                srcData,
 			                                &beta,
@@ -168,7 +168,7 @@ void LRNLayer::backwardPropagation(float Momentum)
 void LRNLayer::Backward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
+	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
 }
 
 void LRNLayer::destroyHandles()

@@ -57,8 +57,8 @@ hiddenLayer::hiddenLayer(string name, int sign)
 	channels = 0;
 	height = 0;
 	width = 0;
-	prevLayer = NULL;
-	nextLayer = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
 
 	configHidden * curConfig = (configHidden*) config::instanceObjtce()->getLayersByName(_name);
 	string preLayerName = curConfig->_input;
@@ -88,11 +88,11 @@ hiddenLayer::hiddenLayer(string name, int sign)
 
 void hiddenLayer::forwardPropagation(string train_or_test)
 {
-	number = prevLayer->number;
-	channels = prevLayer->channels;
-	height = prevLayer->height;
-	width = prevLayer->width;
-	srcData = prevLayer->dstData;
+	number = prevLayer[0]->number;
+	channels = prevLayer[0]->channels;
+	height = prevLayer[0]->height;
+	width = prevLayer[0]->width;
+	srcData = prevLayer[0]->dstData;
 
 	int dim_x = channels * height * width ;
 	int dim_y = outputSize ;
@@ -152,9 +152,9 @@ void hiddenLayer::Forward_cudaFree()
 void hiddenLayer::backwardPropagation(float Momentum)
 {
 	int prevlayer_c, prevlayer_h, prevlayer_w;
-	prevlayer_c = prevLayer->channels;
-	prevlayer_h = prevLayer->height;
-	prevlayer_w = prevLayer->width;
+	prevlayer_c = prevLayer[0]->channels;
+	prevlayer_h = prevLayer[0]->height;
+	prevlayer_w = prevLayer[0]->width;
 
 
 	int dim_x = prevlayer_c * prevlayer_h * prevlayer_w;
@@ -179,7 +179,7 @@ void hiddenLayer::backwardPropagation(float Momentum)
 				                  &alpha,
 				                  srcData,
 				                  dim_x,
-				                  nextLayer->diffData,
+				                  nextLayer[0]->diffData,
 				                  dim_y,
 				                  &beta,
 				                  tmp_Wgrad,
@@ -192,7 +192,7 @@ void hiddenLayer::backwardPropagation(float Momentum)
 				                  outputSize,
 				                  batchSize,
 				                  &alpha,
-				                  nextLayer->diffData,
+				                  nextLayer[0]->diffData,
 				                  outputSize,
 				                  VectorOnes,
 				                  1,
@@ -214,7 +214,7 @@ void hiddenLayer::backwardPropagation(float Momentum)
 				                  &alpha,
 				                  dev_Weight,
 				                  dim_x,
-				                  nextLayer->diffData,
+				                  nextLayer[0]->diffData,
 				                  outputSize,
 				                  &beta,
 				                  diffData,
@@ -291,7 +291,7 @@ void hiddenLayer::backwardPropagation(float Momentum)
 void hiddenLayer::Backward_cudaFree()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer->diffData);
+	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
 }
 
 void hiddenLayer::saveWeight(FILE*file)

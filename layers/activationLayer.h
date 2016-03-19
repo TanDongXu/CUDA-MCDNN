@@ -40,14 +40,11 @@ private:
 	int outputSize;
     cudnnActivationMode_t ActivationMode;
 
-
-
 private:
 	cudnnTensorDescriptor_t srcTensorDesc = NULL;
 	cudnnTensorDescriptor_t dstTensorDesc = NULL;
 	cudnnTensorDescriptor_t srcDiffTensorDesc = NULL;
 	cudnnTensorDescriptor_t dstDiffTensorDesc = NULL;
-
 };
 
 

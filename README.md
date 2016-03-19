@@ -13,6 +13,8 @@
 >Feature
 >--------
 >1. Use cudnn lib to develop CNN
+>2. Use Dropout and NetWork In NetWork(NIN) to train the NetWork
+>3. Use <a href="http://arxiv.org/abs/1409.4842">GoogLeNet Inception</a>*** structure to train NetWork
 
 >Compile
 >-------

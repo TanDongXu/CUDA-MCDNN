@@ -79,7 +79,7 @@ void creatColumnNet(int sign)
 void resultPredict(string train_or_test)
 {
     int size = Layers::instanceObject()->getLayersNum();
-    configBase * config = (configBase*) config::instanceObjtce()->getFirstLayers();
+    configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
     queue<configBase*>que;
     que.push(config);
     set<configBase*>hash;
@@ -110,7 +110,6 @@ void predictTestData(cuMatrixVector<float>&testData, cuMatrix<int>* &testLabel, 
     }
 }
 
-
 /*train netWork*/
 void getNetWorkCost(float&Momentum)
 {
@@ -136,6 +135,39 @@ void getNetWorkCost(float&Momentum)
     }
 }
 
+std::vector<configBase*> g_vQue;
+
+void dfsTraining(configBase* config, int nMomentum, cuMatrixVector<float>& trainData, cuMatrix<int>* &trainLabel, int& iter)
+{
+    g_vQue.push_back(config);
+
+    /*如果是一个叶子节点*/
+    if (config->_next.size() == 0){
+        dataLayer* datalayer = static_cast<dataLayer*>(Layers::instanceObject()->getLayer("data"));
+        datalayer->RandomBatch_Images_Label(trainData, trainLabel);
+
+        for(int i = 0; i < g_vQue.size(); i++){
+    //        printf("f %d %s\n", i, g_vQue[i]->_name.c_str());
+            layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
+            layer->forwardPropagation( string("train") );
+        }
+        for( int i = g_vQue.size() - 1; i>= 0; i--){
+    //        printf("b %d %s\n", i, g_vQue[i]->_name.c_str());
+            layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
+            layer->backwardPropagation( nMomentum );
+        }
+        iter++;
+    }
+    /*如果不是叶子节点*/
+    for(int i = 0; i < config->_next.size(); i++){
+        configBase* tmpConfig = config->_next[i];
+        dfsTraining( tmpConfig, nMomentum, trainData, trainLabel, iter);
+    }
+
+    g_vQue.erase( g_vQue.end() - 1 );
+}
+
+const bool DFS_TRAINING = true;
 
 /*training netWork*/
 void cuTrainNetWork(cuMatrixVector<float> &trainData, 
@@ -145,11 +177,9 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         int batchSize
         )
 {
-
     cout<<"TestData Forecast The Result..."<<endl;
     predictTestData(testData, testLabel, batchSize);
     cout<<endl;
-
 
     cout<<"NetWork training......"<<endl;
     int epochs = config::instanceObjtce()->get_trainEpochs();
@@ -172,17 +202,28 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
 
         clock_t inStart, inEnd;
         inStart = clock();
-        /*train network*/
-        for(int iter = 0 ; iter < iter_per_epo; iter++)
-        {
-            datalayer->RandomBatch_Images_Label(trainData,trainLabel);
-            getNetWorkCost(Momentum);
+        configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
+        if( DFS_TRAINING == false ){
+            /*train network*/
+            for(int iter = 0 ; iter < iter_per_epo; iter++)
+            {
+                datalayer->RandomBatch_Images_Label(trainData, trainLabel);
+                getNetWorkCost(Momentum);
+            }
+        }
+        else{
+            //printf("error\n");
+            int iter = 0;
+            g_vQue.clear();
+            while(iter < iter_per_epo){
+                dfsTraining(config, Momentum, trainData, trainLabel, iter);
+            }
         }
 
         inEnd = clock();
 
+        config = (configBase*) config::instanceObjtce()->getFirstLayers();
         //adjust learning rate
-        configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
         queue<configBase*> que;
         set<configBase*> hash;
         hash.insert(config);

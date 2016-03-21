@@ -89,10 +89,6 @@ void resultPredict(string train_or_test)
         que.pop();
         layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
         layer->forwardPropagation(train_or_test);
-        if(train_or_test == "test")
-        {
-            layer->Forward_cudaFree();
-        }
         for(int i = 0; i < config->_next.size(); i++){
             if( hash.find( config->_next[i] ) == hash.end()){
                 hash.insert( config->_next[i] );
@@ -130,7 +126,6 @@ void getNetWorkCost(float&Momentum)
         que.pop();
         layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
         layer->backwardPropagation(Momentum);
-        layer->Backward_cudaFree();
      
         for(int i = 0; i < config->_prev.size(); i++){
             if( hash.find( config->_prev[i] ) == hash.end()){

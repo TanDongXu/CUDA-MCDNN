@@ -17,17 +17,15 @@ using namespace std;
 class LRNLayer : public layersBase
 {
 public:
-
 	LRNLayer(string name);
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float Momentum);
 	void saveWeight(FILE*file){}
 	void readWeight(FILE*file){}
-	void Forward_cudaFree();
-	void Backward_cudaFree();
-
 	~LRNLayer()
 	{
+		MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+		MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
 		destroyHandles();
 	}
 
@@ -47,7 +45,6 @@ private:
 	double lrnBeta;
 	double lrnK;
 
-
 private:
 	cudnnTensorDescriptor_t srcTensorDesc = NULL;
 	cudnnTensorDescriptor_t dstTensorDesc = NULL;
@@ -55,8 +52,6 @@ private:
 
 	cudnnTensorDescriptor_t srcDiffTensorDesc = NULL;
 	cudnnTensorDescriptor_t dstDiffTensorDesc = NULL;
-
-
 };
 
 

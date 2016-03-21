@@ -14,7 +14,7 @@
 #include"poolLayer.h"
 #include"../composite/Inception.h"
 
-class InceptionLayer : public convLayerBase
+class InceptionLayer : public layersBase
 {
 public:
 	InceptionLayer(string name, int sign);
@@ -22,9 +22,6 @@ public:
 	void backwardPropagation(float Momentum);
 	void saveWeight(FILE* file){};
 	void readWeight(FILE* file){};
-	void Forward_cudaFree();
-	void Backward_cudaFree();
-
 
 	~InceptionLayer()
 	{
@@ -47,7 +44,6 @@ private:
 	int outputSize;
 	float lambda;
 	float epsilon;
-
 	Inception * inception;
 
 };

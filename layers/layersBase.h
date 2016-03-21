@@ -23,13 +23,9 @@ public:
 	virtual int getOutputSize() = 0;
 	virtual void saveWeight(FILE*file) = 0;
 	virtual void readWeight(FILE*file) = 0;
-	virtual void Forward_cudaFree() = 0;
-	virtual void Backward_cudaFree() = 0;
-
 	void adjust_learnRate(int index, double lr_gamma, double lr_power)
 	{
 		lrate = static_cast<float>(lrate * pow((1.0 + lr_gamma * index), (-lr_power)));
-		//lrate *= scale;
 	}
 public:
     void insertPrevLayer(layersBase* layer){
@@ -46,24 +42,14 @@ public:
 	int channels;
 	int height;
 	int width;
+	int inputImageDim;
+	int inputAmount;
 	float lrate;
 	float *diffData;
 	float *srcData , *dstData;
     vector<layersBase*>prevLayer;
     vector<layersBase*>nextLayer;
 };
-
-
-class convLayerBase: public layersBase
-{
-public:
-	int _inputImageDim;
-	int _outputImageDim;
-	int _inputAmount;
-	int _outputAmount;
-};
-
-
 
 class Layers
 {
@@ -94,8 +80,6 @@ public:
 private:
 	map<string,layersBase*> _layersMaps;
 	vector<string> _layersName;
-
-
 };
 
 

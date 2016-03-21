@@ -18,7 +18,7 @@
 
 
 
-class dataLayer: public convLayerBase
+class dataLayer: public layersBase
 {
 public:
 	dataLayer(string name);
@@ -28,10 +28,13 @@ public:
 	void backwardPropagation(float Momentum);
 	void saveWeight(FILE*file){}
 	void readWeight(FILE*file){}
-	void Forward_cudaFree(){}
-	void Backward_cudaFree();
 
-
+	~dataLayer()
+	{
+		MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+		MemoryMonitor::instanceObject()->freeCpuMemory(srcLabel);
+		MemoryMonitor::instanceObject()->freeCpuMemory(batchImage);
+	}
 	int getOutputSize()
 	{
 		return channels * height * width;
@@ -52,6 +55,7 @@ private:
 	int dataSize;
 	int batchSize;
 	int *srcLabel;
+	float* batchImage;
 
 };
 

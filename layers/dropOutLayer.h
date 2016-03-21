@@ -25,9 +25,6 @@ public:
 	void backwardPropagation(float Momemtum);
 	void saveWeight(FILE* file){}
 	void readWeight(FILE* file){}
-	void Forward_cudaFree(){}
-	void Backward_cudaFree(){}
-
 	void createHandles();
 	void destroyHandles();
 
@@ -36,16 +33,13 @@ public:
 	{
 		destroyHandles();
 	}
-	 int getOutputSize()
-	 {
+
+	int getOutputSize()
+	{
 		return outputSize;
-	 }
-
-
-
+	}
 
 private:
-	 int inputSize;
 	 int outputSize;
 	 float DropOut_rate;
 	 float* outputPtr;

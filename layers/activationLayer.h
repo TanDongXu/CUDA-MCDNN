@@ -11,7 +11,7 @@
 #include"layersBase.h"
 #include<cudnn.h>
 
-class activationLayer: public convLayerBase
+class activationLayer: public layersBase
 {
 public:
 	activationLayer(string name);
@@ -19,11 +19,10 @@ public:
 	void backwardPropagation(float Momentum);
 	void saveWeight(FILE*file){}
 	void readWeight(FILE*file){}
-	void Forward_cudaFree();
-	void Backward_cudaFree();
-
 	~activationLayer()
 	{
+		MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+		MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
 		destroyHandles();
 	}
 
@@ -36,7 +35,6 @@ public:
 	}
 
 private:
-	int inputSize;
 	int outputSize;
     cudnnActivationMode_t ActivationMode;
 

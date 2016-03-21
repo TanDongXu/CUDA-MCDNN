@@ -3,18 +3,13 @@
 #include"../cuDNN_netWork.h"
 #include"../tests/test_layer.h"
 
-#include"opencv2/imgproc/imgproc.hpp"
-#include"opencv2/highgui/highgui.hpp"
-
-using namespace cv;
-
 void activationLayer::createHandles()
-	{
-		checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
-		checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
-		checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
-		checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
-	}
+{
+	checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
+	checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
+	checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
+	checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
+}
 
 /*activation layer constructor*/
 activationLayer::activationLayer(string name)
@@ -24,27 +19,25 @@ activationLayer::activationLayer(string name)
 	srcData = NULL;
 	dstData = NULL;
 	diffData = NULL;
-	number = 0;
-	channels =0;
-	height = 0;
-	width = 0;
 	lrate = 0.0f;
     prevLayer.clear();
     nextLayer.clear();
 
 	configActivation * curConfig = (configActivation*) config::instanceObjtce()->getLayersByName(_name);
 	string preLayerName = curConfig->_input;
+	layersBase* prev_Layer = (layersBase*) Layers::instanceObject()->getLayer(preLayerName);
 
-	convLayerBase* prev_Layer = (convLayerBase*) Layers::instanceObject()->getLayer(preLayerName);
-
-	_inputAmount = prev_Layer->_outputAmount;
-    _outputAmount = _inputAmount;
-	_inputImageDim = prev_Layer->_outputImageDim;
-	_outputImageDim = _inputImageDim;
-	inputSize = prev_Layer->getOutputSize();
-    outputSize =inputSize;
+	inputAmount = prev_Layer->channels;
+	inputImageDim = prev_Layer->height;
+	number = prev_Layer->number;
+	channels = prev_Layer->channels;
+	height = prev_Layer->height;
+	width = prev_Layer->width;
+    outputSize = channels * height * width;
 
     ActivationMode = (cudnnActivationMode_t)curConfig->_non_linearity;
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
 
     this->createHandles();
 }
@@ -52,15 +45,7 @@ activationLayer::activationLayer(string name)
 
 void activationLayer::forwardPropagation(string train_or_test)
 {
-	number = prevLayer[0]->number;
-	channels = prevLayer[0]->channels;
-	height = prevLayer[0]->height;
-	width = prevLayer[0]->width;
 	srcData = prevLayer[0]->dstData;
-
-	dstData = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
-
 
     checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 		                                 cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
@@ -70,7 +55,6 @@ void activationLayer::forwardPropagation(string train_or_test)
 		                                 height,
 		                                 width));
 
-
 	checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
@@ -79,6 +63,7 @@ void activationLayer::forwardPropagation(string train_or_test)
 			                              height,
 			                              width));
 
+	MemoryMonitor::instanceObject()->gpuMemoryMemset(dstData,number*channels*height*width*sizeof(float));
 	float alpha = 1.0f;
 	float beta = 0.0f;
 	checkCUDNN(cudnnActivationForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
@@ -89,14 +74,6 @@ void activationLayer::forwardPropagation(string train_or_test)
 			                          &beta,
 			                          dstTensorDesc,
 			                          dstData));
-
-}
-
-
-/*free forwardPropagation memory*/
-void activationLayer::Forward_cudaFree()
-{
-	MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
 }
 
 
@@ -110,7 +87,6 @@ void activationLayer::backwardPropagation(float Momentum)
 				                          height,
 				                          width));
 
-
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
 				                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 				                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
@@ -118,7 +94,6 @@ void activationLayer::backwardPropagation(float Momentum)
 				                          channels,
 				                          height,
 				                          width));
-
 
 	checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
 				                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
@@ -128,7 +103,6 @@ void activationLayer::backwardPropagation(float Momentum)
 				                          height,
 				                          width));
 
-
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
@@ -136,13 +110,6 @@ void activationLayer::backwardPropagation(float Momentum)
 			                              channels,
 			                              height,
 			                              width));
-
-
-
-
-
-	diffData = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
 
 	float alpha = 1.0f;
 	float beta = 0.0f;
@@ -160,15 +127,6 @@ void activationLayer::backwardPropagation(float Momentum)
 			                           diffData));
 
 }
-
-
-/*free backwardPropagation memory*/
-void activationLayer::Backward_cudaFree()
-{
-	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
-}
-
 
 void activationLayer::destroyHandles()
 {

@@ -14,10 +14,8 @@ ShareLayer::ShareLayer(string name)
 	lrate = 0.0f;
     nextLayer.clear();
     prevLayer.clear();
-	_inputImageDim = 0;
-	_outputImageDim = 0;
-	_inputAmount = 0;
-	_outputAmount = 0;
+	inputImageDim = 0;
+	inputAmount = 0;
 	outputSize = 0;
 }
 

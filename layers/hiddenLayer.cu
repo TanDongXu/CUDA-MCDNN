@@ -1,7 +1,5 @@
 #include"hiddenLayer.h"
 
-
-
 void hiddenLayer::createHandles()
 {
 	curandCreateGenerator(&curandGenerator_W, CURAND_RNG_PSEUDO_MTGP32);
@@ -14,20 +12,17 @@ void hiddenLayer::destroyHandles()
 	curandDestroyGenerator(curandGenerator_B);
 }
 
-
-
 void hiddenLayer::initRandom()
 {
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, outputSize * inputSize * 1 * 1 * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, outputSize * 1 * 1 * 1 * sizeof(float));
 	/*initial weight*/
-	curandSetPseudoRandomGeneratorSeed(curandGenerator_W, time(NULL));
-	curandSetPseudoRandomGeneratorSeed(curandGenerator_B, time(NULL));
+	curandSetPseudoRandomGeneratorSeed(curandGenerator_W, 1);
+	curandSetPseudoRandomGeneratorSeed(curandGenerator_B, 1);
 	curandGenerateNormal(curandGenerator_W, dev_Weight, outputSize * inputSize, 0, epsilon);
 	curandGenerateNormal(curandGenerator_B, dev_Bias, outputSize, 0, epsilon);
 
 }
-
 
 /*fill a float-point array with one*/
 __global__ void FillOnes(float* vec, int value)
@@ -52,11 +47,10 @@ hiddenLayer::hiddenLayer(string name, int sign)
 	dev_Bias = NULL;
 	dev_Wgrad = NULL;
 	dev_Bgrad = NULL;
+	tmp_Wgrad = NULL;
+	tmp_Bgrad = NULL;
 	VectorOnes = NULL;
-	number = 0;
-	channels = 0;
-	height = 0;
-	width = 0;
+
     prevLayer.clear();
     nextLayer.clear();
 
@@ -71,35 +65,40 @@ hiddenLayer::hiddenLayer(string name, int sign)
 	batchSize = config::instanceObjtce()->get_batchSize();
 	lambda = curConfig->_weight_decay;
 
+	inputAmount = prev_Layer->channels;
+	inputImageDim = prev_Layer->height;
+	prev_num = prev_Layer->number;
+	prev_channels = prev_Layer->channels;
+	prev_height = prev_Layer->height;
+	prev_width = prev_Layer->width;
+	number = prev_num;
+	channels = outputSize;
+	height = 1;
+	width = 1;
 	//1*batchSize
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&VectorOnes, 1 * 1 * 1 * batchSize* sizeof(float));
 	FillOnes<<<1, batchSize>>>(VectorOnes, batchSize);
 
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_Wgrad,1 * 1 * outputSize * inputSize * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_Bgrad,1 * 1 * outputSize * 1 * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Wgrad,1 * 1 * outputSize * inputSize * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bgrad,1 * 1 * outputSize * 1 * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Wgrad,1 * 1 * outputSize * inputSize * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Bgrad,1 * 1 * outputSize * 1 * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, outputSize * batchSize * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData,  inputSize * batchSize* sizeof(float));
 
 	this->createHandles();
 	if(sign == RANDOM)
 		this->initRandom();
 }
 
-
 void hiddenLayer::forwardPropagation(string train_or_test)
 {
-	number = prevLayer[0]->number;
-	channels = prevLayer[0]->channels;
-	height = prevLayer[0]->height;
-	width = prevLayer[0]->width;
 	srcData = prevLayer[0]->dstData;
 
-	int dim_x = channels * height * width ;
+	int dim_x = prev_channels * prev_height * prev_width ;
 	int dim_y = outputSize ;
-
-	dstData = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, dim_y * batchSize * sizeof(float));
-
 	float alpha = 1.0f;
 	float beta = 0.0f;
 
@@ -117,7 +116,6 @@ void hiddenLayer::forwardPropagation(string train_or_test)
 				                  &beta,
 				                  dstData,
 				                  dim_y));
-
 
     //add bias
 	alpha = 1.0f;
@@ -138,33 +136,13 @@ void hiddenLayer::forwardPropagation(string train_or_test)
 				                  dim_y));
 
 	height = 1; width = 1; channels = dim_y;
-
-}
-
-
-/*free forwardPropagation memory*/
-void hiddenLayer::Forward_cudaFree()
-{
-	MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
 }
 
 
 void hiddenLayer::backwardPropagation(float Momentum)
 {
-	int prevlayer_c, prevlayer_h, prevlayer_w;
-	prevlayer_c = prevLayer[0]->channels;
-	prevlayer_h = prevLayer[0]->height;
-	prevlayer_w = prevLayer[0]->width;
-
-
-	int dim_x = prevlayer_c * prevlayer_h * prevlayer_w;
+	int dim_x = prev_channels * prev_height * prev_width;
 	int dim_y = outputSize;
-
-
-	float*tmp_Wgrad = NULL, *tmp_Bgrad = NULL;
-
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &tmp_Wgrad,1 * 1 * outputSize * inputSize * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &tmp_Bgrad,1 * 1 * outputSize * 1 * sizeof(float));
 
 	checkCudaErrors(cudaMemcpy(tmp_Wgrad, dev_Weight, 1 * 1 * outputSize * inputSize * sizeof(float), cudaMemcpyDeviceToDevice));
 
@@ -200,9 +178,6 @@ void hiddenLayer::backwardPropagation(float Momentum)
 				                  tmp_Bgrad,
 				                  1));
 
-	diffData = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData,  inputSize * batchSize* sizeof(float));
-
 	alpha = 1.0f;
 	beta = 0.0f;
 	checkCublasErrors(cublasSgemm(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
@@ -220,9 +195,6 @@ void hiddenLayer::backwardPropagation(float Momentum)
 				                  diffData,
 				                  dim_x));
 
-
-
-
 	float scalVal = Momentum;
 	int size = 1 * 1 * outputSize * inputSize * 1;
 	checkCublasErrors(cublasSscal(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
@@ -238,7 +210,6 @@ void hiddenLayer::backwardPropagation(float Momentum)
 								  &scalVal,
 								  dev_Bgrad,
 								  1));
-
 
 	scalVal = lrate;
 	size = 1 * 1 * outputSize * inputSize * 1;
@@ -259,12 +230,9 @@ void hiddenLayer::backwardPropagation(float Momentum)
 						          dev_Bgrad,
 						          1));
 
-
-
 	/*updata weightt*/
 	alpha = -1.0f;
 	size = outputSize * inputSize;
-
 	checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
 				                  size,
 				                  &alpha,
@@ -281,18 +249,8 @@ void hiddenLayer::backwardPropagation(float Momentum)
 				                  1,
 				                  dev_Bias,
 				                  1));
-
-
-	MemoryMonitor::instanceObject()->freeGpuMemory(tmp_Bgrad);
-	MemoryMonitor::instanceObject()->freeGpuMemory(tmp_Wgrad);
 }
 
-/*free backwardPropagation memory*/
-void hiddenLayer::Backward_cudaFree()
-{
-	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
-}
 
 void hiddenLayer::saveWeight(FILE*file)
 {

@@ -20,7 +20,7 @@
 using namespace std;
 
 
-class poolLayer : public convLayerBase
+class poolLayer : public layersBase
 {
 public:
 	typedef tuple<string, int, int, int, int, int, int, int> param_tuple;
@@ -30,11 +30,10 @@ public:
 	void backwardPropagation(float Momentum);
 	void saveWeight(FILE*file){}
 	void readWeight(FILE*file){}
-	void Forward_cudaFree();
-	void Backward_cudaFree();
-
 	~poolLayer()
 	{
+		MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+		MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
 		destroyHandles();
 	}
 
@@ -46,7 +45,6 @@ public:
 		return outputSize;
 	}
 
-
 private:
 	string  poolType;
 	int poolDim;
@@ -55,17 +53,17 @@ private:
 	int stride_h;
 	int stride_w;
 	int outputSize;
-
+	int prev_num;
+	int prev_channels;
+	int prev_height;
+	int prev_width;
 
 private:
 	cudnnTensorDescriptor_t srcTensorDesc = NULL;
 	cudnnTensorDescriptor_t dstTensorDesc = NULL;
 	cudnnPoolingDescriptor_t poolingDesc = NULL;
-
 	cudnnTensorDescriptor_t srcDiffTensorDesc = NULL;
 	cudnnTensorDescriptor_t dstDiffTensorDesc = NULL;
-
-
 };
 
 

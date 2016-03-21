@@ -10,7 +10,6 @@ void poolLayer:: createHandles()
 	checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
 }
 
-
 /*constructor*/
 poolLayer::poolLayer(string name)
 {
@@ -19,17 +18,13 @@ poolLayer::poolLayer(string name)
 	srcData = NULL;
 	dstData = NULL;
 	diffData = NULL;
-	number = 0;
-	channels = 0;
-	height =0;
-	width =0;
 	lrate =  0.0f;
     prevLayer.clear();
     nextLayer.clear();
 
 	configPooling* curConfig = (configPooling*) config::instanceObjtce()->getLayersByName(_name);
 	string prevLayerName = curConfig->_input;
-	convLayerBase* prev_Layer = (convLayerBase*) Layers::instanceObject()->getLayer(prevLayerName);
+	layersBase* prev_Layer = (layersBase*) Layers::instanceObject()->getLayer(prevLayerName);
 
 	poolType = curConfig->_poolType;
 	poolDim = curConfig->_size;
@@ -37,12 +32,22 @@ poolLayer::poolLayer(string name)
 	pad_w = curConfig->_pad_w;
 	stride_h =  curConfig->_stride_h;
 	stride_w = curConfig->_stride_w;
-    _inputImageDim = prev_Layer->_outputImageDim;
-	/*the size after pool*/
-	_outputImageDim = static_cast<int>(ceil(static_cast<float>(_inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
-	_inputAmount = prev_Layer->_outputAmount;
-	_outputAmount = _inputAmount;
-	outputSize = _outputAmount * _outputImageDim * _outputImageDim;
+
+	prev_num = prev_Layer->number;
+	prev_channels = prev_Layer->channels;
+	prev_height = prev_Layer->height;
+	prev_width = prev_Layer->width;
+
+    inputImageDim = prev_Layer->height;
+	inputAmount = prev_Layer->channels;
+	number = prev_num;
+	channels = prev_channels;
+	height = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+	width = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+	outputSize = channels * height * width;
+
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
 
 	this->createHandles();
 }
@@ -51,36 +56,35 @@ poolLayer::poolLayer(string name)
 poolLayer::poolLayer(string name, const param_tuple& args)
 {
 	std::tie(poolType, poolDim, pad_h, pad_w, stride_h,
-			stride_w, _inputImageDim, _inputAmount) = args;
+			stride_w, inputImageDim, inputAmount) = args;
 
 	_name = name;
 	_inputName = " ";
 	srcData = NULL;
 	dstData = NULL;
 	diffData = NULL;
-	number = 0;
-	channels = 0;
-	height = 0;
-	width = 0;
 	lrate = 0.0f;
     prevLayer.clear();
     nextLayer.clear();
 
-	_outputImageDim = static_cast<int>(ceil(static_cast<float>(_inputImageDim + 2 * pad_h - poolDim) / stride_h)) + 1;
-	_outputAmount = _inputAmount;
-	outputSize = _outputAmount * _outputImageDim * _outputImageDim;
+    prev_num = config::instanceObjtce()->get_batchSize();
+    prev_channels = inputAmount;
+    prev_height = inputImageDim;
+    prev_width = inputImageDim;
+    number = prev_num;
+    channels = prev_channels;
+    height = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+    width = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+    outputSize = channels * height * width;
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
 
-	this->createHandles();
+    this->createHandles();
 }
 
 
 void poolLayer::forwardPropagation(string train_or_test)
 {
-	srcData = NULL;
-	number = prevLayer[0]->number;
-	channels = prevLayer[0]->channels;
-	height = prevLayer[0]->height;
-	width = prevLayer[0]->width;
 	srcData = prevLayer[0]->dstData;
 
 	checkCUDNN(cudnnSetPooling2dDescriptor(poolingDesc,
@@ -95,14 +99,10 @@ void poolLayer::forwardPropagation(string train_or_test)
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
-			                              number,
-			                              channels,
-			                              height,
-			                              width));
-
-	height = static_cast<int>(ceil(static_cast<float>(height + 2 * pad_h - poolDim) / stride_h)) + 1;
-	width = static_cast<int>(ceil(static_cast<float>(width + 2 * pad_w - poolDim) / stride_w)) + 1;
-
+			                              prev_num,
+			                              prev_channels,
+			                              prev_height,
+			                              prev_width));
 
     checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
     		                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
@@ -111,10 +111,6 @@ void poolLayer::forwardPropagation(string train_or_test)
     		                              channels,
     		                              height,
     		                              width));
-
-
-	dstData = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
 
 	float alpha = 1.0;
 	float beta = 0.0;
@@ -128,13 +124,6 @@ void poolLayer::forwardPropagation(string train_or_test)
 			                       dstData));
 
 }
-
-/*free forwardPropagation memory*/
-void poolLayer::Forward_cudaFree()
-{
-	MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
-}
-
 
 
 void poolLayer::backwardPropagation(float Momentum)
@@ -155,32 +144,22 @@ void poolLayer::backwardPropagation(float Momentum)
 		                                height,
 		                                width));
 
-   int prevlayer_n, prevlayer_c, prevlayer_h,prevlayer_w;
-   prevlayer_n = prevLayer[0]->number;
-   prevlayer_c = prevLayer[0]->channels;
-   prevlayer_h = prevLayer[0]->height;
-   prevlayer_w = prevLayer[0]->width;
-
    checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
-		                               cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-		                               cuDNN_netWork<float>::instanceObject()->GetDataType(),
-		                               prevlayer_n,
-		                               prevlayer_c,
-		                               prevlayer_h,
-		                               prevlayer_w));
+		                                 cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+		                                 cuDNN_netWork<float>::instanceObject()->GetDataType(),
+		                                 prev_num,
+		                                 prev_channels,
+		                                 prev_height,
+		                                 prev_width));
 
    checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
 		                                 cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 		                                 cuDNN_netWork<float>::instanceObject()->GetDataType(),
-		                                 prevlayer_n,
-		                                 prevlayer_c,
-		                                 prevlayer_h,
-		                                 prevlayer_w));
+		                                 prev_num,
+		                                 prev_channels,
+		                                 prev_height,
+		                                 prev_width));
 
-
-   diffData = NULL;
-   MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, 
-                                                    prevlayer_n * prevlayer_c * prevlayer_h * prevlayer_w * sizeof(float));
 
    float alpha = 1.0f;
    float beta = 0.0;
@@ -196,16 +175,8 @@ void poolLayer::backwardPropagation(float Momentum)
 		                           &beta,
 		                           dstDiffTensorDesc,
 		                           diffData));
-
 }
 
-
-
-void poolLayer::Backward_cudaFree()
-{
-	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
-}
 
 void poolLayer:: destroyHandles()
 {

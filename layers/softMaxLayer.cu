@@ -9,14 +9,12 @@ void softMaxLayer::createHandles()
 	checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
 }
 
-
 /*get the datasize and label*/
 void softMaxLayer::GetDataSize_BatchLabel()
 {
 	dataLayer* data_Layer = (dataLayer*) Layers::instanceObject()->getLayer("data");
 	dataSize = data_Layer->getDataSize();
 	srcLabel = data_Layer->getDataLabel();
-
 }
 
 /*constructor*/
@@ -28,10 +26,9 @@ softMaxLayer::softMaxLayer(string name)
 	dstData = NULL;
 	srcDiff = NULL;
 	diffData = NULL;
-	number = 0;
-	channels =0;
-	height = 0;
-	width =0 ;
+	devLabel = NULL;
+	srcDiff = NULL;
+	host_result = NULL;
 	dataSize = 0;
 	srcLabel = NULL;
     nextLayer.clear();
@@ -51,6 +48,19 @@ softMaxLayer::softMaxLayer(string name)
 	lambda = curConfig->_weight_decay;
 	outputSize = nclasses;
 
+	inputAmount = prev_Layer->channels;
+	inputImageDim = prev_Layer->height;
+	number = prev_Layer->number;
+	channels = prev_Layer->channels;
+	height = prev_Layer->height;
+	width = prev_Layer->width;
+
+	host_result = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height * width *sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&srcDiff, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&devLabel, batchSize * 1 * 1 * 1 * sizeof(int));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
+
 	this->createHandles();
 
 }
@@ -64,32 +74,28 @@ void softMaxLayer::ClassificationResults()
 	}
 
 	const int max_digit = nclasses;
-	float *result;
-	result = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height * width *sizeof(float));
-	checkCudaErrors(cudaMemcpy(result, dstData, number * channels * height * width * sizeof(float),cudaMemcpyDeviceToHost));
+	checkCudaErrors(cudaMemcpy(host_result, dstData, number * channels * height * width * sizeof(float),cudaMemcpyDeviceToHost));
 
 	int temp = ((number < dataSize - flag) ? number : dataSize-flag);
 	for(int i=0; i< temp; i++)
 	{
-		float max = result[i * max_digit];
+		float max = host_result[i * max_digit];
 		int labelIndex =0;
 		for(int j=1; j<max_digit;j++)
 		{
-			if(max < result[i * max_digit + j])
+			if(max < host_result[i * max_digit + j])
 			{
-				max = result[i * max_digit + j];
+				max = host_result[i * max_digit + j];
 				labelIndex = j;
-
 			}
 		}
 		flag++;
 		if(srcLabel[i] != labelIndex) --cur_correctSize;
-
 	}
 
 	if(flag == dataSize)
 	{
-		cout<<"Correct_Sizes: "<<cur_correctSize<<"/"<<CorrectSize;
+		cout<<"correct_sizes: "<<cur_correctSize<<"/"<<CorrectSize;
 		if(cur_correctSize > CorrectSize)
 		{
 			CorrectSize = cur_correctSize;
@@ -98,22 +104,13 @@ void softMaxLayer::ClassificationResults()
 		flag = 1;
 	}
 
-	MemoryMonitor::instanceObject()->freeCpuMemory(result);
 }
 
 
 void softMaxLayer::forwardPropagation(string train_or_test)
 {
 	GetDataSize_BatchLabel();
-	number = prevLayer[0]->number;
-	channels = prevLayer[0]->channels;
-	height = prevLayer[0]->height;
-	width = prevLayer[0]->width;
-	srcData = NULL;
 	srcData = prevLayer[0]->dstData;
-
-	dstData = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
 
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
@@ -133,7 +130,6 @@ void softMaxLayer::forwardPropagation(string train_or_test)
 
 	float alpha = 1.0;
 	float beta = 0.0;
-
 	checkCUDNN(cudnnSoftmaxForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 			                       CUDNN_SOFTMAX_FAST,
 			                       CUDNN_SOFTMAX_MODE_CHANNEL,
@@ -144,19 +140,11 @@ void softMaxLayer::forwardPropagation(string train_or_test)
 			                       dstTensorDesc,
 			                       dstData));
 
-
 	if(train_or_test == "test" )
 		ClassificationResults();
 
 }
 
-
-void softMaxLayer::Forward_cudaFree()
-{
-	MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeCpuMemory(srcLabel);
-}
 
 __global__ void SoftmaxLossBackprop(const int* label, int num_labels, int batch_size, float* diffData)
 {
@@ -168,22 +156,14 @@ __global__ void SoftmaxLossBackprop(const int* label, int num_labels, int batch_
 }
 
 
-
-
 /*compute diff*/
 void softMaxLayer::getBackPropDiffData()
 {
-	int *devLabel;
-	devLabel = NULL;
-	srcDiff = NULL;
-    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&srcDiff, number * channels * height * width * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&devLabel, batchSize * 1 * 1 * 1 * sizeof(int));
 	checkCudaErrors(cudaMemcpy(devLabel, srcLabel, batchSize * 1 * 1 * 1 * sizeof(int), cudaMemcpyHostToDevice));
 	checkCudaErrors(cudaMemcpy(srcDiff, dstData, number * channels * height * width * sizeof(float), cudaMemcpyDeviceToDevice));
 
 	SoftmaxLossBackprop<<< (batchSize + 127)/128, 128>>>(devLabel, nclasses, batchSize, srcDiff);
 	cudaThreadSynchronize();
-	MemoryMonitor::instanceObject()->freeGpuMemory(devLabel);
 }
 
 
@@ -208,12 +188,8 @@ void softMaxLayer::backwardPropagation(float Momentum)
 			                              height,
 			                              width));
 
-	diffData = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
-
 	float alpha = 1.0f;
 	float beta = 0.0f;
-
 	/*computes the gridient of the softmax*/
 	checkCUDNN(cudnnSoftmaxBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 			                        CUDNN_SOFTMAX_FAST,
@@ -228,13 +204,6 @@ void softMaxLayer::backwardPropagation(float Momentum)
 			                        diffData));
 }
 
-
-
-void softMaxLayer::Backward_cudaFree()
-{
-	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(srcDiff);
-}
 
 void softMaxLayer:: destroyHandles()
 {

@@ -24,7 +24,7 @@
 using namespace std;
 
 
-class convLayer:public convLayerBase
+class convLayer:public layersBase
 {
 public:
 	typedef tuple<int, int, int, int, int, int, int, int, float, float, float> param_tuple;
@@ -36,8 +36,6 @@ public:
     void backwardPropagation(float Momentum);
     void saveWeight(FILE*file);
     void readWeight(FILE*file);
-    void Forward_cudaFree();
-    void Backward_cudaFree();
 	void addBias(const cudnnTensorDescriptor_t& dstTensorDesc, int c, float *data );
 
 	~convLayer()
@@ -48,6 +46,10 @@ public:
 		MemoryMonitor::instanceObject()->freeGpuMemory(dev_Bias);
 		MemoryMonitor::instanceObject()->freeGpuMemory(dev_Wgrad);
 		MemoryMonitor::instanceObject()->freeGpuMemory(dev_Bgrad);
+		MemoryMonitor::instanceObject()->freeGpuMemory(tmp_Wgrad);
+	    MemoryMonitor::instanceObject()->freeGpuMemory(tmp_Bgrad);
+		MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+		MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
 		destroyHandles();
 	}
 
@@ -59,10 +61,10 @@ public:
 		return outputSize;
 	}
 
-
 private:
 
 	float *host_Weight, *dev_Weight;
+	float *tmp_Wgrad, *tmp_Bgrad;
 	float *host_Bias, *dev_Bias;
 	float *dev_Wgrad, *dev_Bgrad;
 	float lambda;
@@ -75,8 +77,10 @@ private:
 	int kernelAmount;
 	int outputSize;
 	int batchSize;
-
-
+	int prev_num;
+	int prev_channels;
+	int prev_height;
+	int prev_width;
 
 private:
 	cudnnTensorDescriptor_t srcTensorDesc = NULL;
@@ -91,8 +95,6 @@ private:
 private:
 	curandGenerator_t curandGenerator_W;
 	curandGenerator_t curandGenerator_B;
-
-
 
 };
 

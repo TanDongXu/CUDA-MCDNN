@@ -4,25 +4,24 @@ dropOutLayer::dropOutLayer(string name)
 {
 	_name = name;
 	_inputName = " ";
-	number = 0;
-	channels = 0;
-	height = 0;
-	width = 0;
 	lrate = 0.0f;
 	srcData = NULL;
 	dstData = NULL;
-
     nextLayer.clear();
     prevLayer.clear();
-
 	outputPtr = NULL;
 
 	configDropOut* curConfig = (configDropOut*) config::instanceObjtce()->getLayersByName(_name);
 	string prevLayerName = curConfig->_input;
 	layersBase* prev_Layer = (layersBase*) Layers::instanceObject()->getLayer(prevLayerName);
 
-	inputSize = prev_Layer->getOutputSize();
-	outputSize = inputSize;
+	inputAmount = prev_Layer->channels;
+	inputImageDim = prev_Layer->height;
+	number = prev_Layer->number;
+	channels = prev_Layer->channels;
+	height = prev_Layer->height;
+	width = prev_Layer->width;
+	outputSize = channels * height * width;
 	DropOut_rate = curConfig->dropOut_rate;
 
 	this->createHandles();
@@ -77,10 +76,6 @@ void dropOutLayer::Dropout_TestSet(float* data, int size, float dropout_rate)
 
 void dropOutLayer::forwardPropagation(string train_or_test)
 {
-	number = prevLayer[0]->number;
-	channels =  prevLayer[0]->channels;
-	height = prevLayer[0]->height;
-	width = prevLayer[0]->width;
 	srcData =prevLayer[0]->dstData;
 	dstData = srcData;
 

@@ -12,17 +12,15 @@
 #include<string>
 #include"layersBase.h"
 
-class ShareLayer : public convLayerBase
+class ShareLayer : public layersBase
 {
 public:
 	ShareLayer(string name);
-	ShareLayer(string name, convLayerBase* layer);
+	ShareLayer(string name, layersBase* layer);
 	void forwardPropagation(string train_or_test){};
 	void backwardPropagation(float Momemtum){};
 	void readWeight(FILE* file){};
 	void saveWeight(FILE* file){};
-	void Forward_cudaFree(){}
-	void Backward_cudaFree(){}
 
 	int getOutputSize()
 	{

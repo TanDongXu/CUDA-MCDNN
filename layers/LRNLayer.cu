@@ -10,10 +10,7 @@ void LRNLayer::createHandles()
 	checkCUDNN(cudnnCreateLRNDescriptor(&normDesc));
 	checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
 	checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
-
 }
-
-
 
 LRNLayer::LRNLayer(string name)
 {
@@ -22,10 +19,6 @@ LRNLayer::LRNLayer(string name)
 	srcData = NULL;
 	dstData = NULL;
 	diffData = NULL;
-	number = 0;
-	channels = 0;
-	height = 0;
-	width = 0;
 	lrate = 0.0f;
 	prevLayer.clear();
 	nextLayer.clear();
@@ -39,32 +32,30 @@ LRNLayer::LRNLayer(string name)
 	lrnBeta = curConfig->_lrnBeta;
 	lrnK = 1.0;
 
-
+	inputAmount = prev_Layer->channels;
+	inputImageDim = prev_Layer->height;
+	number = prev_Layer->number;
+	channels = prev_Layer->channels;
+	height = prev_Layer->height;
+	width = prev_Layer->width;
 	inputSize = prev_Layer->getOutputSize();
 	outputSize =inputSize;
+
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height* width * sizeof(float));
 
 	this->createHandles();
 }
 
-
-
 void LRNLayer::forwardPropagation(string train_or_test)
 {
-    srcData = NULL;
-	number = prevLayer[0]->number;
-	channels = prevLayer[0]->channels;
-	height = prevLayer[0]->height;
-	width = prevLayer[0]->width;
 	srcData = prevLayer[0]->dstData;
-
 
 	checkCUDNN(cudnnSetLRNDescriptor(normDesc,
 			                         lrnN,
 			                         lrnAlpha,
 			                         lrnBeta,
 			                         lrnK));
-
-
 
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
@@ -82,10 +73,6 @@ void LRNLayer::forwardPropagation(string train_or_test)
 			                              height,
 			                              width));
 
-	dstData = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
-
-
 	float alpha = 1.0f;
 	float beta = 0.0f;
 	checkCUDNN(cudnnLRNCrossChannelForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
@@ -98,12 +85,6 @@ void LRNLayer::forwardPropagation(string train_or_test)
 			                               dstTensorDesc,
 			                               dstData));
 
-}
-
-
-void LRNLayer::Forward_cudaFree()
-{
-	MemoryMonitor::instanceObject()->freeGpuMemory(srcData);
 }
 
 
@@ -141,13 +122,8 @@ void LRNLayer::backwardPropagation(float Momentum)
 			                              height,
 			                              width));
 
-
-	diffData = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height* width * sizeof(float));
-
 	float alpha = 1.0f;
 	float beta = 0.0f;
-
 	checkCUDNN(cudnnLRNCrossChannelBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 			                                normDesc,
 			                                CUDNN_LRN_CROSS_CHANNEL_DIM1,
@@ -165,12 +141,6 @@ void LRNLayer::backwardPropagation(float Momentum)
 }
 
 
-void LRNLayer::Backward_cudaFree()
-{
-	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-	MemoryMonitor::instanceObject()->freeGpuMemory(nextLayer[0]->diffData);
-}
-
 void LRNLayer::destroyHandles()
 {
 	checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
@@ -178,5 +148,4 @@ void LRNLayer::destroyHandles()
 	checkCUDNN(cudnnDestroyLRNDescriptor(normDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(dstDiffTensorDesc));
-
 }

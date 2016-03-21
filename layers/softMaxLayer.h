@@ -17,29 +17,28 @@
 #include"../tests/test_layer.h"
 #include"../saveData/saveNetWork.h"
 
-
-
 class softMaxLayer : public layersBase
 {
 public:
-
 	softMaxLayer(string name);
 	void initRandom();
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float Momentum);
 	void saveWeight(FILE*file){}
 	void readWeight(FILE*file){}
-	void Forward_cudaFree();
-	void Backward_cudaFree();
 	void ClassificationResults();
 	void getBackPropDiffData();
 	void GetDataSize_BatchLabel();
 
 	~softMaxLayer()
 	{
+		MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+		MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
+		MemoryMonitor::instanceObject()->freeGpuMemory(srcDiff);
+		MemoryMonitor::instanceObject()->freeGpuMemory(devLabel);
+		MemoryMonitor::instanceObject()->freeCpuMemory(host_result);
 		destroyHandles();
 	}
-
 
 	void createHandles();
 	void destroyHandles();
@@ -49,22 +48,20 @@ public:
 		return 0;
 	}
 
-public:
-
-
 private:
 	int inputSize;
 	int outputSize;
 	int nclasses;
 	int batchSize;
 	int dataSize;
-	int *srcLabel;
+	int* srcLabel;
 	int cur_correctSize;
 	int CorrectSize;
 	int flag;
+	int* devLabel;
 	float lambda;
-	float *srcDiff;
-
+	float* srcDiff;
+	float* host_result;
 
 private:
     cudnnTensorDescriptor_t srcTensorDesc = NULL;

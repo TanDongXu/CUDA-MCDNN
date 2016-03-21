@@ -5,11 +5,10 @@
 >
 >Results
 >--------
->CNN accelerated by cuda and lib <a href ="https://developer.nvidia.com/cudnn">CUDNN</a>,
+>CNN accelerated by cuda and lib <a href ="https://developer.nvidia.com/cudnn">CUDNN</a>
 >* The training time is greatly reduced compared to the first version 
 >1. Test on <a href="http://yann.lecun.com/exdb/mnist/"> mnist</a>    
->2. Test on cifar-10   
-***
+>2. Test on cifar-10
 
 >Feature
 >--------

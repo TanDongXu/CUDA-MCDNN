@@ -32,6 +32,13 @@ public:
 		MemoryMonitor::instanceObject()->freeCpuMemory(host_offset);
 		MemoryMonitor::instanceObject()->freeCpuMemory(host_channels);
 		MemoryMonitor::instanceObject()->freeCpuMemory(separateDim);
+		MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+		MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
+		MemoryMonitor::instanceObject()->freeGpuMemory(dev_offset);
+		MemoryMonitor::instanceObject()->freeGpuMemory(dev_channels);
+		MemoryMonitor::instanceObject()->freeGpuMemory(separate_diffData);
+		prevDiff.vector_clear();
+		separate_dstData.vector_clear();
 	}
 
 private:
@@ -44,7 +51,7 @@ private:
     int three;
     int five;
     int pool_proj;
-    int prev_number;
+    int prev_num;
     int prev_channels;
     int prev_height;
     int prev_width;
@@ -59,7 +66,6 @@ private:
 	Layers *InnerLayers;
 	cuBaseVector<float> separate_dstData;
 	cuBaseVector<float> prevDiff;
-
 
 };
 

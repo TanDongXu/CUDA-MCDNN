@@ -26,7 +26,7 @@ class Inception
 {
 public:
 	typedef tuple<int, int, int, int, int, int, int, int, float, float>param_tuple;
-	Inception(convLayerBase* prevLayer, int sign, float* rate, const param_tuple& args);
+	Inception(layersBase* prevLayer, int sign, float* rate, const param_tuple& args);
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float*& nextLayerDiffData, float Momemtum);
 

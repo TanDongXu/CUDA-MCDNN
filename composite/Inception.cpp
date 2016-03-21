@@ -2,7 +2,7 @@
 
 
 /*Inception constructor*/
-Inception::Inception(convLayerBase* prevLayer, 
+Inception::Inception(layersBase* prevLayer,
                      int sign, 
                      float* rate, 
                      const param_tuple& args)
@@ -11,6 +11,7 @@ Inception::Inception(convLayerBase* prevLayer,
 		     inputAmount, inputImageDim, epsilon, lambda) = args;
 
 	dstData = NULL;
+	diffData = NULL;
 	lrate = rate;
 	InnerLayers = new Layers[4];
 
@@ -108,25 +109,10 @@ void Inception::forwardPropagation(string train_or_test)
             layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
             layer->lrate = *lrate;
             layer->forwardPropagation(train_or_test);
-            if(j > 0 && train_or_test == "test")
-            {
-            	layer->Forward_cudaFree();
-            }
 		}
 	}
-
 	/*get the inception result data*/
-	dstData = NULL;
 	dstData = concat->forwardSetup();
-
-	if (train_or_test == "test")
-	{
-		for (int i = 0; i < 4; i++)
-		{
-			layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(InnerLayers[i].getLayersNum() - 1));
-			MemoryMonitor::instanceObject()->freeGpuMemory(layer->dstData);
-		}
-	}
 }
 
 
@@ -142,18 +128,8 @@ void Inception::backwardPropagation(float*& nextLayerDiffData, float Momentum)
 		{
 	        layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(j));
 	        layer->backwardPropagation(Momentum);
-	        layer->Backward_cudaFree();
 		}
 	}
-
 	/*get inception diff*/
-	diffData = NULL;
 	diffData = concat->backwardSetup();
-
-	for (int i = 0; i < 4; i++)
-	{
-		/*free first layer diffData*/
-		layer = InnerLayers[i].getLayer(InnerLayers[i].getLayersName(0));
-		MemoryMonitor::instanceObject()->freeGpuMemory(layer->diffData);
-	}
 }

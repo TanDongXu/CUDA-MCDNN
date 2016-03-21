@@ -99,7 +99,7 @@ void copy_HostToDevice(float*hostData, float*&devData, int number, int channels,
 
 
 
-void printfLayersParameter(convLayerBase* layer)
+void printfLayersParameter(layersBase* layer)
 {
 	cout<<"name: "<<layer->_name<<endl;
 	cout<<"Input: "<<layer->_inputName<<endl;
@@ -107,10 +107,8 @@ void printfLayersParameter(convLayerBase* layer)
 	cout<<"channels: "<<layer->channels<<endl;
 	cout<<"height: "<<layer->height<<endl;
 	cout<<"width: "<<layer->width<<endl;
-	cout<<"InputAmount: "<<layer->_inputAmount<<endl;
-	cout<<"InputImageDim: "<<layer->_inputImageDim<<endl;
-	cout<<"outputAmout: "<<layer->_outputAmount<<endl;
-	cout<<"outputImageDim: "<<layer->_outputImageDim<<endl;
+	cout<<"InputAmount: "<<layer->inputAmount<<endl;
+	cout<<"InputImageDim: "<<layer->inputImageDim<<endl;
 
 	//
 	printf_DevParameter(layer->number, layer->channels, layer->height, layer->width, layer->dstData);

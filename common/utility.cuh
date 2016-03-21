@@ -25,6 +25,20 @@
 const double FLAGS_lr_gamma = 0.0001;   //learning rate policy
 const double FLAGS_lr_power = 0.75;     //Learing rate policy power
 
+/*get array maxValue*/
+template<class T>
+T getMax(T*value, int size)
+{
+	int max = value[0];
+	for(int i = 1; i < size; i++)
+	{
+		if(value[i] > max)
+			max = value[i];
+	}
+
+	return max;
+}
+
 
 void showDevices();
 __global__ void MultiChannelsMerge(float** inputs, float* outputs, int* channels, int* indexs, int row, int outChannels);

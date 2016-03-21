@@ -22,8 +22,8 @@ void convLayer::initRandom()
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
 
 	//set seed
-	curandSetPseudoRandomGeneratorSeed(curandGenerator_W, 1);
-	curandSetPseudoRandomGeneratorSeed(curandGenerator_B, 1);
+	curandSetPseudoRandomGeneratorSeed(curandGenerator_W, time(NULL));
+	curandSetPseudoRandomGeneratorSeed(curandGenerator_B, time(NULL));
 	curandGenerateNormal(curandGenerator_W, dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize, 0, epsilon);
 	curandGenerateNormal(curandGenerator_B, dev_Bias, kernelAmount, 0, epsilon);
 }

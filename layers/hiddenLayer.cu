@@ -78,6 +78,7 @@ hiddenLayer::hiddenLayer(string name, int sign)
 	//1*batchSize
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&VectorOnes, 1 * 1 * 1 * batchSize* sizeof(float));
 	FillOnes<<<1, batchSize>>>(VectorOnes, batchSize);
+    cudaThreadSynchronize();
 
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Wgrad,1 * 1 * outputSize * inputSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bgrad,1 * 1 * outputSize * 1 * sizeof(float));

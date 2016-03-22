@@ -1,6 +1,5 @@
 #include"mnist.h"
-
-
+#include "../layers/voteLayer.h"
 
 void runMnist()
 {
@@ -30,6 +29,7 @@ void runMnist()
     cout<<"    Test_label :   "<< testSetY->cols                        <<" features and "<<  testSetY->rows  <<" samples"<<endl;
     cout<<"*******************************************************"<<endl;
 
+    VoteLayer::instance()->init(testSetY->rows, 10, testSetY);
 
     int version = cudnnGetVersion();
     cout<<"cudnnGetVersion(): "<<version<<" CUDNN VERSION from cudnn.h: "<<CUDNN_VERSION<<endl;

@@ -70,7 +70,4 @@ private:
     cudnnTensorDescriptor_t dstDiffTensorDesc = NULL;
 
 };
-
-
-
 #endif /* SOFTMAXLAYER_H_ */

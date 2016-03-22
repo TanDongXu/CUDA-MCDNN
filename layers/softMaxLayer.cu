@@ -62,7 +62,6 @@ softMaxLayer::softMaxLayer(string name)
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
 
 	this->createHandles();
-
 }
 
 /*classification results*/
@@ -74,6 +73,7 @@ void softMaxLayer::ClassificationResults()
 	}
 
 	const int max_digit = nclasses;
+
 	checkCudaErrors(cudaMemcpy(host_result, dstData, number * channels * height * width * sizeof(float),cudaMemcpyDeviceToHost));
 
 	int temp = ((number < dataSize - flag) ? number : dataSize-flag);

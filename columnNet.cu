@@ -10,6 +10,7 @@
 #include"./layers/activationLayer.h"
 #include"./layers/LRNLayer.h"
 #include"./layers/softMaxLayer.h"
+#include "./layers/voteLayer.h"
 #include"./common/cuMatrixVector.h"
 #include"./common/cuMatrix.h"
 #include"./common/utility.cuh"
@@ -18,6 +19,8 @@
 #include <queue>
 #include <set>
 #include"math.h"
+const bool DFS_TRAINING = true;
+const bool DFS_TEST = true;
 
 using namespace std;
 
@@ -137,7 +140,38 @@ void getNetWorkCost(float&Momentum)
 
 std::vector<configBase*> g_vQue;
 
-void dfsTraining(configBase* config, int nMomentum, cuMatrixVector<float>& trainData, cuMatrix<int>* &trainLabel, int& iter)
+/* voting */
+void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMatrix<int>*& testLabel, int nBatchSize)
+{
+    g_vQue.push_back( config );
+    if( config->_next.size() == 0 ){
+
+        dataLayer* datalayer = static_cast<dataLayer*>( Layers::instanceObject()->getLayer("data"));
+
+        for(int i = 0; i < (testData.size() + nBatchSize - 1) / nBatchSize; i++)
+        {
+            datalayer->getBatch_Images_Label(i , testData, testLabel);
+            for(int j = 0; j < g_vQue.size(); j++)
+            {
+                layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[j]->_name);
+                layer->forwardPropagation(string("train"));
+
+                // is softmax, then vote
+                if( j == g_vQue.size() - 1 ){
+                    VoteLayer::instance()->vote( i , nBatchSize, layer->dstData );
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < config->_next.size(); i++){
+        configBase* tmpConfig = config->_next[i];
+        dfsResultPredict( tmpConfig, testData, testLabel, nBatchSize );
+    }
+    g_vQue.erase( g_vQue.end() - 1 );
+}
+
+void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& trainData, cuMatrix<int>* &trainLabel, int& iter)
 {
     g_vQue.push_back(config);
 
@@ -149,7 +183,7 @@ void dfsTraining(configBase* config, int nMomentum, cuMatrixVector<float>& train
         for(int i = 0; i < g_vQue.size(); i++){
     //        printf("f %d %s\n", i, g_vQue[i]->_name.c_str());
             layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
-            layer->forwardPropagation( string("train") );
+            layer->forwardPropagation( "train" );
         }
         for( int i = g_vQue.size() - 1; i>= 0; i--){
     //        printf("b %d %s\n", i, g_vQue[i]->_name.c_str());
@@ -163,11 +197,8 @@ void dfsTraining(configBase* config, int nMomentum, cuMatrixVector<float>& train
         configBase* tmpConfig = config->_next[i];
         dfsTraining( tmpConfig, nMomentum, trainData, trainLabel, iter);
     }
-
-    g_vQue.erase( g_vQue.end() - 1 );
+    g_vQue.pop_back();
 }
-
-const bool DFS_TRAINING = true;
 
 /*training netWork*/
 void cuTrainNetWork(cuMatrixVector<float> &trainData, 
@@ -250,7 +281,16 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
 
         /*test network*/
         cout<<"epochs: "<<epo<<" ,Time: "<<(inEnd - inStart)/CLOCKS_PER_SEC<<"s,";
-        predictTestData(testData, testLabel, batchSize);
+        if( DFS_TEST == false){
+            predictTestData( testData, testLabel, batchSize );
+        }
+        else{
+            VoteLayer::instance()->clear();
+            configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
+            dfsResultPredict(config, testData, testLabel, batchSize);
+            float fTest = VoteLayer::instance()->result();
+            printf("test result %f", fTest);
+        }
         cout<<" ,Momentum: "<<Momentum<<endl;
 
     }
@@ -258,5 +298,4 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     stop = clock();
     runtime = stop - start;
     cout<< epochs <<" epochs total rumtime is: "<<runtime /CLOCKS_PER_SEC<<" Seconds"<<endl;
-
 }

@@ -95,7 +95,7 @@ void softMaxLayer::ClassificationResults()
 
 	if(flag == dataSize)
 	{
-        cout<<"Correct: "<<cur_correctSize<<"/"<<CorrectSize<<" ";
+        cout<< _name << " " <<cur_correctSize<<"/"<<CorrectSize<<" ";
 		if(cur_correctSize > CorrectSize)
 		{
 			CorrectSize = cur_correctSize;

@@ -1,5 +1,5 @@
 #include"layersBase.h"
-
+#include"../config/config.h"
 layersBase* Layers::getLayer(string name)
 {
 	if(_layersMaps.find(name) != _layersMaps.end())
@@ -36,8 +36,9 @@ void Layers::storLayers(string name, layersBase* layer)
 		{
 			_layersMaps[name]->_inputName = _layersMaps[_layersName[_layersName.size() - 2]]->_name;
 
-			_layersMaps[_layersName[_layersName.size() -2 ]]->insertNextlayer( _layersMaps[name] );
-			_layersMaps[name]->insertPrevLayer(_layersMaps[_layersName[_layersName.size() - 2]]);
+            string prev_name = config::instanceObjtce()->getLayersByName(name)->_input;
+			_layersMaps[prev_name]->insertNextlayer( _layersMaps[name] );
+			_layersMaps[name]->insertPrevLayer(_layersMaps[prev_name]);
 		}
 
 	}else

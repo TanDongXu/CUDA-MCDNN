@@ -64,6 +64,7 @@ void dropOutLayer::Dropout_TrainSet(float* data, int size, float dropout_rate)
 	int threadsPerBlock = 256;
 	int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 	dropout_train<<<blocksPerGrid, threadsPerBlock>>>(data, outputPtr, size, dropout_rate);
+    cudaThreadSynchronize();
 
 }
 
@@ -72,6 +73,7 @@ void dropOutLayer::Dropout_TestSet(float* data, int size, float dropout_rate)
 	int threadsPerBlock = 256;
 	int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 	dropout_test<<<blocksPerGrid, threadsPerBlock>>>(srcData, number * channels * height * width, DropOut_rate);
+    cudaThreadSynchronize();
 }
 
 void dropOutLayer::forwardPropagation(string train_or_test)

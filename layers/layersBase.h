@@ -72,8 +72,9 @@ public:
 	/*get layer by name*/
 	layersBase * getLayer(string name);
 
-	/*store the layers by name*/
+	/*linear store the layers by name*/
 	void storLayers(string name, layersBase* layer);
+    void storLayers(string prev_name, string name, layersBase* layer);
 	/*store the layers name*/
 	void storLayersName(string);
 	/*get layers name by index*/

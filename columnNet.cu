@@ -66,7 +66,7 @@ void creatColumnNet(int sign)
             baseLayer = new dropOutLayer(layer->_name);
         }
 
-        Layers::instanceObject()->storLayers(layer->_name, baseLayer);
+        Layers::instanceObject()->storLayers(layer->_input, layer->_name, baseLayer);
         for(int i = 0; i < layer->_next.size(); i++){
             if( hash.find( layer->_next[i] ) == hash.end()){
                 hash.insert( layer->_next[i] );

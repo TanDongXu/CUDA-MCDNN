@@ -168,7 +168,7 @@ void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMa
     for(int i = 0; i < config->_next.size(); i++){
         configBase* tmpConfig = config->_next[i];
         layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer( config->_name );
-        layer->setBranchIndex(i);
+        layer->setCurBranchIndex(i);
         dfsResultPredict( tmpConfig, testData, testLabel, nBatchSize );
     }
     g_vQue.pop_back();
@@ -199,7 +199,7 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
     for(int i = 0; i < config->_next.size(); i++){
         configBase* tmpConfig = config->_next[i];
         layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer( config->_name );
-        layer->setBranchIndex(i);
+        layer->setCurBranchIndex(i);
         dfsTraining( tmpConfig, nMomentum, trainData, trainLabel, iter);
     }
     g_vQue.pop_back();

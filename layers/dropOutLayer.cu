@@ -95,7 +95,8 @@ void dropOutLayer::forwardPropagation(string train_or_test)
 
 void dropOutLayer::backwardPropagation(float Momemtum)
 {
-	diffData = nextLayer[0]->diffData;
+	int nIndex = m_nCurBranchIndex;
+	diffData = nextLayer[nIndex]->diffData;
 	Dropout_TrainSet(diffData, number * channels * height * width, DropOut_rate);
 	MemoryMonitor::instanceObject()->freeGpuMemory(outputPtr);
 }

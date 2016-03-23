@@ -149,7 +149,7 @@ void hiddenLayer::backwardPropagation(float Momentum)
 
 	float alpha = 1.0f /(float)batchSize;
 	float beta = lambda;
-    int nIndex = m_nCurBranchIndex;
+	int nIndex = m_nCurBranchIndex;
 	checkCublasErrors(cublasSgemm(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
 				                  CUBLAS_OP_N,
 				                  CUBLAS_OP_T,

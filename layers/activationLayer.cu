@@ -113,13 +113,14 @@ void activationLayer::backwardPropagation(float Momentum)
 
 	float alpha = 1.0f;
 	float beta = 0.0f;
+	int nIndex = m_nCurBranchIndex;
 	checkCUDNN(cudnnActivationBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 			                           ActivationMode,
 			                           &alpha,
 			                           dstTensorDesc,
 			                           dstData,
 			                           srcDiffTensorDesc,
-			                           nextLayer[0]->diffData,
+			                           nextLayer[nIndex]->diffData,
 			                           srcTensorDesc,
 			                           srcData,
 			                           &beta,

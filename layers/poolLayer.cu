@@ -163,13 +163,14 @@ void poolLayer::backwardPropagation(float Momentum)
 
    float alpha = 1.0f;
    float beta = 0.0;
+   int nIndex = m_nCurBranchIndex;
    checkCUDNN(cudnnPoolingBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 		                           poolingDesc,
 		                           &alpha,
 		                           dstTensorDesc,
 		                           dstData,
 		                           srcDiffTensorDesc,
-		                           nextLayer[0]->diffData,
+		                           nextLayer[nIndex]->diffData,
 		                           srcTensorDesc,
 		                           srcData,
 		                           &beta,

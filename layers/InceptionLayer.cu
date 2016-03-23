@@ -55,7 +55,8 @@ void InceptionLayer::forwardPropagation(string train_or_test)
 
 void InceptionLayer::backwardPropagation(float Momentum)
 {
-	inception->backwardPropagation(nextLayer[0]->diffData, Momentum);
+	int nIndex = m_nCurBranchIndex;
+	inception->backwardPropagation(nextLayer[nIndex]->diffData, Momentum);
 	diffData = inception->getInceptionDiffData();
 }
 

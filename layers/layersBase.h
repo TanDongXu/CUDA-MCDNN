@@ -18,11 +18,18 @@ using namespace std;
 class layersBase
 {
 public:
+    layersBase():m_nCurBranchIndex(0){}
 	virtual void forwardPropagation(string train_or_test) = 0;
 	virtual void backwardPropagation(float Momentum) = 0;
 	virtual int getOutputSize() = 0;
 	virtual void saveWeight(FILE*file) = 0;
 	virtual void readWeight(FILE*file) = 0;
+
+	void setCurBranchIndex(int nIndex = 0)
+	{
+		m_nCurBranchIndex = nIndex;
+	}
+
 	void adjust_learnRate(int index, double lr_gamma, double lr_power)
 	{
 		lrate = static_cast<float>(lrate * pow((1.0 + lr_gamma * index), (-lr_power)));
@@ -44,6 +51,7 @@ public:
 	int width;
 	int inputImageDim;
 	int inputAmount;
+	int m_nCurBranchIndex;
 	float lrate;
 	float *diffData;
 	float *srcData , *dstData;

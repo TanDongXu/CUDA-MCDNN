@@ -306,10 +306,11 @@ void convLayer::backwardPropagation(float Momentum)
 
 	float alpha = 1.0f;
 	float beta = 0.0f;
+	int nIndex = m_nCurBranchIndex;
 	checkCUDNN(cudnnConvolutionBackwardBias(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 			                                &alpha,
 			                                srcDiffTensorDesc,
-			                                nextLayer[0]->diffData,
+			                                nextLayer[nIndex]->diffData,
 			                                &beta,
 			                                biasTensorDesc,
 			                                tmp_Bgrad
@@ -320,7 +321,7 @@ void convLayer::backwardPropagation(float Momentum)
 			                                  srcTensorDesc,
 			                                  srcData,
 			                                  srcDiffTensorDesc,
-			                                  nextLayer[0]->diffData,
+			                                  nextLayer[nIndex]->diffData,
 			                                  convDesc,
 			                                  &beta,
 			                                  filterDesc,
@@ -342,7 +343,7 @@ void convLayer::backwardPropagation(float Momentum)
 			                                filterDesc,
 			                                dev_Weight,
 			                                srcDiffTensorDesc,
-			                                nextLayer[0]->diffData,
+			                                nextLayer[nIndex]->diffData,
 			                                convDesc,
 			                                &beta,
 			                                dstDiffTensorDesc,

@@ -124,6 +124,8 @@ void LRNLayer::backwardPropagation(float Momentum)
 
 	float alpha = 1.0f;
 	float beta = 0.0f;
+    int nIndex = m_nCurBranchIndex;
+    //printf("LRN %d %d\n", m_nCurBranchIndex, nextLayer.size());
 	checkCUDNN(cudnnLRNCrossChannelBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
 			                                normDesc,
 			                                CUDNN_LRN_CROSS_CHANNEL_DIM1,
@@ -131,12 +133,15 @@ void LRNLayer::backwardPropagation(float Momentum)
 			                                dstTensorDesc,
 			                                dstData,
 			                                srcDiffTensorDesc,
-			                                nextLayer[0]->diffData,
+			                                nextLayer[nIndex]->diffData,
 			                                srcTensorDesc,
 			                                srcData,
 			                                &beta,
 			                                dstDiffTensorDesc,
 			                                diffData));
+    nIndex++;
+    if(nIndex == nextLayer.size())
+        nIndex = 0;
 
 }
 

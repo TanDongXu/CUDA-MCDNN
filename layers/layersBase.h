@@ -23,6 +23,9 @@ public:
 	virtual int getOutputSize() = 0;
 	virtual void saveWeight(FILE*file) = 0;
 	virtual void readWeight(FILE*file) = 0;
+    void setBranchIndex(int nIndex){ 
+        m_nCurBranchIndex = nIndex;
+    }
 	void adjust_learnRate(int index, double lr_gamma, double lr_power)
 	{
 		lrate = static_cast<float>(lrate * pow((1.0 + lr_gamma * index), (-lr_power)));
@@ -47,6 +50,7 @@ public:
 	float lrate;
 	float *diffData;
 	float *srcData , *dstData;
+    int m_nCurBranchIndex;
     vector<layersBase*>prevLayer;
     vector<layersBase*>nextLayer;
 };

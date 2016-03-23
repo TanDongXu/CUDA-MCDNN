@@ -149,6 +149,7 @@ void hiddenLayer::backwardPropagation(float Momentum)
 
 	float alpha = 1.0f /(float)batchSize;
 	float beta = lambda;
+    int nIndex = m_nCurBranchIndex;
 	checkCublasErrors(cublasSgemm(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
 				                  CUBLAS_OP_N,
 				                  CUBLAS_OP_T,
@@ -158,7 +159,7 @@ void hiddenLayer::backwardPropagation(float Momentum)
 				                  &alpha,
 				                  srcData,
 				                  dim_x,
-				                  nextLayer[0]->diffData,
+				                  nextLayer[nIndex]->diffData,
 				                  dim_y,
 				                  &beta,
 				                  tmp_Wgrad,
@@ -171,7 +172,7 @@ void hiddenLayer::backwardPropagation(float Momentum)
 				                  outputSize,
 				                  batchSize,
 				                  &alpha,
-				                  nextLayer[0]->diffData,
+				                  nextLayer[nIndex]->diffData,
 				                  outputSize,
 				                  VectorOnes,
 				                  1,
@@ -190,7 +191,7 @@ void hiddenLayer::backwardPropagation(float Momentum)
 				                  &alpha,
 				                  dev_Weight,
 				                  dim_x,
-				                  nextLayer[0]->diffData,
+				                  nextLayer[nIndex]->diffData,
 				                  outputSize,
 				                  &beta,
 				                  diffData,

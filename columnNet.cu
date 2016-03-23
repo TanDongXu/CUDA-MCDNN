@@ -145,6 +145,7 @@ void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMa
 {
     g_vQue.push_back( config );
     if( config->_next.size() == 0 ){
+        //printf("%s\n", config->_name.c_str());
 
         dataLayer* datalayer = static_cast<dataLayer*>( Layers::instanceObject()->getLayer("data"));
 
@@ -154,7 +155,7 @@ void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMa
             for(int j = 0; j < g_vQue.size(); j++)
             {
                 layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[j]->_name);
-                layer->forwardPropagation(string("train"));
+                layer->forwardPropagation("test");
 
                 // is softmax, then vote
                 if( j == g_vQue.size() - 1 ){
@@ -166,9 +167,11 @@ void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMa
 
     for(int i = 0; i < config->_next.size(); i++){
         configBase* tmpConfig = config->_next[i];
+        layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer( config->_name );
+        layer->setBranchIndex(i);
         dfsResultPredict( tmpConfig, testData, testLabel, nBatchSize );
     }
-    g_vQue.erase( g_vQue.end() - 1 );
+    g_vQue.pop_back();
 }
 
 void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& trainData, cuMatrix<int>* &trainLabel, int& iter)
@@ -181,12 +184,12 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
         datalayer->RandomBatch_Images_Label(trainData, trainLabel);
 
         for(int i = 0; i < g_vQue.size(); i++){
-    //        printf("f %d %s\n", i, g_vQue[i]->_name.c_str());
+            //printf("f %d %s\n", i, g_vQue[i]->_name.c_str());
             layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
             layer->forwardPropagation( "train" );
         }
         for( int i = g_vQue.size() - 1; i>= 0; i--){
-    //        printf("b %d %s\n", i, g_vQue[i]->_name.c_str());
+        //printf("b %d %s\n", i, g_vQue[i]->_name.c_str());
             layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
             layer->backwardPropagation( nMomentum );
         }
@@ -195,6 +198,8 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
     /*如果不是叶子节点*/
     for(int i = 0; i < config->_next.size(); i++){
         configBase* tmpConfig = config->_next[i];
+        layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer( config->_name );
+        layer->setBranchIndex(i);
         dfsTraining( tmpConfig, nMomentum, trainData, trainLabel, iter);
     }
     g_vQue.pop_back();

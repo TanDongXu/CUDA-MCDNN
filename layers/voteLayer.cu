@@ -7,8 +7,8 @@ VoteLayer::VoteLayer(){
 }
 
 VoteLayer* VoteLayer::instance(){
-    static VoteLayer* tmp = new VoteLayer();
-    return tmp;
+    static VoteLayer tmp;
+    return &tmp;
 }
 
 void VoteLayer::vote( int nStartPosition, int nBatchSize, float* pDevVote )
@@ -49,12 +49,14 @@ float VoteLayer::result()
     }
 
     float fResult = 0;
+    //printf("%d %d\n",m_nNumOfTestData, m_nClasses);
 
     for(int i = 0; i < m_nNumOfTestData; i++){
         float fMax = -1;
         int nIndex =  -1;
         for(int j = 0; j < m_nClasses; j++){
             float fValue = m_pHostVote[i * m_nClasses + j];
+            //printf("%f\n", fValue);
             if( fValue > fMax ){
                 fMax = fValue;
                 nIndex = j;
@@ -83,7 +85,6 @@ void VoteLayer::init(int nNumOfTestData, int nClasses, cuMatrix<int>* pLabels)
         m_nNumOfTestData = nNumOfTestData;
 
         m_pHostVote = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(m_nNumOfTestData * m_nClasses * sizeof(float));
-        printf("nClasses %d nNumOfTestData %d\n", nClasses, nNumOfTestData);
     }
     else
     {

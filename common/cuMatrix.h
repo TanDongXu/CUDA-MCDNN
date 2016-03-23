@@ -22,19 +22,13 @@ class cuMatrix
 public:
 	cuMatrix(T * _data, int _r, int _c, int _ch, bool _isGpuData = false):rows(_r),cols(_c),channels(_ch),hostData(NULL),devData(NULL){
         if( _isGpuData == false){
-
             /*allocate host memory*/
             mallocHostMemory();
-
             /*deep copy*/
             memcpy(hostData,_data,rows * cols *sizeof(*hostData) * channels);
         }
         else{
             mallocDeviceMemory();
-            if(devData == NULL){
-                printf("cuMatrix error\n");
-                exit(0);
-            }
             MemoryMonitor::instanceObject()->gpu2gpu(devData, _data, rows * cols * sizeof(*devData) * channels );
         }
     }
@@ -45,12 +39,14 @@ public:
     /*destructor*/
     ~cuMatrix()
     {
-        if(hostData!=NULL)
+        if(hostData != NULL)
         {
             MemoryMonitor::instanceObject()->freeCpuMemory(hostData);
         }
         if(devData != NULL)
+        {
             MemoryMonitor::instanceObject()->freeGpuMemory(devData);
+        }
     }
 
     /*set value*/
@@ -144,9 +140,7 @@ private:
             MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&devData, rows * cols * channels * sizeof(*devData));
             checkCudaErrors(cudaMemset(devData, 0, rows * cols * channels * sizeof(*devData)));
         }
-
     }
-
 };
 
 

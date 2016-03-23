@@ -294,7 +294,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
             configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
             dfsResultPredict(config, testData, testLabel, batchSize);
             float fTest = VoteLayer::instance()->result();
-            printf("test result %f", fTest);
+            printf(" test_result %f", fTest);
         }
         cout<<" ,Momentum: "<<Momentum<<endl;
 

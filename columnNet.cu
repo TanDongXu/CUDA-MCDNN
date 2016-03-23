@@ -191,9 +191,16 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
         for( int i = g_vQue.size() - 1; i>= 0; i--){
         //printf("b %d %s\n", i, g_vQue[i]->_name.c_str());
             layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
+            /*反向传到减枝*/
+            /*if( i - 1 >= 0)
+            {
+                configBase* b1 = g_vQue[i - 1]->_next[0];
+                configBase* b2 = g_vQue[i];
+                if( b1 != b2 )break;
+            }
+            */
             layer->backwardPropagation( nMomentum );
         }
-        iter++;
     }
     /*如果不是叶子节点*/
     for(int i = 0; i < config->_next.size(); i++){
@@ -253,6 +260,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
             g_vQue.clear();
             while(iter < iter_per_epo){
                 dfsTraining(config, Momentum, trainData, trainLabel, iter);
+                iter++ ;
             }
         }
 
@@ -291,10 +299,12 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
         else{
             VoteLayer::instance()->clear();
+            static float fMax = 0;
             configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
             dfsResultPredict(config, testData, testLabel, batchSize);
             float fTest = VoteLayer::instance()->result();
-            printf(" test_result %f", fTest);
+            if ( fMax < fTest ) fMax = fTest;
+            printf(" test_result %f/%f ", fTest, fMax);
         }
         cout<<" ,Momentum: "<<Momentum<<endl;
 

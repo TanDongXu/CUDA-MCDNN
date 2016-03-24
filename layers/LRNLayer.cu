@@ -138,10 +138,6 @@ void LRNLayer::backwardPropagation(float Momentum)
 			                                &beta,
 			                                dstDiffTensorDesc,
 			                                diffData));
-    nIndex++;
-    if(nIndex == nextLayer.size())
-        nIndex = 0;
-
 }
 
 

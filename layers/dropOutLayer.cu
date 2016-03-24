@@ -4,7 +4,6 @@ dropOutLayer::dropOutLayer(string name)
 {
 	_name = name;
 	_inputName = " ";
-	lrate = 0.0f;
 	srcData = NULL;
 	dstData = NULL;
     nextLayer.clear();

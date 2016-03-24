@@ -18,7 +18,7 @@ using namespace std;
 class layersBase
 {
 public:
-    layersBase():m_nCurBranchIndex(0){}
+    layersBase():m_nCurBranchIndex(0), m_fReduceRate(0), lrate( 123456 ){}
 	virtual void forwardPropagation(string train_or_test) = 0;
 	virtual void backwardPropagation(float Momentum) = 0;
 	virtual int getOutputSize() = 0;
@@ -38,8 +38,22 @@ public:
     void insertPrevLayer(layersBase* layer){
         prevLayer.push_back(layer);
     }
+
     void insertNextlayer(layersBase* layer){
         nextLayer.push_back(layer);
+    }
+
+    void rateReduce(){
+        if( lrate < 1 )
+            lrate /= (m_fReduceRate + 1.0f);
+    }
+
+    void setRateReduce( float fReduce){
+        m_fReduceRate = fReduce;
+    }
+
+    float getRateReduce(){
+        return m_fReduceRate;
     }
 
 public:
@@ -53,6 +67,7 @@ public:
 	int inputAmount;
 	int m_nCurBranchIndex;
 	float lrate;
+    float m_fReduceRate;
 	float *diffData;
 	float *srcData , *dstData;
     vector<layersBase*>prevLayer;

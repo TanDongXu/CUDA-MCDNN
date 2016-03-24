@@ -5,6 +5,7 @@
  *      Author: tdx
  */
 #include<iostream>
+#include <cuda.h>
 #include"./examples/mnist.h"
 #include"./examples/cifar-10.h"
 
@@ -14,6 +15,7 @@ int main(void)
 {
 	cout<<"Select the dataSet to run:"<<endl<<"1.MNIST    2.CIFAR-10"<<endl;
 
+    cudaSetDevice(1);
 	int cmd;
 	cin>> cmd;
 

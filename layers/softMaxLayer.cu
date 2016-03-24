@@ -34,7 +34,6 @@ softMaxLayer::softMaxLayer(string name)
     nextLayer.clear();
     prevLayer.clear();
 	flag = 1;
-	lrate = 0.0f;
 	CorrectSize = 0;
 	cur_correctSize = 0;
 

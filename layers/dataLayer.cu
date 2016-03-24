@@ -11,7 +11,6 @@ dataLayer::dataLayer(string name)
 	srcLabel = NULL;
 	batchImage = NULL;
 	dataSize = 0;
-	lrate = 0.0f;
     prevLayer.clear();
     nextLayer.clear();
 

@@ -101,6 +101,24 @@ void resultPredict(string train_or_test)
     }
 }
 
+float dfsGetLearningRateReduce(configBase* config){
+    layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
+    if(config->_next.size() == 0){
+        layer->setRateReduce( 1 );
+        return 1;
+    }
+
+    float fRateReduce = 0;
+    for(int i = 0; i < config->_next.size(); i++){
+        fRateReduce += dfsGetLearningRateReduce( config->_next[i] );
+    }
+
+    layer->setRateReduce( fRateReduce );
+    printf("rate %f\n", layer->getRateReduce()); 
+    
+    return fRateReduce;
+}
+
 /*test netWork*/
 void predictTestData(cuMatrixVector<float>&testData, cuMatrix<int>* &testLabel, int batchSize)
 {
@@ -199,7 +217,12 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
                 if( b1 != b2 )break;
             }
             */
-            layer->backwardPropagation( nMomentum );
+            if(layer->getRateReduce() > 1e-4){
+                layer->backwardPropagation( nMomentum );
+            }
+            else{
+                break;
+            }
         }
     }
     /*如果不是叶子节点*/
@@ -220,6 +243,8 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         int batchSize
         )
 {
+    configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
+    dfsGetLearningRateReduce( config );
     cout<<"TestData Forecast The Result..."<<endl;
     predictTestData(testData, testLabel, batchSize);
     cout<<endl;
@@ -260,28 +285,35 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
             g_vQue.clear();
             while(iter < iter_per_epo){
                 dfsTraining(config, Momentum, trainData, trainLabel, iter);
-                iter++ ;
+                iter++;
             }
         }
 
         inEnd = clock();
+        //if( true ){
+        if( epo% 50 == 0 && epo != 0 ){
+            config = (configBase*) config::instanceObjtce()->getFirstLayers();
+            //adjust learning rate
+            queue<configBase*> que;
+            set<configBase*> hash;
+            hash.insert(config);
+            que.push(config);
+            while( !que.empty() ){
+                config = que.front();
+                que.pop();
+                layersBase * layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
+                layer->rateReduce();
+                /*
+                if( layer->lrate >= 1e-4 && layer->lrate <= 1){
+                    printf("lRate %s %f\n", layer->_name.c_str(), layer->lrate);
+                }
+                */
 
-        config = (configBase*) config::instanceObjtce()->getFirstLayers();
-        //adjust learning rate
-        queue<configBase*> que;
-        set<configBase*> hash;
-        hash.insert(config);
-        que.push(config);
-        while( !que.empty() ){
-            config = que.front();
-            que.pop();
-            layersBase * layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
-            layer->adjust_learnRate(epo, FLAGS_lr_gamma, FLAGS_lr_power);
-
-            for(int i = 0; i < config->_next.size(); i++){
-                if( hash.find(config->_next[i]) == hash.end()){
-                    hash.insert(config->_next[i]);
-                    que.push(config->_next[i]);
+                for(int i = 0; i < config->_next.size(); i++){
+                    if( hash.find(config->_next[i]) == hash.end()){
+                        hash.insert(config->_next[i]);
+                        que.push(config->_next[i]);
+                    }
                 }
             }
         }

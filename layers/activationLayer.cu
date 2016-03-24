@@ -19,7 +19,6 @@ activationLayer::activationLayer(string name)
 	srcData = NULL;
 	dstData = NULL;
 	diffData = NULL;
-	lrate = 0.0f;
     prevLayer.clear();
     nextLayer.clear();
 

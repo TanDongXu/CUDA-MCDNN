@@ -10,6 +10,7 @@
 
 #include"../config/config.h"
 #include"../tests/test_layer.h"
+#include"../common/utility.cuh"
 #include"layersBase.h"
 #include<curand.h>
 
@@ -18,6 +19,7 @@ class dropOutLayer : public layersBase
 {
 public:
 	dropOutLayer(string name);
+	dropOutLayer(dropOutLayer* layer);
 	void CreateUniform(int size);
 	void Dropout_TrainSet(float* data, int size, float dropout_rate);
 	void Dropout_TestSet(float* data, int size, float dropout_rate);

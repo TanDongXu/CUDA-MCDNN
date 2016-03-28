@@ -26,6 +26,33 @@ dropOutLayer::dropOutLayer(string name)
 	this->createHandles();
 }
 
+dropOutLayer::dropOutLayer(dropOutLayer* layer)
+{
+	srcData = NULL;
+	dstData = NULL;
+	nextLayer.clear();
+	prevLayer.clear();
+	outputPtr = NULL;
+
+	static int idx = 0;
+	_name = layer->_name + int_to_string(idx);
+	idx ++;
+	_inputName = layer->_inputName;
+
+	inputAmount = layer->inputAmount;
+	inputImageDim = layer->inputImageDim;
+	number = layer->number;
+	channels = layer->channels;
+	height = layer->height;
+	width = layer->width;
+	outputSize = layer->outputSize;
+	DropOut_rate = layer->DropOut_rate;
+
+	cout<<"drop deep copy"<<endl;
+	this->createHandles();
+
+}
+
 void dropOutLayer::createHandles()
 {
 	curandCreateGenerator(&curandGenerator_DropOut, CURAND_RNG_PSEUDO_MTGP32);

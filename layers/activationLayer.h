@@ -15,6 +15,7 @@ class activationLayer: public layersBase
 {
 public:
 	activationLayer(string name);
+	activationLayer(activationLayer* layer);
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float Momentum);
 	void saveWeight(FILE*file){}

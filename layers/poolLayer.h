@@ -13,6 +13,7 @@
 #include<cudnn.h>
 #include<math.h>
 #include"layersBase.h"
+#include"../common/utility.cuh"
 #include"../config/config.h"
 #include"../cuDNN_netWork.h"
 #include"../tests/test_layer.h"
@@ -26,6 +27,7 @@ public:
 	typedef tuple<string, int, int, int, int, int, int, int> param_tuple;
 	poolLayer(string name);
 	poolLayer(string name, const param_tuple& agrs);
+	poolLayer(poolLayer* layer);
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float Momentum);
 	void saveWeight(FILE*file){}

@@ -115,7 +115,7 @@ float dfsGetLearningRateReduce(configBase* config){
 
     layer->setRateReduce( fRateReduce );
     printf("rate %f\n", layer->getRateReduce()); 
-    
+
     return fRateReduce;
 }
 
@@ -146,7 +146,7 @@ void getNetWorkCost(float&Momentum)
         que.pop();
         layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
         layer->backwardPropagation(Momentum);
-     
+
         for(int i = 0; i < config->_prev.size(); i++){
             if( hash.find( config->_prev[i] ) == hash.end()){
                 hash.insert(config->_prev[i]);
@@ -207,17 +207,17 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
             layer->forwardPropagation( "train" );
         }
         for( int i = g_vQue.size() - 1; i>= 0; i--){
-        //printf("b %d %s\n", i, g_vQue[i]->_name.c_str());
+            //printf("b %d %s\n", i, g_vQue[i]->_name.c_str());
             layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
             /*反向传到减枝*/
             /*if( i - 1 >= 0)
-            {
-                configBase* b1 = g_vQue[i - 1]->_next[0];
-                configBase* b2 = g_vQue[i];
-                if( b1 != b2 )break;
-            }
-            */
-            if(layer->getRateReduce() > 1e-4){
+              {
+              configBase* b1 = g_vQue[i - 1]->_next[0];
+              configBase* b2 = g_vQue[i];
+              if( b1 != b2 )break;
+              }
+             */
+            if(layer->lrate > 1e-4){
                 layer->backwardPropagation( nMomentum );
             }
             else{
@@ -291,29 +291,42 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
 
         inEnd = clock();
         //if( true ){
-        if( epo% 50 == 0 && epo != 0 ){
-            config = (configBase*) config::instanceObjtce()->getFirstLayers();
-            //adjust learning rate
-            queue<configBase*> que;
-            set<configBase*> hash;
-            hash.insert(config);
-            que.push(config);
-            while( !que.empty() ){
-                config = que.front();
-                que.pop();
-                layersBase * layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
-                layer->rateReduce();
-                /*
-                if( layer->lrate >= 1e-4 && layer->lrate <= 1){
-                    printf("lRate %s %f\n", layer->_name.c_str(), layer->lrate);
+        config = (configBase*) config::instanceObjtce()->getFirstLayers();
+        //adjust learning rate
+        queue<configBase*> que;
+        set<configBase*> hash;
+        hash.insert(config);
+        que.push(config);
+        //bool flag = false;
+        while( !que.empty() ){
+            config = que.front();
+            que.pop();
+            layersBase * layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
+            /*
+            if( epo % 30 == 0 && epo != 0 && flag == false)
+            {
+                if( layer->lrate >= 0.00001 && layer->lrate <= 1)
+                {
+    //                layer->lrate = 0;
+                    flag = true;
                 }
-                */
+            }
+            */
 
-                for(int i = 0; i < config->_next.size(); i++){
-                    if( hash.find(config->_next[i]) == hash.end()){
-                        hash.insert(config->_next[i]);
-                        que.push(config->_next[i]);
-                    }
+            if( epo % 100 == 0 && epo != 0){
+                layer->rateReduce();
+            }
+            //layer->rateReduce();
+            /*
+               if( layer->lrate >= 1e-4 && layer->lrate <= 1){
+               printf("lRate %s %f\n", layer->_name.c_str(), layer->lrate);
+               }
+             */
+
+            for(int i = 0; i < config->_next.size(); i++){
+                if( hash.find(config->_next[i]) == hash.end()){
+                    hash.insert(config->_next[i]);
+                    que.push(config->_next[i]);
                 }
             }
         }
@@ -345,4 +358,4 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     stop = clock();
     runtime = stop - start;
     cout<< epochs <<" epochs total rumtime is: "<<runtime /CLOCKS_PER_SEC<<" Seconds"<<endl;
-}
+    }

@@ -1,6 +1,16 @@
 #include"utility.cuh"
 
 
+/*int to string*/
+string int_to_string(int num)
+{
+	stringstream ss;
+	ss<< num;
+	string s;
+	s = ss.str();
+	return s;
+}
+
 /*showDevices information*/
 void showDevices()
 {

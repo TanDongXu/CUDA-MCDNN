@@ -100,6 +100,7 @@ public:
 	{
 		return _layersMaps.size();
 	}
+    bool hasLayer(string name);
 
 private:
 	map<string,layersBase*> _layersMaps;

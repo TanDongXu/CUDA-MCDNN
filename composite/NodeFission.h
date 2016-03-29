@@ -37,6 +37,7 @@ public:
 
 	static layersBase* createLayer(layersBase* node)
 	{
+
 		string nodeType = config::instanceObjtce()->getLayersByName(node->_name)->_type;
 
 		if(nodeType == "DATA")
@@ -44,7 +45,6 @@ public:
 			return new dataLayer((dataLayer*)node);
 		}else if(nodeType == "CONV")
 		{
-
 			return new convLayer((convLayer*)node);
 		}else if(nodeType == "POOLING")
 		{
@@ -153,7 +153,6 @@ public:
 		{
 			cout<< "NodeFission: Config not exist" << endl;
 			exit(0);
-			//return NULL;
 		}
 	}
 

@@ -177,12 +177,6 @@ void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMa
             {
                 layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[j]->_name);
                 layer->forwardPropagation("test");
-
-                if(i==0)
-                {
-                	cout<<"Name: "<<layer->_name<<endl;
-                }
-
                 // is softmax, then vote
                 if( j == g_vQue.size() - 1 ){
                     VoteLayer::instance()->vote( i , nBatchSize, layer->dstData );
@@ -218,7 +212,7 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
         for( int i = g_vQue.size() - 1; i>= 0; i--){
             layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
             if(layer->getRateReduce() > 1e-4){
-                layer->backwardPropagation( nMomentum );
+              layer->backwardPropagation( nMomentum );
             }
             else{
                 break;
@@ -235,9 +229,10 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
     g_vQue.pop_back();
 }
 
-/*structure adjust:Fission operator*/
+/*get Fission node*/
 void getFissNode(layersBase*curLayer)
 {
+	//叶子节点
 	if (curLayer->nextLayer.size() == 0)
 	{
 		layersBase* tmp = curLayer;
@@ -288,6 +283,8 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     start = clock();
     for(int epo = 0; epo < epochs; epo++)
     {
+
+
         dataLayer* datalayer = static_cast<dataLayer*>(Layers::instanceObject()->getLayer("data"));
 
         Momentum = nMomentum[id];
@@ -314,7 +311,6 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
 
         inEnd = clock();
-        //if( true ){
         if( epo% 50 == 0 && epo != 0 ){
             config = (configBase*) config::instanceObjtce()->getFirstLayers();
             //adjust learning rate
@@ -349,7 +345,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
 
         /*test network*/
-        cout<<"epochs: "<<epo<<" ,Time: "<<(inEnd - inStart)/CLOCKS_PER_SEC<<"s,";
+       cout<<"epochs: "<<epo<<" ,Time: "<<(inEnd - inStart)/CLOCKS_PER_SEC<<"s,";
         if( DFS_TEST == false){
             predictTestData( testData, testLabel, batchSize );
         }
@@ -364,21 +360,21 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
         cout<<" ,Momentum: "<<Momentum<<endl;
 
-        if(DFS_TRAINING == true)
-        {
-        	g_vFissNode.clear();
-        	layersBase* curLayer =  Layers::instanceObject()->getLayer("data");
-        	getFissNode(curLayer);
-        	if(g_vFissNode[0]->_name == "hidden2"){
-        	for(int i = 0; i < g_vFissNode.size()-1; i++)
-        	{
-        		//if(g_vFissNode[i]->_name == "data")break;
-        		NodeFission(g_vFissNode[i], g_vFissNode[i]->nextLayer[0]);
-        	}
+        if (DFS_TRAINING == true) {
+			g_vFissNode.clear();
+			layersBase* curLayer = Layers::instanceObject()->getLayer("data");
+			getFissNode(curLayer);
+			//if (g_vFissNode[0]->_name == "hidden2") {
+				//for (int i = 0; i < g_vFissNode.size() - 1; i++) {
+				//if(g_vFissNode[i]->_name == "data")break;
+				//printf("nextLayer %d\n", g_vFissNode[0]->nextLayer.size());
+			//	NodeFission(g_vFissNode[0], g_vFissNode[0]->nextLayer[0]);
+				//creatColumnNet11(1);
+				//}
 
-        	}
+		//	}
 
-        }
+		}
 
     }
 

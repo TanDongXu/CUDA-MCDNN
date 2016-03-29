@@ -55,10 +55,10 @@ softMaxLayer::softMaxLayer(string name)
 	width = prev_Layer->width;
 
 	host_result = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height * width *sizeof(float));
-    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&srcDiff, number * channels * height * width * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&devLabel, batchSize * 1 * 1 * 1 * sizeof(int));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &srcDiff, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &devLabel, batchSize * 1 * 1 * 1 * sizeof(int));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));
 
 	this->createHandles();
 }
@@ -109,9 +109,6 @@ softMaxLayer::softMaxLayer(softMaxLayer* layer)
 	MemoryMonitor::instanceObject()->gpu2gpu(devLabel, layer->devLabel,  batchSize * 1 * 1 * 1 * sizeof(int));
 	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData,  number * channels * height * width * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
-
-	//srcData = layer->srcData;
-	cout<<"softMax deep copy"<<endl;
 
 	this->createHandles();
 
@@ -219,7 +216,6 @@ void softMaxLayer::getBackPropDiffData()
 	SoftmaxLossBackprop<<< (batchSize + 127)/128, 128>>>(devLabel, nclasses, batchSize, srcDiff);
 	cudaThreadSynchronize();
 }
-
 
 
 void softMaxLayer::backwardPropagation(float Momentum)

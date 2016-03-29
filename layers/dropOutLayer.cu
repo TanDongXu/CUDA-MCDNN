@@ -23,6 +23,7 @@ dropOutLayer::dropOutLayer(string name)
 	outputSize = channels * height * width;
 	DropOut_rate = curConfig->dropOut_rate;
 
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &outputPtr, number * channels * height * width * sizeof(float));
 	this->createHandles();
 }
 
@@ -47,6 +48,8 @@ dropOutLayer::dropOutLayer(dropOutLayer* layer)
 	width = layer->width;
 	outputSize = layer->outputSize;
 	DropOut_rate = layer->DropOut_rate;
+
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &outputPtr, number * channels * height * width * sizeof(float));
 
 	cout<<"drop deep copy"<<endl;
 	this->createHandles();
@@ -80,8 +83,6 @@ __global__ void dropout_test(float* data, int size, float probability)
 void dropOutLayer::CreateUniform(int size)
 {
 	curandSetPseudoRandomGeneratorSeed(curandGenerator_DropOut, time(NULL));
-	outputPtr = NULL;
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&outputPtr, size * sizeof(float));
 	curandGenerateUniform(curandGenerator_DropOut, outputPtr, size);
 }
 
@@ -124,7 +125,6 @@ void dropOutLayer::backwardPropagation(float Momemtum)
 	int nIndex = m_nCurBranchIndex;
 	diffData = nextLayer[nIndex]->diffData;
 	Dropout_TrainSet(diffData, number * channels * height * width, DropOut_rate);
-	MemoryMonitor::instanceObject()->freeGpuMemory(outputPtr);
 }
 
 void dropOutLayer::destroyHandles()

@@ -39,7 +39,7 @@ T getMax(T*value, int size)
 	return max;
 }
 
-
+string int_to_string(int num);
 void showDevices();
 __global__ void MultiChannelsMerge(float** inputs, float* outputs, int* channels, int* indexs, int row, int outChannels);
 __global__ void MultiArrayAdd(float** inputs, float* outputs, int number,int channels, int height, int width);

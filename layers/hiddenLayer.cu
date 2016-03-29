@@ -75,19 +75,24 @@ hiddenLayer::hiddenLayer(string name, int sign)
 	channels = outputSize;
 	height = 1;
 	width = 1;
+
+	printf("copy batchSize %d channels %d", batchSize, channels);
+	printf("outputSize %d inputSize %d ", outputSize, inputSize);
+	printf("prev_num %d prev_channels %d prev_height %d prev_width %d\n", prev_num, prev_channels, prev_height, prev_width);
+
 	//1*batchSize
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&VectorOnes, 1 * 1 * 1 * batchSize* sizeof(float));
 	FillOnes<<<1, batchSize>>>(VectorOnes, batchSize);
     cudaThreadSynchronize();
 
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Wgrad,1 * 1 * outputSize * inputSize * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bgrad,1 * 1 * outputSize * 1 * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_Wgrad,1 * 1 * outputSize * inputSize * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_Bgrad,1 * 1 * outputSize * 1 * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Wgrad,1 * 1 * outputSize * inputSize * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Bgrad,1 * 1 * outputSize * 1 * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, outputSize * batchSize * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData,  inputSize * batchSize* sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &tmp_Wgrad,1 * 1 * outputSize * inputSize * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &tmp_Bgrad,1 * 1 * outputSize * 1 * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, outputSize * batchSize * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData,  inputSize * batchSize* sizeof(float));
 
 	this->createHandles();
 	if(sign == RANDOM)
@@ -134,13 +139,14 @@ hiddenLayer::hiddenLayer(hiddenLayer* layer)
 	channels = outputSize;
 	height = 1;
 	width = 1;
+
 	//1*batchSize
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &VectorOnes, 1 * 1 * 1 * batchSize * sizeof(float));
 	FillOnes<<<1, batchSize>>>(VectorOnes, batchSize);
 	cudaThreadSynchronize();
 
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, outputSize * inputSize * 1 * 1 * sizeof(float));
-	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, outputSize * 1 * 1 * 1 * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_Weight, outputSize * inputSize * 1 * 1 * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_Bias, outputSize * 1 * 1 * 1 * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &tmp_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
@@ -152,12 +158,9 @@ hiddenLayer::hiddenLayer(hiddenLayer* layer)
 	MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, layer->dev_Bias, outputSize * 1 * 1 * 1 * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(dev_Wgrad, layer->dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(dev_Bgrad, layer->dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
-	//MemoryMonitor::instanceObject()->gpu2gpu(tmp_Wgrad, layer->tmp_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
-	//MemoryMonitor::instanceObject()->gpu2gpu(tmp_Bgrad, layer->tmp_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, outputSize * batchSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, inputSize * batchSize * sizeof(float));
 
-	//srcData = layer->srcData;
 	this->createHandles();
 	cout<<"hidden copy"<<endl;
 }
@@ -207,6 +210,7 @@ void hiddenLayer::forwardPropagation(string train_or_test)
 				                  dim_y));
 
 	height = 1; width = 1; channels = dim_y;
+
 }
 
 

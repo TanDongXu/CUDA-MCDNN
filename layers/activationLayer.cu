@@ -65,7 +65,6 @@ activationLayer::activationLayer(activationLayer* layer)
 	outputSize = layer->outputSize;
 	ActivationMode = layer->ActivationMode;
 
-	//srcData = layer->srcData;
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, number * channels * width * sizeof(float));

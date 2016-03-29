@@ -1,17 +1,5 @@
 #include"readCifar10Data.h"
-
-
-
-/*int to string*/
-string int_to_string(int num)
-{
-	stringstream ss;
-	ss<< num;
-	string s;
-	s = ss.str();
-	return s;
-}
-
+#include"../common/utility.cuh"
 
 void read_batch(string fileName,
 		        cuMatrixVector<float>& image_data,

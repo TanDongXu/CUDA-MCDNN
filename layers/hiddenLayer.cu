@@ -162,7 +162,7 @@ hiddenLayer::hiddenLayer(hiddenLayer* layer)
 	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, inputSize * batchSize * sizeof(float));
 
 	this->createHandles();
-	cout<<"hidden copy"<<endl;
+	//cout<<"hidden copy"<<endl;
 }
 
 

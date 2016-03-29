@@ -121,7 +121,7 @@ poolLayer::poolLayer(poolLayer* layer)
 	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
 
 	this->createHandles();
-	cout<<"pool deep copy"<<endl;
+	//cout<<"pool deep copy"<<endl;
 }
 
 

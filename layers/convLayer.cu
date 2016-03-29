@@ -201,7 +201,7 @@ convLayer::convLayer(convLayer* layer)
     MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, batchSize * kernelAmount * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, batchSize * inputAmount * inputImageDim * inputImageDim * sizeof(float));
 
-    cout<<"conv deep copy"<<endl;
+    //cout<<"conv deep copy"<<endl;
     this->createHandles();
 }
 

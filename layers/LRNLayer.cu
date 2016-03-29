@@ -80,7 +80,7 @@ LRNLayer::LRNLayer(LRNLayer* layer)
 	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
 
 	this->createHandles();
-	cout<<"lrn deep copy"<<endl;
+	//cout<<"lrn deep copy"<<endl;
 }
 
 void LRNLayer::forwardPropagation(string train_or_test)

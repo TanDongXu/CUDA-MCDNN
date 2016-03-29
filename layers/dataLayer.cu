@@ -62,7 +62,7 @@ dataLayer::dataLayer(dataLayer* layer)
 	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData,  number * channels * height * width * sizeof(float));
 
 	srcData = layer->dstData;
-	cout<<"data deep copy"<<endl;
+	//cout<<"data deep copy"<<endl;
 }
 
 

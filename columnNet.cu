@@ -159,7 +159,9 @@ void getNetWorkCost(float&Momentum)
 }
 
 std::vector<configBase*> g_vQue;
-vector<layersBase*> g_vFissNode;
+std::map<layersBase*, size_t> g_vFissNode;
+std::vector<softMaxLayer*> g_vMinBranch;
+int g_nMinCorrSize;
 
 /* voting */
 void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMatrix<int>*& testLabel, int nBatchSize)
@@ -177,6 +179,10 @@ void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMa
             {
                 layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[j]->_name);
                 layer->forwardPropagation("test");
+//                if(i == 0)
+//                {
+//                	cout<<layer->_name<<endl;
+//                }
                 // is softmax, then vote
                 if( j == g_vQue.size() - 1 ){
                     VoteLayer::instance()->vote( i , nBatchSize, layer->dstData );
@@ -229,30 +235,53 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
     g_vQue.pop_back();
 }
 
-/*get Fission node*/
-void getFissNode(layersBase*curLayer)
+/*get min result branch*/
+void getMinBranch(layersBase*curLayer)
 {
 	//叶子节点
 	if (curLayer->nextLayer.size() == 0)
 	{
-		layersBase* tmp = curLayer;
-		while(tmp->prevLayer[0]->nextLayer.size() == 1)
+		softMaxLayer* tmp = (softMaxLayer*)curLayer;
+		if(tmp->getCorrectNum() <= g_nMinCorrSize)
 		{
-			tmp = tmp->prevLayer[0];
-		}
-		if(tmp->prevLayer[0]->_name != string("data"))
-		{
-			g_vFissNode.push_back(tmp->prevLayer[0]);
+			g_nMinCorrSize = tmp->getCorrectNum();
+			g_vMinBranch.push_back(tmp);
 		}
 	}
 
 	for(int i = 0; i < curLayer->nextLayer.size(); i++)
 	{
 		layersBase* tmpLayer =  curLayer->nextLayer[i];
-		getFissNode(tmpLayer);
+		getMinBranch(tmpLayer);
 	}
 }
 
+
+/*get Fissnode and Fission*/
+void performFiss()
+{
+	for(int i = 0; i < g_vMinBranch.size(); i++)
+	{
+		layersBase* tmpCur = (layersBase*)g_vMinBranch[i];
+
+		while (tmpCur->prevLayer.size() != 0 && tmpCur->prevLayer[0]->nextLayer.size() == 1)
+		{
+			tmpCur = tmpCur->prevLayer[0];
+		}
+		if (tmpCur->_name == "data")
+			break;
+
+		NodeFission(tmpCur->prevLayer[0], tmpCur);
+		//++g_vFissNode[tmpCur->prevLayer[0]];
+	}
+
+//	for(const auto &w :g_vFissNode)
+//	{
+//		cout<<w.second<<" times"<<endl;
+//	}
+	//perform Fission
+	//
+}
 
 /*training netWork*/
 void cuTrainNetWork(cuMatrixVector<float> &trainData, 
@@ -360,20 +389,16 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
         cout<<" ,Momentum: "<<Momentum<<endl;
 
-        if (DFS_TRAINING == true) {
+        if (DFS_TRAINING == true && ((epo + 1) % 2) == 0)
+        {
 			g_vFissNode.clear();
+			g_vMinBranch.clear();
 			layersBase* curLayer = Layers::instanceObject()->getLayer("data");
-			getFissNode(curLayer);
-			//if (g_vFissNode[0]->_name == "hidden2") {
-				//for (int i = 0; i < g_vFissNode.size() - 1; i++) {
-				//if(g_vFissNode[i]->_name == "data")break;
-				//printf("nextLayer %d\n", g_vFissNode[0]->nextLayer.size());
-			//	NodeFission(g_vFissNode[0], g_vFissNode[0]->nextLayer[0]);
-				//creatColumnNet11(1);
-				//}
-
-		//	}
-
+			dataLayer* tmpLayer = (dataLayer*)curLayer;
+			g_nMinCorrSize = tmpLayer->getDataSize();
+			//get the min result branch
+			getMinBranch(curLayer);
+			performFiss();
 		}
 
     }

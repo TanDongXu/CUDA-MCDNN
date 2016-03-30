@@ -76,10 +76,6 @@ hiddenLayer::hiddenLayer(string name, int sign)
 	height = 1;
 	width = 1;
 
-	printf("copy batchSize %d channels %d", batchSize, channels);
-	printf("outputSize %d inputSize %d ", outputSize, inputSize);
-	printf("prev_num %d prev_channels %d prev_height %d prev_width %d\n", prev_num, prev_channels, prev_height, prev_width);
-
 	//1*batchSize
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&VectorOnes, 1 * 1 * 1 * batchSize* sizeof(float));
 	FillOnes<<<1, batchSize>>>(VectorOnes, batchSize);
@@ -119,7 +115,7 @@ hiddenLayer::hiddenLayer(hiddenLayer* layer)
 	nextLayer.clear();
 
 	static int idx = 0;
-	_name = layer->_name + int_to_string(idx);
+	_name = layer->_name + string("_") + int_to_string(idx);
 	idx ++;
 	_inputName = layer->_inputName;
 	epsilon = layer->epsilon;

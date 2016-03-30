@@ -36,7 +36,7 @@ dropOutLayer::dropOutLayer(dropOutLayer* layer)
 	outputPtr = NULL;
 
 	static int idx = 0;
-	_name = layer->_name + int_to_string(idx);
+	_name = layer->_name + string("_") + int_to_string(idx);
 	idx ++;
 	_inputName = layer->_inputName;
 

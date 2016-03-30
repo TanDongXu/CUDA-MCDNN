@@ -217,12 +217,12 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
 
         for( int i = g_vQue.size() - 1; i>= 0; i--){
             layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
-            if(layer->getRateReduce() > 1e-4){
+           // if(layer->getRateReduce() > 1e-4){
               layer->backwardPropagation( nMomentum );
-            }
-            else{
-                break;
-            }
+          //  }
+           // else{
+          //      break;
+         //   }
         }
     }
     /*如果不是叶子节点*/
@@ -242,7 +242,7 @@ void getMinBranch(layersBase*curLayer)
 	if (curLayer->nextLayer.size() == 0)
 	{
 		softMaxLayer* tmp = (softMaxLayer*)curLayer;
-		if(tmp->getCorrectNum() <= g_nMinCorrSize)
+		if(tmp->getCorrectNum() < g_nMinCorrSize)
 		{
 			g_nMinCorrSize = tmp->getCorrectNum();
 			g_vMinBranch.push_back(tmp);
@@ -264,14 +264,14 @@ void performFiss()
 	{
 		layersBase* tmpCur = (layersBase*)g_vMinBranch[i];
 
-		while (tmpCur->prevLayer.size() != 0 && tmpCur->prevLayer[0]->nextLayer.size() == 1)
+		while (tmpCur->prevLayer[0]->_name != string("data") && tmpCur->prevLayer[0]->nextLayer.size() == 1)
 		{
 			tmpCur = tmpCur->prevLayer[0];
 		}
-		if (tmpCur->_name == "data")
+		if (tmpCur->prevLayer[0]->_name== "data")
 			break;
-
-		NodeFission(tmpCur->prevLayer[0], tmpCur);
+		else
+			NodeFission(tmpCur->prevLayer[0], tmpCur);
 		//++g_vFissNode[tmpCur->prevLayer[0]];
 	}
 
@@ -340,32 +340,52 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
 
         inEnd = clock();
-        if( epo% 50 == 0 && epo != 0 ){
-            config = (configBase*) config::instanceObjtce()->getFirstLayers();
-            //adjust learning rate
-            queue<configBase*> que;
-            set<configBase*> hash;
-            hash.insert(config);
-            que.push(config);
-            while( !que.empty() ){
-                config = que.front();
-                que.pop();
-                layersBase * layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
-                layer->rateReduce();
-                /*
-                if( layer->lrate >= 1e-4 && layer->lrate <= 1){
-                    printf("lRate %s %f\n", layer->_name.c_str(), layer->lrate);
-                }
-                */
 
-                for(int i = 0; i < config->_next.size(); i++){
-                    if( hash.find(config->_next[i]) == hash.end()){
-                        hash.insert(config->_next[i]);
-                        que.push(config->_next[i]);
-                    }
+        config = (configBase*) config::instanceObjtce()->getFirstLayers();
+        //adjust learning rate
+        queue<configBase*> que;
+        set<configBase*> hash;
+        hash.insert(config);
+        que.push(config);
+        while( !que.empty() ){
+            config = que.front();
+            que.pop();
+            layersBase * layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
+            layer->adjust_learnRate(epo, FLAGS_lr_gamma, FLAGS_lr_power);
+
+            for(int i = 0; i < config->_next.size(); i++){
+                if( hash.find(config->_next[i]) == hash.end()){
+                    hash.insert(config->_next[i]);
+                    que.push(config->_next[i]);
                 }
             }
         }
+//        if( epo% 50 == 0 && epo != 0 ){
+//            config = (configBase*) config::instanceObjtce()->getFirstLayers();
+//            //adjust learning rate
+//            queue<configBase*> que;
+//            set<configBase*> hash;
+//            hash.insert(config);
+//            que.push(config);
+//            while( !que.empty() ){
+//                config = que.front();
+//                que.pop();
+//                layersBase * layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
+//                layer->rateReduce();
+//                /*
+//                if( layer->lrate >= 1e-4 && layer->lrate <= 1){
+//                    printf("lRate %s %f\n", layer->_name.c_str(), layer->lrate);
+//                }
+//                */
+//
+//                for(int i = 0; i < config->_next.size(); i++){
+//                    if( hash.find(config->_next[i]) == hash.end()){
+//                        hash.insert(config->_next[i]);
+//                        que.push(config->_next[i]);
+//                    }
+//                }
+//            }
+//        }
 
         if(epo && epo % epoCount[id] == 0)
         {

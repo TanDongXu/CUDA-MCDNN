@@ -33,13 +33,51 @@ class configNonLinearity
                 m_nonLinearity = ACTIVATION_RELU;
             }else
             {
-                m_nonLinearity = -1;
+                cout<<"config: non_Linearity is not exist"<<endl;
+                exit(0);
             }
         }
 
-        int getValue(){return m_nonLinearity;}
-    private:
+        int getValue()
+        {
+        	return m_nonLinearity;
+        }
+
+private:
         int m_nonLinearity;
+
+};
+
+
+
+class ConfigPoolMethod
+{
+public:
+	ConfigPoolMethod(string method)
+	{
+		if(method == string("POOL_MAX"))
+		{
+			m_poolMethod = POOLING_MAX;
+		}else if(method == string("POOL_AVE_INCLUDE_PAD"))
+		{
+			m_poolMethod = POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
+		}else if(method == string("POOL_AVE_EXCLUDE_PAD"))
+		{
+			m_poolMethod = POOLING_AVERAGE_COUNT_EXCLUDE_PADDING;
+		}else
+		{
+			cout<<"config: POOL_METHOD is not exist"<<endl;
+			exit(0);
+		}
+	}
+
+	int getValue()
+	{
+		return m_poolMethod;
+	}
+
+private:
+	int m_poolMethod;
 
 };
 
@@ -191,6 +229,7 @@ class config
 
 
         configNonLinearity* m_nonLinearity;
+        ConfigPoolMethod * m_poolMethod;
 
         void deleteSpace();
         void deleteComment();
@@ -260,7 +299,7 @@ class configPooling : public configBase
 {
     public:
         configPooling(string type, string name, string input, string sub_input, int size,
-                int pad_h, int pad_w, int stride_h, int stride_w, string poolType)
+                int pad_h, int pad_w, int stride_h, int stride_w, int poolType)
         {
             _type = type;
             _name = name;
@@ -279,7 +318,7 @@ class configPooling : public configBase
         int _pad_w;
         int _stride_h;
         int _stride_w;
-        string _poolType;
+        int _poolType;
 
 };
 

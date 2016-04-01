@@ -31,6 +31,7 @@ public:
 
 	convLayer(string name, int sign);
 	convLayer(string name, int sign, const param_tuple& args);
+	convLayer(convLayer* layer);
 	void initRandom();
 	void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);

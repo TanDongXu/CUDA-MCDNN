@@ -46,6 +46,43 @@ LRNLayer::LRNLayer(string name)
 	this->createHandles();
 }
 
+//deep copy constructor
+LRNLayer::LRNLayer(LRNLayer* layer)
+{
+	srcData = NULL;
+	dstData = NULL;
+	diffData = NULL;
+	prevLayer.clear();
+	nextLayer.clear();
+
+	static int idx = 0;
+	_name = layer->_name + int_to_string(idx);
+	idx ++;
+	_inputName = layer->_inputName;
+
+	lrnN = layer->lrnN;
+	lrnAlpha = layer->lrnAlpha;
+	lrnBeta = layer->lrnBeta;
+	lrnK = layer->lrnK;
+
+	inputAmount = layer->inputAmount;
+	inputImageDim = layer->inputImageDim;
+	number = layer->number;
+	channels = layer->channels;
+	height = layer->height;
+	width = layer->width;
+	inputSize = layer->inputSize;
+	outputSize = layer->outputSize;
+
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
+
+	this->createHandles();
+	cout<<"lrn deep copy"<<endl;
+}
+
 void LRNLayer::forwardPropagation(string train_or_test)
 {
 	srcData = prevLayer[0]->dstData;

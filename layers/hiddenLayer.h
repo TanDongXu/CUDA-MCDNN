@@ -23,6 +23,7 @@ class hiddenLayer: public layersBase
 {
 public:
 	hiddenLayer(string name, int sign);
+	hiddenLayer(hiddenLayer* layer);
 	void initRandom();
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float Momentum);

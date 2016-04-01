@@ -16,11 +16,13 @@
 #include"../cuDNN_netWork.h"
 #include"../tests/test_layer.h"
 #include"../saveData/saveNetWork.h"
+#include"../common/utility.cuh"
 
 class softMaxLayer : public layersBase
 {
 public:
 	softMaxLayer(string name);
+	softMaxLayer(softMaxLayer* layer);
 	void initRandom();
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float Momentum);

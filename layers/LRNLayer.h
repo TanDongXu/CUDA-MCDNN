@@ -11,6 +11,7 @@
 #include<string>
 #include<cudnn.h>
 #include"layersBase.h"
+#include"../common/utility.cuh"
 
 using namespace std;
 
@@ -18,6 +19,7 @@ class LRNLayer : public layersBase
 {
 public:
 	LRNLayer(string name);
+	LRNLayer(LRNLayer* layer);
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float Momentum);
 	void saveWeight(FILE*file){}

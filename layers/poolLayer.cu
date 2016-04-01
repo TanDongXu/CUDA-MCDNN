@@ -82,6 +82,49 @@ poolLayer::poolLayer(string name, const param_tuple& args)
 }
 
 
+//deep copy constructor
+poolLayer::poolLayer(poolLayer* layer)
+{
+	srcData = NULL;
+	dstData = NULL;
+	diffData = NULL;
+	prevLayer.clear();
+	nextLayer.clear();
+
+	static int idx = 0;
+	_name = layer->_name + int_to_string(idx);
+	idx ++;
+	_inputName = layer->_inputName;
+	poolType = layer->poolType;
+	poolDim = layer->poolDim;
+	pad_h = layer->pad_h;
+	pad_w = layer->pad_w;
+	stride_h = layer->stride_h;
+	stride_w = layer->stride_w;
+
+	prev_num = layer->prev_num;
+	prev_channels = layer->prev_channels;
+	prev_height = layer->prev_height;
+	prev_width = layer->prev_width;
+
+	inputImageDim = layer->inputImageDim;
+	inputAmount = layer->inputAmount;
+	number = layer->number;
+	channels = layer->channels;
+	height = layer->height;
+	width = layer->width;
+	outputSize = layer->outputSize;
+
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
+
+	this->createHandles();
+	cout<<"pool deep copy"<<endl;
+}
+
+
 void poolLayer::forwardPropagation(string train_or_test)
 {
 	srcData = prevLayer[0]->dstData;

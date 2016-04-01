@@ -149,6 +149,82 @@ convLayer::convLayer(string name, int sign, const param_tuple& args)
 		this->initRandom();
 }
 
+//deep copy constructor
+convLayer::convLayer(convLayer* layer)
+{
+	srcData = NULL;
+	dstData = NULL;
+	host_Weight = NULL;
+	host_Bias = NULL;
+	dev_Weight = NULL;
+	dev_Bias = NULL;
+	dev_Wgrad = NULL;
+	dev_Bgrad = NULL;
+	tmp_Wgrad = NULL;
+	tmp_Bgrad = NULL;
+	diffData = NULL;
+	prevLayer.clear();
+	nextLayer.clear();
+
+	static int idx = 0;
+	_name = layer->_name + int_to_string(idx);
+	idx ++;
+	_inputName = layer->_inputName ;
+	epsilon = layer->epsilon;
+	lrate = layer->lrate;
+	batchSize = layer->batchSize;
+	kernelAmount = layer->kernelAmount;
+	kernelSize = layer->kernelSize;
+	pad_h = layer->pad_h;
+	pad_w = layer->pad_w;
+	stride_h = layer->stride_h;
+	stride_w = layer->stride_w;
+	lambda = layer->lambda;
+	inputAmount = layer->inputAmount;
+	inputImageDim = layer->inputImageDim;
+	prev_num = layer->prev_num;
+	prev_channels = layer->prev_channels;
+	prev_height = layer->prev_height;
+	prev_width = layer->prev_width;
+	number = layer->number;
+	channels = layer->channels;
+	height = layer->height;
+	width = layer->width;
+	outputSize = layer->outputSize;
+
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight,
+	                                                 kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Wgrad,
+                                                     kernelAmount * inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
+
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Wgrad,
+                                                     kernelAmount * inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData,
+           		                                      batchSize * kernelAmount * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData,
+                                                      batchSize * inputAmount * inputImageDim * inputImageDim * sizeof(float));
+
+    MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight,
+    		                                 layer->dev_Weight,  kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, layer->dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpu2gpu(dev_Wgrad,
+    		                                 layer->dev_Wgrad, kernelAmount * inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpu2gpu(dev_Bgrad, layer->dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
+   // MemoryMonitor::instanceObject()->gpu2gpu(tmp_Wgrad,
+   //		                                 layer->tmp_Wgrad, kernelAmount * inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
+   // MemoryMonitor::instanceObject()->gpu2gpu(tmp_Bgrad, layer->tmp_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, batchSize * kernelAmount * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpu2gpu(diffData,
+    		                                 layer->diffData, batchSize * inputAmount * inputImageDim * inputImageDim * sizeof(float));
+
+    cout<<"conv deep copy"<<endl;
+   // srcData = layer->srcData;
+    this->createHandles();
+}
+
 void convLayer::addBias(const cudnnTensorDescriptor_t& dstTensorDesc, int c, float *data )
 {
     

@@ -34,9 +34,8 @@ void Layers::storLayers(string prev_name, string name, layersBase* layer)
 			_layersMaps[name]->_inputName = " ";
 		}else
 		{
-
-           // string prev_name = config::instanceObjtce()->getLayersByName(name)->_input;
 			_layersMaps[name]->_inputName = prev_name;
+			//cout<<"prevName: "<<prev_name<<" name: "<<name<<endl;
 			_layersMaps[prev_name]->insertNextlayer( _layersMaps[name] );
 			_layersMaps[name]->insertPrevLayer(_layersMaps[prev_name]);
 		}

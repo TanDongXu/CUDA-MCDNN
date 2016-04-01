@@ -29,6 +29,43 @@ dataLayer::dataLayer(string name)
 
 }
 
+//deep copy constructor
+dataLayer::dataLayer(dataLayer* layer)
+{
+	srcData = NULL;
+	dstData = NULL;
+	srcLabel = NULL;
+	batchImage = NULL;
+	dataSize = 0;
+	prevLayer.clear();
+	nextLayer.clear();
+
+	static int idx = 0;
+	_name = layer->_name + int_to_string(idx);;
+	idx ++;
+	_inputName = layer->_inputName;
+	batchSize = layer->batchSize;
+	inputAmount = layer->inputAmount;
+	inputImageDim = layer->inputImageDim;
+
+	number = layer->number;
+	channels = layer->channels;
+	height = layer->height;
+	width = layer->width;
+
+	batchImage = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
+	srcLabel = (int*) MemoryMonitor::instanceObject()->cpuMallocMemory(batchSize * 1 * 1 * 1 * sizeof(int));
+
+	MemoryMonitor::instanceObject()->cpu2cpu(batchImage, layer->batchImage, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->cpu2cpu(srcLabel, layer->srcLabel, batchSize * 1 * 1 * 1 * sizeof(int));
+	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData,  number * channels * height * width * sizeof(float));
+
+	srcData = layer->dstData;
+	cout<<"data deep copy"<<endl;
+}
+
+
 void dataLayer::forwardPropagation(string train_or_test)
 {
     //nothing

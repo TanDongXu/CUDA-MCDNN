@@ -11,17 +11,18 @@
 #include"layersBase.h"
 #include"../common/cuMatrixVector.h"
 #include"../tests/test_layer.h"
-#include<cuda_runtime_api.h>
 #include"../config/config.h"
 #include"../cuDNN_netWork.h"
+#include"../common/utility.cuh"
 #include<cstring>
-
+#include<cuda_runtime_api.h>
 
 
 class dataLayer: public layersBase
 {
 public:
 	dataLayer(string name);
+	dataLayer(dataLayer* layer);
 	void getBatch_Images_Label(int index, cuMatrixVector<float> &inputData, cuMatrix<int>* &inputLabel);
 	void RandomBatch_Images_Label(cuMatrixVector<float> &inputData, cuMatrix<int>* &inputLabel);
 	void forwardPropagation(string train_or_test);

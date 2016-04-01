@@ -2,6 +2,7 @@
 #include"../config/config.h"
 #include"../cuDNN_netWork.h"
 #include"../tests/test_layer.h"
+#include"../common/utility.cuh"
 
 void activationLayer::createHandles()
 {
@@ -41,6 +42,38 @@ activationLayer::activationLayer(string name)
     this->createHandles();
 }
 
+//deep copy constructor
+activationLayer::activationLayer(activationLayer* layer)
+{
+	srcData = NULL;
+	dstData = NULL;
+	diffData = NULL;
+	prevLayer.clear();
+	nextLayer.clear();
+
+	static int idx = 0;
+	_name = layer->_name + int_to_string(idx);
+	idx ++;
+	_inputName = layer->_inputName;
+
+	inputAmount = layer->inputAmount;
+	inputImageDim = layer->inputImageDim;
+	number = layer->number;
+	channels =  layer->channels;
+	height = layer->height;
+	width = layer->width;
+	outputSize = layer->outputSize;
+	ActivationMode = layer->ActivationMode;
+
+	//srcData = layer->srcData;
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, number * channels * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
+
+	cout<<"act deep copy"<<endl;
+	this->createHandles();
+}
 
 void activationLayer::forwardPropagation(string train_or_test)
 {

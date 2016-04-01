@@ -63,6 +63,61 @@ softMaxLayer::softMaxLayer(string name)
 	this->createHandles();
 }
 
+//deep copy constructor
+softMaxLayer::softMaxLayer(softMaxLayer* layer)
+{
+	srcData = NULL;
+	dstData = NULL;
+	srcDiff = NULL;
+	diffData = NULL;
+	devLabel = NULL;
+	srcDiff = NULL;
+	host_result = NULL;
+	dataSize = 0;
+	srcLabel = NULL;
+	nextLayer.clear();
+	prevLayer.clear();
+	flag = 1;
+	CorrectSize = 0;
+	cur_correctSize = 0;
+
+	static int idx = 0;
+	_name = layer->_name + int_to_string(idx);
+	idx ++;
+	_inputName = layer->_inputName;
+	batchSize = layer->batchSize;
+	inputSize = layer->inputSize;
+	nclasses = layer->nclasses;
+	lambda = layer->lambda;
+	outputSize = layer->outputSize;
+
+	inputAmount = layer->inputAmount;
+	inputImageDim = layer->inputImageDim;
+	number = layer->number;
+	channels = layer->channels;
+	height = layer->height;
+	width = layer->width;
+
+	host_result = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &srcDiff, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &devLabel, batchSize * 1 * 1 * 1 * sizeof(int));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));
+
+	MemoryMonitor::instanceObject()->cpu2cpu(host_result, layer->host_result, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpu2gpu(srcDiff, layer->srcDiff, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpu2gpu(devLabel, layer->devLabel,  batchSize * 1 * 1 * 1 * sizeof(int));
+	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData,  number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
+
+	//srcData = layer->srcData;
+	cout<<"softMax deep copy"<<endl;
+
+	this->createHandles();
+
+}
+
+
 /*classification results*/
 void softMaxLayer::ClassificationResults()
 {
@@ -76,11 +131,11 @@ void softMaxLayer::ClassificationResults()
 	checkCudaErrors(cudaMemcpy(host_result, dstData, number * channels * height * width * sizeof(float),cudaMemcpyDeviceToHost));
 
 	int temp = ((number < dataSize - flag) ? number : dataSize-flag);
-	for(int i=0; i< temp; i++)
+	for(int i = 0; i < temp; i++)
 	{
 		float max = host_result[i * max_digit];
-		int labelIndex =0;
-		for(int j=1; j<max_digit;j++)
+		int labelIndex = 0;
+		for(int j = 1; j < max_digit;j++)
 		{
 			if(max < host_result[i * max_digit + j])
 			{
@@ -94,7 +149,7 @@ void softMaxLayer::ClassificationResults()
 
 	if(flag == dataSize)
 	{
-        cout<< _name << " " <<cur_correctSize<<"/"<<CorrectSize<<" ";
+        cout<< _name << " " << cur_correctSize << "/" << CorrectSize <<" ";
 		if(cur_correctSize > CorrectSize)
 		{
 			CorrectSize = cur_correctSize;

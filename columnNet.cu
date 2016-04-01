@@ -20,6 +20,7 @@
 #include <queue>
 #include <set>
 #include"math.h"
+#include<algorithm>
 
 const bool DFS_TRAINING = true;
 const bool DFS_TEST = true;
@@ -160,7 +161,7 @@ void getNetWorkCost(float&Momentum)
 
 std::vector<configBase*> g_vQue;
 std::map<layersBase*, size_t> g_vFissNode;
-std::vector<softMaxLayer*> g_vMinBranch;
+std::vector<softMaxLayer*> g_vBranchResult;
 int g_nMinCorrSize;
 
 /* voting */
@@ -235,52 +236,72 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
     g_vQue.pop_back();
 }
 
+//ascend order
+bool cmp_ascend_Order( softMaxLayer* a, softMaxLayer* b)
+{
+	return (a->getCorrectNum()) < (b->getCorrectNum());
+}
+
 /*get min result branch*/
-void getMinBranch(layersBase*curLayer)
+void getBranchResult(layersBase*curLayer)
 {
 	//叶子节点
 	if (curLayer->nextLayer.size() == 0)
 	{
-		softMaxLayer* tmp = (softMaxLayer*)curLayer;
-		if(tmp->getCorrectNum() < g_nMinCorrSize)
-		{
-			g_nMinCorrSize = tmp->getCorrectNum();
-			g_vMinBranch.push_back(tmp);
-		}
+		softMaxLayer* tmp = (softMaxLayer*) curLayer;
+		g_vBranchResult.push_back(tmp);
 	}
 
-	for(int i = 0; i < curLayer->nextLayer.size(); i++)
-	{
-		layersBase* tmpLayer =  curLayer->nextLayer[i];
-		getMinBranch(tmpLayer);
+	for (int i = 0; i < curLayer->nextLayer.size(); i++) {
+		layersBase* tmpLayer = curLayer->nextLayer[i];
+		getBranchResult(tmpLayer);
 	}
+//	//叶子节点
+//	if (curLayer->nextLayer.size() == 0)
+//	{
+//		softMaxLayer* tmp = (softMaxLayer*)curLayer;
+//		if(tmp->getCorrectNum() < g_nMinCorrSize)
+//		{
+//			g_nMinCorrSize = tmp->getCorrectNum();
+//			g_vMinBranch.push_back(tmp);
+//		}
+//	}
+//
+//	for(int i = 0; i < curLayer->nextLayer.size(); i++)
+//	{
+//		layersBase* tmpLayer =  curLayer->nextLayer[i];
+//		ascend_OrderBranch(tmpLayer);
+//	}
 }
 
 
 /*get Fissnode and Fission*/
 void performFiss()
 {
-	for(int i = 0; i < g_vMinBranch.size(); i++)
+	for(int i = 0; i < g_vBranchResult.size(); i++)
 	{
-		layersBase* tmpCur = (layersBase*)g_vMinBranch[i];
+		layersBase* tmpCur = (layersBase*)g_vBranchResult[i];
 
 		while (tmpCur->prevLayer[0]->_name != string("data") && tmpCur->prevLayer[0]->nextLayer.size() == 1)
 		{
 			tmpCur = tmpCur->prevLayer[0];
 		}
-		if (tmpCur->prevLayer[0]->_name== "data")
-			break;
+		//if curBranch is Fiss to data layer, then fiss another
+		if (tmpCur->prevLayer[0]->_name== "data" && (i != g_vBranchResult.size() - 1))
+			continue;
+		else if(i == g_vBranchResult.size() - 1)
+		{
+			softmaxFission(g_vBranchResult[0]);
+			continue;
+		}
 		else
+		{
+			//Fission one Node every time
+			//cout<<tmpCur->prevLayer[0]->_name<<endl;
 			NodeFission(tmpCur->prevLayer[0], tmpCur);
-		//++g_vFissNode[tmpCur->prevLayer[0]];
+			break;
+		}
 	}
-
-//	for(const auto &w :g_vFissNode)
-//	{
-//		cout<<w.second<<" times"<<endl;
-//	}
-	//perform Fission
-	//
 }
 
 /*training netWork*/
@@ -409,16 +430,25 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
         cout<<" ,Momentum: "<<Momentum<<endl;
 
-        if (DFS_TRAINING == true && ((epo + 1) % 2) == 0)
+        if (DFS_TRAINING == true )
         {
-			g_vFissNode.clear();
-			g_vMinBranch.clear();
-			layersBase* curLayer = Layers::instanceObject()->getLayer("data");
-			dataLayer* tmpLayer = (dataLayer*)curLayer;
-			g_nMinCorrSize = tmpLayer->getDataSize();
-			//get the min result branch
-			getMinBranch(curLayer);
-			performFiss();
+			if ((epo < 30 && ((epo + 1) % 15) == 0) || (epo >= 30 && ((epo + 1) % 10) == 0)) {
+				g_vFissNode.clear();
+				g_vBranchResult.clear();
+				layersBase* curLayer = Layers::instanceObject()->getLayer("data");
+				//dataLayer* tmpLayer = (dataLayer*) curLayer;
+				//g_nMinCorrSize = tmpLayer->getDataSize();
+				getBranchResult(curLayer);
+				sort(g_vBranchResult.begin(), g_vBranchResult.end(), cmp_ascend_Order);
+//				vector<softMaxLayer*> ::iterator it;
+//				for(it  = g_vBranchResult.begin(); it != g_vBranchResult.end(); it++)
+//				{
+//					cout<<(*it)->_name<<endl;
+//				}
+				//ascending order softmax result
+
+				performFiss();
+			}
 		}
 
     }

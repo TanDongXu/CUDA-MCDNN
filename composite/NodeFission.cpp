@@ -68,3 +68,29 @@ void NodeFission(layersBase* splitNode, layersBase* nextNode) {
 	nextNode->insertPrevLayer(layerFiss);
 
 }
+
+
+void softmaxFission(layersBase* splitNode)
+{
+	//modify config
+	configBase* configFiss = FissionFactory::instanceObject()->createConfig(splitNode);
+	configBase* curConfig = config::instanceObjtce()->getLayersByName(splitNode->_name);
+	configBase* prevConfig = config::instanceObjtce()->getLayersByName(splitNode->_inputName);
+	//necessary
+	configFiss->_prev.clear();
+	configFiss->_next.clear();
+
+	prevConfig->_next.push_back(configFiss);
+	configFiss->_prev.push_back(prevConfig);
+	config::instanceObjtce()->insertLayerByName(configFiss->_name, configFiss);
+
+
+	//modify Layers
+	layersBase* layerFiss = FissionFactory::instanceObject()->createLayer(splitNode);
+	layerFiss->nextLayer.clear();
+	layerFiss->prevLayer.clear();
+	//layerFiss
+	layersBase* prevLayer = Layers::instanceObject()->getLayer(splitNode->_inputName);
+	//prev
+	Layers::instanceObject()->storLayers(prevLayer->_name, layerFiss->_name,layerFiss);
+}

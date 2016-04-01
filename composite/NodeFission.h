@@ -23,6 +23,7 @@
 
 
 void NodeFission(layersBase* splitNode, layersBase* nextNode);
+void softmaxFission(layersBase* splitNode);
 
 
 //static factory

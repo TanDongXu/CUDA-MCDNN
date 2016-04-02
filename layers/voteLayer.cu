@@ -98,7 +98,6 @@ void VoteLayer::init(int nNumOfTestData, int nClasses, cuMatrix<int>* pLabels)
         m_pLabels = pLabels->getHostData();
         m_nClasses = nClasses;
         m_nNumOfTestData = nNumOfTestData;
-        printf("m_nNumOfTestData %d\n", m_nNumOfTestData);
 
         m_pHostVote = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(m_nNumOfTestData * m_nClasses * sizeof(float));
     }

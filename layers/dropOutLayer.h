@@ -33,6 +33,7 @@ public:
 
 	~dropOutLayer()
 	{
+		MemoryMonitor::instanceObject()->freeGpuMemory(outputPtr);
 		destroyHandles();
 	}
 

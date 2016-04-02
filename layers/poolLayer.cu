@@ -18,6 +18,7 @@ poolLayer::poolLayer(string name)
 	srcData = NULL;
 	dstData = NULL;
 	diffData = NULL;
+	m_poolMethod = NULL;
     prevLayer.clear();
     nextLayer.clear();
 
@@ -25,7 +26,7 @@ poolLayer::poolLayer(string name)
 	string prevLayerName = curConfig->_input;
 	layersBase* prev_Layer = (layersBase*) Layers::instanceObject()->getLayer(prevLayerName);
 
-	poolType = curConfig->_poolType;
+	PoolingMode = (cudnnPoolingMode_t)curConfig->_poolType;
 	poolDim = curConfig->_size;
 	pad_h = curConfig->_pad_h;
 	pad_w = curConfig->_pad_w;
@@ -54,7 +55,7 @@ poolLayer::poolLayer(string name)
 /*constructor overload*/
 poolLayer::poolLayer(string name, const param_tuple& args)
 {
-	std::tie(poolType, poolDim, pad_h, pad_w, stride_h,
+	std::tie(pool_Type, poolDim, pad_h, pad_w, stride_h,
 			stride_w, inputImageDim, inputAmount) = args;
 
 	_name = name;
@@ -66,6 +67,8 @@ poolLayer::poolLayer(string name, const param_tuple& args)
     prevLayer.clear();
     nextLayer.clear();
 
+    m_poolMethod = new ConfigPoolMethod(pool_Type);
+    PoolingMode = (cudnnPoolingMode_t)m_poolMethod->getValue();
     prev_num = config::instanceObjtce()->get_batchSize();
     prev_channels = inputAmount;
     prev_height = inputImageDim;
@@ -88,14 +91,15 @@ poolLayer::poolLayer(poolLayer* layer)
 	srcData = NULL;
 	dstData = NULL;
 	diffData = NULL;
+	m_poolMethod = NULL;
 	prevLayer.clear();
 	nextLayer.clear();
 
 	static int idx = 0;
-	_name = layer->_name + int_to_string(idx);
+	_name = layer->_name + string("_") + int_to_string(idx);
 	idx ++;
 	_inputName = layer->_inputName;
-	poolType = layer->poolType;
+	PoolingMode = layer->PoolingMode;
 	poolDim = layer->poolDim;
 	pad_h = layer->pad_h;
 	pad_w = layer->pad_w;
@@ -121,7 +125,7 @@ poolLayer::poolLayer(poolLayer* layer)
 	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
 
 	this->createHandles();
-	cout<<"pool deep copy"<<endl;
+	//cout<<"pool deep copy"<<endl;
 }
 
 
@@ -130,7 +134,7 @@ void poolLayer::forwardPropagation(string train_or_test)
 	srcData = prevLayer[0]->dstData;
 
 	checkCUDNN(cudnnSetPooling2dDescriptor(poolingDesc,
-			                               CUDNN_POOLING_MAX,
+										   PoolingMode,
 			                               poolDim,
 			                               poolDim,//window
 			                               pad_h,

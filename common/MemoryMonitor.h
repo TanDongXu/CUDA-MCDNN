@@ -25,6 +25,7 @@ public:
 	void freeGpuMemory(void*ptr);
 	void gpuMemoryMemset(void* dev_data, int size);
 	void cpuMemoryMemset(void* host_data, int size);
+	void cpu2cpu(void* host_data2, void* host_data1, int size);
     void cpu2Gpu(void* dev_data, void* host_data, int size);
     void gpu2cpu(void* host_data, void* dev_data, int size);
     void gpu2gpu(void* dev_data2, void* dev_data1, int size);

@@ -13,6 +13,18 @@ layersBase* Layers::getLayer(string name)
 	}
 }
 
+bool Layers::hasLayer(string name)
+{
+	if(_layersMaps.find(name) != _layersMaps.end())
+		{
+			return true;
+		}else
+		{
+
+			return false;
+		}
+}
+
 
 void Layers::storLayersName(string name)
 {

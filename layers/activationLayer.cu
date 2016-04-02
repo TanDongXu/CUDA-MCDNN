@@ -52,7 +52,7 @@ activationLayer::activationLayer(activationLayer* layer)
 	nextLayer.clear();
 
 	static int idx = 0;
-	_name = layer->_name + int_to_string(idx);
+	_name = layer->_name + string("_") + int_to_string(idx);
 	idx ++;
 	_inputName = layer->_inputName;
 
@@ -65,13 +65,12 @@ activationLayer::activationLayer(activationLayer* layer)
 	outputSize = layer->outputSize;
 	ActivationMode = layer->ActivationMode;
 
-	//srcData = layer->srcData;
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, number * channels * width * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
 
-	cout<<"act deep copy"<<endl;
+	//cout<<"act deep copy"<<endl;
 	this->createHandles();
 }
 

@@ -41,7 +41,7 @@ dataLayer::dataLayer(dataLayer* layer)
 	nextLayer.clear();
 
 	static int idx = 0;
-	_name = layer->_name + int_to_string(idx);;
+	_name = layer->_name + string("_") + int_to_string(idx);;
 	idx ++;
 	_inputName = layer->_inputName;
 	batchSize = layer->batchSize;
@@ -62,7 +62,7 @@ dataLayer::dataLayer(dataLayer* layer)
 	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData,  number * channels * height * width * sizeof(float));
 
 	srcData = layer->dstData;
-	cout<<"data deep copy"<<endl;
+	//cout<<"data deep copy"<<endl;
 }
 
 

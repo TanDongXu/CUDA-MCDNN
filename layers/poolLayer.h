@@ -37,6 +37,7 @@ public:
 		MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
 		MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
 		destroyHandles();
+		delete m_poolMethod;
 	}
 
 	void createHandles();
@@ -48,7 +49,9 @@ public:
 	}
 
 private:
-	string  poolType;
+	cudnnPoolingMode_t PoolingMode;
+	ConfigPoolMethod* m_poolMethod;
+	string pool_Type;
 	int poolDim;
 	int pad_h;
 	int pad_w;

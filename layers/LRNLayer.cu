@@ -56,7 +56,7 @@ LRNLayer::LRNLayer(LRNLayer* layer)
 	nextLayer.clear();
 
 	static int idx = 0;
-	_name = layer->_name + int_to_string(idx);
+	_name = layer->_name + string("_") + int_to_string(idx);
 	idx ++;
 	_inputName = layer->_inputName;
 
@@ -80,7 +80,7 @@ LRNLayer::LRNLayer(LRNLayer* layer)
 	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
 
 	this->createHandles();
-	cout<<"lrn deep copy"<<endl;
+	//cout<<"lrn deep copy"<<endl;
 }
 
 void LRNLayer::forwardPropagation(string train_or_test)

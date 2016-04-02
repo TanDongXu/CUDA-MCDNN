@@ -217,6 +217,7 @@ void config::get_layers_config(string &str)
         }else if(type == string("POOLING"))
         {
             string poolType = get_word_type(layers[i], "POOLING_TYPE");
+            m_poolMethod = new ConfigPoolMethod(poolType);
             int size = get_word_int(layers[i], "POOLDIM");
             int pad_h = get_word_int(layers[i], "PAD_H");
             int pad_w = get_word_int(layers[i], "PAD_W");
@@ -224,7 +225,7 @@ void config::get_layers_config(string &str)
             int stride_w = get_word_int(layers[i], "STRIDE_W");
 
             layer = new configPooling(type, name, input, sub_input, size, pad_h, pad_w, stride_h,
-                    stride_w, poolType);
+                    stride_w, m_poolMethod->getValue());
 
             cout << endl;
             cout << "***********************Pooling layer*******************"

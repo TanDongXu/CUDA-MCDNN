@@ -23,6 +23,7 @@
 
 
 void NodeFission(layersBase* splitNode, layersBase* nextNode);
+void softmaxFission(layersBase* splitNode);
 
 
 //static factory
@@ -37,6 +38,7 @@ public:
 
 	static layersBase* createLayer(layersBase* node)
 	{
+
 		string nodeType = config::instanceObjtce()->getLayersByName(node->_name)->_type;
 
 		if(nodeType == "DATA")
@@ -44,7 +46,6 @@ public:
 			return new dataLayer((dataLayer*)node);
 		}else if(nodeType == "CONV")
 		{
-
 			return new convLayer((convLayer*)node);
 		}else if(nodeType == "POOLING")
 		{
@@ -83,7 +84,7 @@ public:
 			static int idx = 0;
 			configData* tmp = (configData*) curConfig;
 			configData* config = new configData( *tmp );
-			config->_name = curConfig->_name + int_to_string(idx);
+			config->_name = curConfig->_name + string("_") + int_to_string(idx);
 			idx ++;
 			return config;
 
@@ -92,7 +93,7 @@ public:
 			static int idx = 0;
 			configConv* tmp  = (configConv*)curConfig;
 			configConv* config = new configConv(*tmp);
-			config->_name = curConfig->_name + int_to_string(idx);
+			config->_name = curConfig->_name + string("_") + int_to_string(idx);
 			idx++;
 			return config;
 
@@ -101,7 +102,7 @@ public:
 			static int idx = 0;
 			configPooling* tmp = (configPooling*)curConfig;
 			configPooling* config = new configPooling(*tmp);
-			config->_name = curConfig->_name + int_to_string(idx);
+			config->_name = curConfig->_name + string("_") + int_to_string(idx);
 			idx++;
 			return config;
 
@@ -110,7 +111,7 @@ public:
 			static int idx = 0;
 			configHidden* tmp = (configHidden*)curConfig;
 			configHidden* config =new configHidden (*tmp);
-			config->_name = curConfig->_name + int_to_string(idx);
+			config->_name = curConfig->_name + string("_") + int_to_string(idx);
 			idx++;
 			return config;
 
@@ -119,7 +120,7 @@ public:
 			static int idx = 0;
 			configSoftMax* tmp = (configSoftMax*)curConfig;
 			configSoftMax* config = new configSoftMax(*tmp);
-			config->_name = curConfig->_name + int_to_string(idx);
+			config->_name = curConfig->_name + string("_") + int_to_string(idx);
 			idx++;
 			return config;
 
@@ -128,7 +129,7 @@ public:
 			static int idx = 0;
 			configActivation* tmp = (configActivation*)curConfig;
 			configActivation* config = new configActivation(*tmp);
-			config->_name = curConfig->_name + int_to_string(idx);
+			config->_name = curConfig->_name + string("_") + int_to_string(idx);
 			idx++;
 			return config;
 
@@ -137,7 +138,7 @@ public:
 			static int idx = 0;
 			configLRN* tmp = (configLRN*)curConfig;
 			configLRN* config = new configLRN(*tmp);
-			config->_name = curConfig->_name + int_to_string(idx);
+			config->_name = curConfig->_name + string("_") + int_to_string(idx);
 			idx++;
 			return config;
 
@@ -146,14 +147,13 @@ public:
 			static int idx = 0;
 			configDropOut* tmp = (configDropOut*)curConfig;
 			configDropOut* config = new configDropOut(*tmp);
-			config->_name = curConfig->_name + int_to_string(idx);
+			config->_name = curConfig->_name + string("_") + int_to_string(idx);
 			idx++;
 			return config;
 		}else
 		{
 			cout<< "NodeFission: Config not exist" << endl;
 			exit(0);
-			//return NULL;
 		}
 	}
 

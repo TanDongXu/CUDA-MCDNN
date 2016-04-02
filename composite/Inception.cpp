@@ -61,7 +61,7 @@ Inception::Inception(layersBase* prevLayer,
                               lambda));
 
 	max_pool = new poolLayer("max_pool", 
-               poolLayer::param_tuple("max", 3, 1, 1, 1, 1, 
+               poolLayer::param_tuple("POOL_MAX", 3, 1, 1, 1, 1,
                                       inputImageDim, 
                                       inputAmount));
 

@@ -50,6 +50,12 @@ public:
 		return 0;
 	}
 
+	int getCorrectNum()
+	{
+		return CorrectSize;
+	}
+
+
 private:
 	int inputSize;
 	int outputSize;

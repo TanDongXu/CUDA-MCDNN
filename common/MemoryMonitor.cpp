@@ -2,6 +2,7 @@
 #include<cuda_runtime.h>
 #include<stdlib.h>
 #include<string.h>
+#include<cstring>
 #include"checkError.h"
 
 
@@ -10,6 +11,11 @@ void * MemoryMonitor::cpuMallocMemory(int size){
 	void* p=NULL;
 	p = malloc(size);
 	return p;
+}
+
+void MemoryMonitor::cpu2cpu(void* host_data2, void* host_data1, int size)
+{
+	memcpy(host_data2, host_data1, size);
 }
 
 void MemoryMonitor::cpu2Gpu(void* dev_data, void* host_data, int size)

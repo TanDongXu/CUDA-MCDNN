@@ -19,8 +19,8 @@ poolLayer::poolLayer(string name)
 	dstData = NULL;
 	diffData = NULL;
 	m_poolMethod = NULL;
-    prevLayer.clear();
-    nextLayer.clear();
+	prevLayer.clear();
+	nextLayer.clear();
 
 	configPooling* curConfig = (configPooling*) config::instanceObjtce()->getLayersByName(_name);
 	string prevLayerName = curConfig->_input;
@@ -38,14 +38,12 @@ poolLayer::poolLayer(string name)
 	prev_height = prev_Layer->height;
 	prev_width = prev_Layer->width;
 
-    inputImageDim = prev_Layer->height;
+	inputImageDim = prev_Layer->height;
 	inputAmount = prev_Layer->channels;
 	number = prev_num;
 	channels = prev_channels;
-    printf("height %d width %d\n", prev_height, prev_width);
 	height = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
 	width = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
-    printf("height %d width %d\n", height, width);
 	outputSize = channels * height * width;
 
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
@@ -66,24 +64,24 @@ poolLayer::poolLayer(string name, const param_tuple& args)
 	dstData = NULL;
 	diffData = NULL;
 	lrate = 0.0f;
-    prevLayer.clear();
-    nextLayer.clear();
+	prevLayer.clear();
+	nextLayer.clear();
 
-    m_poolMethod = new ConfigPoolMethod(pool_Type);
-    PoolingMode = (cudnnPoolingMode_t)m_poolMethod->getValue();
-    prev_num = config::instanceObjtce()->get_batchSize();
-    prev_channels = inputAmount;
-    prev_height = inputImageDim;
-    prev_width = inputImageDim;
-    number = prev_num;
-    channels = prev_channels;
-    height = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
-    width = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
-    outputSize = channels * height * width;
-    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
-    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
+	m_poolMethod = new ConfigPoolMethod(pool_Type);
+	PoolingMode = (cudnnPoolingMode_t)m_poolMethod->getValue();
+	prev_num = config::instanceObjtce()->get_batchSize();
+	prev_channels = inputAmount;
+	prev_height = inputImageDim;
+	prev_width = inputImageDim;
+	number = prev_num;
+	channels = prev_channels;
+	height = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+	width = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+	outputSize = channels * height * width;
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
 
-    this->createHandles();
+	this->createHandles();
 }
 
 
@@ -133,94 +131,94 @@ void poolLayer::forwardPropagation(string train_or_test)
 	srcData = prevLayer[0]->dstData;
 
 	checkCUDNN(cudnnSetPooling2dDescriptor(poolingDesc,
-										   PoolingMode,
-			                               poolDim,
-			                               poolDim,//window
-			                               pad_h,
-			                               pad_w,//pading
-			                               stride_h,
-			                               stride_w));//stride
+				PoolingMode,
+				poolDim,
+				poolDim,//window
+				pad_h,
+				pad_w,//pading
+				stride_h,
+				stride_w));//stride
 
 	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
-			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
-			                              prev_num,
-			                              prev_channels,
-			                              prev_height,
-			                              prev_width));
+				cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+				cuDNN_netWork<float>::instanceObject()->GetDataType(),
+				prev_num,
+				prev_channels,
+				prev_height,
+				prev_width));
 
-    checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
-    		                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-    		                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
-    		                              number,
-    		                              channels,
-    		                              height,
-    		                              width));
+	checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
+				cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+				cuDNN_netWork<float>::instanceObject()->GetDataType(),
+				number,
+				channels,
+				height,
+				width));
 
 	float alpha = 1.0;
 	float beta = 0.0;
 	checkCUDNN(cudnnPoolingForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-			                       poolingDesc,
-			                       &alpha,
-			                       srcTensorDesc,
-			                       srcData,
-			                       &beta,
-			                       dstTensorDesc,
-			                       dstData));
+				poolingDesc,
+				&alpha,
+				srcTensorDesc,
+				srcData,
+				&beta,
+				dstTensorDesc,
+				dstData));
 
 }
 
 
 void poolLayer::backwardPropagation(float Momentum)
 {
-   checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
-		                                 cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-		                                 cuDNN_netWork<float>::instanceObject()->GetDataType(),
-		                                 number,
-		                                 channels,
-		                                 height,
-		                                 width));
+	checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
+				cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+				cuDNN_netWork<float>::instanceObject()->GetDataType(),
+				number,
+				channels,
+				height,
+				width));
 
-   checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
-		                                cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-		                                cuDNN_netWork<float>::instanceObject()->GetDataType(),
-		                                number,
-		                                channels,
-		                                height,
-		                                width));
+	checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
+				cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+				cuDNN_netWork<float>::instanceObject()->GetDataType(),
+				number,
+				channels,
+				height,
+				width));
 
-   checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
-		                                 cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-		                                 cuDNN_netWork<float>::instanceObject()->GetDataType(),
-		                                 prev_num,
-		                                 prev_channels,
-		                                 prev_height,
-		                                 prev_width));
+	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
+				cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+				cuDNN_netWork<float>::instanceObject()->GetDataType(),
+				prev_num,
+				prev_channels,
+				prev_height,
+				prev_width));
 
-   checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
-		                                 cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-		                                 cuDNN_netWork<float>::instanceObject()->GetDataType(),
-		                                 prev_num,
-		                                 prev_channels,
-		                                 prev_height,
-		                                 prev_width));
+	checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
+				cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+				cuDNN_netWork<float>::instanceObject()->GetDataType(),
+				prev_num,
+				prev_channels,
+				prev_height,
+				prev_width));
 
 
-   float alpha = 1.0f;
-   float beta = 0.0;
-   int nIndex = m_nCurBranchIndex;
-   checkCUDNN(cudnnPoolingBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-		                           poolingDesc,
-		                           &alpha,
-		                           dstTensorDesc,
-		                           dstData,
-		                           srcDiffTensorDesc,
-		                           nextLayer[nIndex]->diffData,
-		                           srcTensorDesc,
-		                           srcData,
-		                           &beta,
-		                           dstDiffTensorDesc,
-		                           diffData));
+	float alpha = 1.0f;
+	float beta = 0.0;
+	int nIndex = m_nCurBranchIndex;
+	checkCUDNN(cudnnPoolingBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
+				poolingDesc,
+				&alpha,
+				dstTensorDesc,
+				dstData,
+				srcDiffTensorDesc,
+				nextLayer[nIndex]->diffData,
+				srcTensorDesc,
+				srcData,
+				&beta,
+				dstDiffTensorDesc,
+				diffData));
 }
 
 
@@ -229,6 +227,6 @@ void poolLayer:: destroyHandles()
 	checkCUDNN(cudnnDestroyPoolingDescriptor(poolingDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(dstTensorDesc))
-	checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
+		checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(dstDiffTensorDesc));
 }

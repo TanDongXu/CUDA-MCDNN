@@ -42,8 +42,10 @@ poolLayer::poolLayer(string name)
 	inputAmount = prev_Layer->channels;
 	number = prev_num;
 	channels = prev_channels;
+    printf("height %d width %d\n", prev_height, prev_width);
 	height = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
 	width = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+    printf("height %d width %d\n", height, width);
 	outputSize = channels * height * width;
 
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));

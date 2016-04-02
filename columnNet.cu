@@ -118,7 +118,7 @@ float dfsGetLearningRateReduce(configBase* config){
 
     layer->setRateReduce( fRateReduce );
     printf("rate %f\n", layer->getRateReduce()); 
-    
+
     return fRateReduce;
 }
 
@@ -149,7 +149,7 @@ void getNetWorkCost(float&Momentum)
         que.pop();
         layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
         layer->backwardPropagation(Momentum);
-     
+
         for(int i = 0; i < config->_prev.size(); i++){
             if( hash.find( config->_prev[i] ) == hash.end()){
                 hash.insert(config->_prev[i]);
@@ -456,4 +456,4 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     stop = clock();
     runtime = stop - start;
     cout<< epochs <<" epochs total rumtime is: "<<runtime /CLOCKS_PER_SEC<<" Seconds"<<endl;
-}
+    }

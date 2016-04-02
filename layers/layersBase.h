@@ -45,7 +45,14 @@ public:
 
     void rateReduce(){
         if( lrate < 1 )
-            lrate /= (m_fReduceRate + 1.0f);
+        {
+            if( m_fReduceRate <= 1.0f)
+                lrate /= 2.0f;
+            else if( m_fReduceRate <= 2.0f)
+                lrate /= 2.5f; 
+            else if( m_fReduceRate <= 5.0f)
+                lrate /= 3.0f;
+        }
     }
 
     void setRateReduce( float fReduce){

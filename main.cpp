@@ -15,7 +15,7 @@ int main(void)
 {
 	cout<<"Select the dataSet to run:"<<endl<<"1.MNIST    2.CIFAR-10"<<endl;
 
-    cudaSetDevice(1);
+    cudaSetDevice(0);
 	int cmd;
 	cin>> cmd;
 

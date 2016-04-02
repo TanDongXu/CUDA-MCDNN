@@ -14,10 +14,20 @@ VoteLayer* VoteLayer::instance(){
 void VoteLayer::vote( int nStartPosition, int nBatchSize, float* pDevVote )
 {
     int nRemain = nBatchSize;
-    if( nBatchSize + nStartPosition * nBatchSize > m_nNumOfTestData )
-    {
+    if( nBatchSize + nStartPosition * nBatchSize > m_nNumOfTestData ){
         nRemain = m_nNumOfTestData - nStartPosition * nBatchSize;
-    } 
+    }
+    else if ( nStartPosition * nBatchSize == m_nNumOfTestData ){
+        return;
+    }
+    //printf("startPosition %d %d %d\n", m_nNumOfTestData, nStartPosition, nRemain);
+
+    if( nRemain <= 0 )
+    {
+        printf("VoteLayer:vote error, nRemain = 0\n");
+        exit(0);
+    }
+
     cuMatrix<float>tmp(pDevVote, nRemain, m_nClasses, 1, true);
     tmp.toCpu();
 
@@ -29,6 +39,11 @@ void VoteLayer::vote( int nStartPosition, int nBatchSize, float* pDevVote )
 
     for(int i = 0; i < nRemain; i++){
         int nCurPosition = (nStartPosition * nBatchSize + i) * m_nClasses;
+        //printf("%d\n", nCurPosition);
+        if( nCurPosition >= m_nNumOfTestData * m_nClasses ){
+            printf(" nCurPosition >= m_nNumOfTestData\n");
+            exit(0);
+        }
         for(int j = 0; j < m_nClasses; j++){
             m_pHostVote[nCurPosition + j] += tmp.getHostData()[i * m_nClasses + j];
         }
@@ -83,6 +98,7 @@ void VoteLayer::init(int nNumOfTestData, int nClasses, cuMatrix<int>* pLabels)
         m_pLabels = pLabels->getHostData();
         m_nClasses = nClasses;
         m_nNumOfTestData = nNumOfTestData;
+        printf("m_nNumOfTestData %d\n", m_nNumOfTestData);
 
         m_pHostVote = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(m_nNumOfTestData * m_nClasses * sizeof(float));
     }

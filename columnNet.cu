@@ -127,7 +127,7 @@ void predictTestData(cuMatrixVector<float>&testData, cuMatrix<int>* &testLabel, 
 {
     dataLayer* datalayer = static_cast<dataLayer*>( Layers::instanceObject()->getLayer("data"));
 
-    for(int i=0;i<(testData.size()+batchSize)/batchSize;i++)
+    for(int i=0;i<( testData.size() + batchSize - 1)/batchSize;i++)
     {
         datalayer->getBatch_Images_Label(i , testData, testLabel);
         resultPredict("test");
@@ -447,7 +447,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
 //				}
 				//ascending order softmax result
 
-				performFiss();
+//				performFiss();
 			}
 		}
 

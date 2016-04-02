@@ -19,6 +19,10 @@
 #define ACTIVATION_RELU 1
 #define ACTIVATION_TANH 2
 
+#define POOLING_MAX      0
+#define POOLING_AVERAGE_COUNT_INCLUDE_PADDING  1 // count for average includes padded values
+#define POOLING_AVERAGE_COUNT_EXCLUDE_PADDING  2 // count for average does not include padded values
+
 /*the ways of initial weight*/
 #define RANDOM 1
 #define READ_FROM_FILE 2
@@ -38,6 +42,7 @@ T getMax(T*value, int size)
 
 	return max;
 }
+
 
 string int_to_string(int num);
 void showDevices();

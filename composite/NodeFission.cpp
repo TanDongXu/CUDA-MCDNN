@@ -69,7 +69,7 @@ void NodeFission(layersBase* splitNode, layersBase* nextNode) {
 
 }
 
-
+/*softMaxLayer fission*/
 void softmaxFission(layersBase* splitNode)
 {
 	//modify config

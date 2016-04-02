@@ -24,6 +24,7 @@
 
 const bool DFS_TRAINING = true;
 const bool DFS_TEST = true;
+const bool FISS_TRAINING = false;
 
 using namespace std;
 
@@ -430,7 +431,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
         cout<<" ,Momentum: "<<Momentum<<endl;
 
-        if (DFS_TRAINING == true )
+        if (DFS_TRAINING == true && FISS_TRAINING == true )
         {
 			if ((epo < 30 && ((epo + 1) % 15) == 0) || (epo >= 30 && ((epo + 1) % 10) == 0)) {
 				//g_vFissNode.clear();
@@ -447,7 +448,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
 //				}
 				//ascending order softmax result
 
-//				performFiss();
+				performFiss();
 			}
 		}
 

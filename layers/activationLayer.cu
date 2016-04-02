@@ -70,7 +70,6 @@ activationLayer::activationLayer(activationLayer* layer)
 	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, number * channels * width * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
 
-	//cout<<"act deep copy"<<endl;
 	this->createHandles();
 }
 

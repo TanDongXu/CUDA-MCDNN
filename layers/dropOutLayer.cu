@@ -51,7 +51,6 @@ dropOutLayer::dropOutLayer(dropOutLayer* layer)
 
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &outputPtr, number * channels * height * width * sizeof(float));
 
-	//cout<<"drop deep copy"<<endl;
 	this->createHandles();
 
 }

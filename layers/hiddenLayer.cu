@@ -150,15 +150,11 @@ hiddenLayer::hiddenLayer(hiddenLayer* layer)
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, outputSize * batchSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, inputSize * batchSize * sizeof(float));
 
-	MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, layer->dev_Weight, outputSize * inputSize * 1 * 1 * sizeof(float));
-	MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, layer->dev_Bias, outputSize * 1 * 1 * 1 * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(dev_Wgrad, layer->dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpu2gpu(dev_Bgrad, layer->dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
-	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, outputSize * batchSize * sizeof(float));
-	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, inputSize * batchSize * sizeof(float));
 
 	this->createHandles();
-	//cout<<"hidden copy"<<endl;
+    this->initRandom();
 }
 
 

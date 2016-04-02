@@ -76,11 +76,8 @@ LRNLayer::LRNLayer(LRNLayer* layer)
 
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));
-	MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, number * channels * height * width * sizeof(float));
-	MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
 
 	this->createHandles();
-	//cout<<"lrn deep copy"<<endl;
 }
 
 void LRNLayer::forwardPropagation(string train_or_test)

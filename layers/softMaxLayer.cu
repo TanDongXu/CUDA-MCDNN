@@ -103,13 +103,6 @@ softMaxLayer::softMaxLayer(softMaxLayer* layer)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &devLabel, batchSize * 1 * 1 * 1 * sizeof(int));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));
-
-    MemoryMonitor::instanceObject()->cpu2cpu(host_result, layer->host_result, number * channels * height * width * sizeof(float));
-    MemoryMonitor::instanceObject()->gpu2gpu(srcDiff, layer->srcDiff, number * channels * height * width * sizeof(float));
-    MemoryMonitor::instanceObject()->gpu2gpu(devLabel, layer->devLabel,  batchSize * 1 * 1 * 1 * sizeof(int));
-    MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData,  number * channels * height * width * sizeof(float));
-    MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
-
     this->createHandles();
 
 }
@@ -124,11 +117,9 @@ void softMaxLayer::ClassificationResults()
     }
 
     const int max_digit = nclasses;
-
-    checkCudaErrors(cudaMemcpy(host_result, dstData, number * channels * height * width * sizeof(float),cudaMemcpyDeviceToHost));
+    MemoryMonitor::instanceObject()->gpu2cpu(host_result, dstData, number * channels * height * width * sizeof(float));
 
     int temp = ((number <= dataSize - flag) ? number : (dataSize-flag));
-    //printf("temp%d\n", temp);
     for(int i = 0; i < temp; i++)
     {
         float max = host_result[i * max_digit];
@@ -211,8 +202,8 @@ __global__ void SoftmaxLossBackprop(const int* label, int num_labels, int batch_
 /*compute diff*/
 void softMaxLayer::getBackPropDiffData()
 {
-    checkCudaErrors(cudaMemcpy(devLabel, srcLabel, batchSize * 1 * 1 * 1 * sizeof(int), cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(srcDiff, dstData, number * channels * height * width * sizeof(float), cudaMemcpyDeviceToDevice));
+    MemoryMonitor::instanceObject()->cpu2Gpu(devLabel, srcLabel, batchSize * 1 * 1 * 1 * sizeof(int));
+    MemoryMonitor::instanceObject()->gpu2gpu(srcDiff, dstData, number * channels * height * width * sizeof(float));
 
     SoftmaxLossBackprop<<< (batchSize + 127)/128, 128>>>(devLabel, nclasses, batchSize, srcDiff);
     cudaThreadSynchronize();

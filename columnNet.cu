@@ -160,9 +160,9 @@ void getNetWorkCost(float&Momentum)
 }
 
 std::vector<configBase*> g_vQue;
-std::map<layersBase*, size_t> g_vFissNode;
+//std::map<layersBase*, size_t> g_vFissNode;
 std::vector<softMaxLayer*> g_vBranchResult;
-int g_nMinCorrSize;
+//int g_nMinCorrSize;
 
 /* voting */
 void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMatrix<int>*& testLabel, int nBatchSize)
@@ -292,7 +292,7 @@ void performFiss()
 		else if(i == g_vBranchResult.size() - 1)
 		{
 			softmaxFission(g_vBranchResult[0]);
-			continue;
+			break;
 		}
 		else
 		{
@@ -312,8 +312,8 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         int batchSize
         )
 {
-    configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
-    dfsGetLearningRateReduce( config );
+    //configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
+    //dfsGetLearningRateReduce( config );
     cout<<"TestData Forecast The Result..."<<endl;
     predictTestData(testData, testLabel, batchSize);
     cout<<endl;
@@ -433,7 +433,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         if (DFS_TRAINING == true )
         {
 			if ((epo < 30 && ((epo + 1) % 15) == 0) || (epo >= 30 && ((epo + 1) % 10) == 0)) {
-				g_vFissNode.clear();
+				//g_vFissNode.clear();
 				g_vBranchResult.clear();
 				layersBase* curLayer = Layers::instanceObject()->getLayer("data");
 				//dataLayer* tmpLayer = (dataLayer*) curLayer;

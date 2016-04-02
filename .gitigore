@@ -1,20 +1,76 @@
-*.mdb
-*.ldb
-*.sln
-*.config
+# C++ .gitignore
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
 
 
+# C file gitignore
 
-#过滤文件夹Debug Release obj
-Debug/
-Release/
-obj/
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
 
-.cproject
-..models?et_normalized_28_20.txt
-..\..\models\net_normalized_28_20.txt
-..\models\net_normalized_28_20.txt
-.project
-.settings
-.
-..
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+
+
+#CUDA.gitignore
+
+*.i
+*.ii
+*.gpu
+*.ptx
+*.cubin
+*.fatbin

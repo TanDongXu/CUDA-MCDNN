@@ -95,7 +95,6 @@ private:
 
 private:
 	curandGenerator_t curandGenerator_W;
-	curandGenerator_t curandGenerator_B;
 
 };
 

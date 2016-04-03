@@ -3,24 +3,21 @@
 void hiddenLayer::createHandles()
 {
 	curandCreateGenerator(&curandGenerator_W, CURAND_RNG_PSEUDO_MTGP32);
-	curandCreateGenerator(&curandGenerator_B, CURAND_RNG_PSEUDO_MTGP32);
 }
 
 void hiddenLayer::destroyHandles()
 {
 	curandDestroyGenerator(curandGenerator_W);
-	curandDestroyGenerator(curandGenerator_B);
 }
 
 void hiddenLayer::initRandom()
 {
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, outputSize * inputSize * 1 * 1 * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, outputSize * 1 * 1 * 1 * sizeof(float));
-	/*initial weight*/
+    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * outputSize * 1 * 1 * sizeof(float));
+    /*initial weight*/
 	curandSetPseudoRandomGeneratorSeed(curandGenerator_W, time(NULL));
-	curandSetPseudoRandomGeneratorSeed(curandGenerator_B, time(NULL));
 	curandGenerateNormal(curandGenerator_W, dev_Weight, outputSize * inputSize, 0, epsilon);
-	curandGenerateNormal(curandGenerator_B, dev_Bias, outputSize, 0, epsilon);
 
 }
 

@@ -174,7 +174,7 @@ void softMaxLayer::forwardPropagation(string train_or_test)
     float alpha = 1.0;
     float beta = 0.0;
     checkCUDNN(cudnnSoftmaxForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-                CUDNN_SOFTMAX_FAST,
+                CUDNN_SOFTMAX_ACCURATE,
                 CUDNN_SOFTMAX_MODE_CHANNEL,
                 &alpha,
                 srcTensorDesc,
@@ -234,7 +234,7 @@ void softMaxLayer::backwardPropagation(float Momentum)
     float beta = 0.0f;
     /*computes the gridient of the softmax*/
     checkCUDNN(cudnnSoftmaxBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-                CUDNN_SOFTMAX_FAST,
+                CUDNN_SOFTMAX_ACCURATE,
                 CUDNN_SOFTMAX_MODE_CHANNEL,
                 &alpha,
                 dstTensorDesc,

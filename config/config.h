@@ -31,7 +31,11 @@ class configNonLinearity
             }else if(method == string("NL_RELU"))
             {
                 m_nonLinearity = ACTIVATION_RELU;
-            }else
+            }else if(method == string("NL_LRELU"))
+            {
+                m_nonLinearity = ACTIVATION_LRELU;
+            }
+            else
             {
                 cout<<"config: non_Linearity is not exist"<<endl;
                 exit(0);

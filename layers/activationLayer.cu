@@ -34,8 +34,7 @@ activationLayer::activationLayer(string name)
 	height = prev_Layer->height;
 	width = prev_Layer->width;
     outputSize = channels * height * width;
-
-    ActivationMode = (cudnnActivationMode_t)curConfig->_non_linearity;
+    ActivationMode = curConfig->_non_linearity;
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
 
@@ -73,11 +72,41 @@ activationLayer::activationLayer(activationLayer* layer)
 	this->createHandles();
 }
 
+/*
+ lrelu forward
+*/
+__global__ void LreluForward(float* srcData, float* dstData, int data_size)
+{
+	int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+	int num_threads = blockDim.x * gridDim.x;
+	for(int i = 0; i < data_size; i += num_threads)
+	{
+		int index = i + thread_index;
+		if(index < data_size)
+		{
+			dstData[index] = srcData[index] > 0 ? srcData[index] : srcData[index] * 0.01;
+		}
+	}
+
+}
+
 void activationLayer::forwardPropagation(string train_or_test)
 {
 	srcData = prevLayer[0]->dstData;
 
-    checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
+	if(ActivationMode == ACTIVATION_LRELU)
+	{
+		int data_size = number * channels * height * width;
+		int num_threads = 256;
+		int num_block = (data_size + num_threads - 1) / num_threads;
+
+	    LreluForward<<<num_block, num_threads>>>(srcData, dstData, data_size);
+
+	}
+	else
+	{
+		cudnnActivationMode = (cudnnActivationMode_t)ActivationMode;
+		checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 		                                 cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 		                                 cuDNN_netWork<float>::instanceObject()->GetDataType(),
 		                                 number,
@@ -85,7 +114,7 @@ void activationLayer::forwardPropagation(string train_or_test)
 		                                 height,
 		                                 width));
 
-	checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
+		checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
 			                              number,
@@ -93,23 +122,58 @@ void activationLayer::forwardPropagation(string train_or_test)
 			                              height,
 			                              width));
 
-	MemoryMonitor::instanceObject()->gpuMemoryMemset(dstData,number*channels*height*width*sizeof(float));
-	float alpha = 1.0f;
-	float beta = 0.0f;
-	checkCUDNN(cudnnActivationForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-			                          ActivationMode,
+		MemoryMonitor::instanceObject()->gpuMemoryMemset(dstData,number*channels*height*width*sizeof(float));
+		float alpha = 1.0f;
+		float beta = 0.0f;
+		checkCUDNN(cudnnActivationForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
+									  cudnnActivationMode,
 			                          &alpha,
 			                          srcTensorDesc,
 			                          srcData,
 			                          &beta,
 			                          dstTensorDesc,
 			                          dstData));
+
+
+		}
 }
 
 
+/*
+ lrelu backWard
+*/
+__global__ void LreluBackward(float* srcDiff, float* dstDiff, float* srcData, int data_size)
+{
+	int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+	int num_threads = blockDim.x * gridDim.x;
+
+	for(int i = 0; i < data_size; i += num_threads)
+	{
+		int index = i + thread_index;
+		if(index < data_size)
+		{
+			dstDiff[index] = srcDiff[index] * ((srcData[index] > 0) + (srcData[index] <= 0) * 0.01);
+		}
+	}
+
+}
+
 void activationLayer::backwardPropagation(float Momentum)
 {
-	checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
+	if(ActivationMode == ACTIVATION_LRELU)
+	{
+		int nIndex = m_nCurBranchIndex;
+		int data_size = number * channels * height * width;
+		int num_threads = 256;
+		int num_block = (data_size + num_threads - 1) / num_threads;
+
+		LreluBackward<<<num_block, num_threads>>>(nextLayer[nIndex]->diffData, diffData, srcData, data_size);
+
+	}
+	else
+	{
+		cudnnActivationMode = (cudnnActivationMode_t)ActivationMode;
+		checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
 				                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 				                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
 				                          number,
@@ -117,7 +181,7 @@ void activationLayer::backwardPropagation(float Momentum)
 				                          height,
 				                          width));
 
-	checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
+		checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
 				                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 				                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
 				                          number,
@@ -125,7 +189,7 @@ void activationLayer::backwardPropagation(float Momentum)
 				                          height,
 				                          width));
 
-	checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
+		checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
 				                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 				                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
 				                          number,
@@ -133,7 +197,7 @@ void activationLayer::backwardPropagation(float Momentum)
 				                          height,
 				                          width));
 
-	checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
+		checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
 			                              cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
 			                              cuDNN_netWork<float>::instanceObject()->GetDataType(),
 			                              number,
@@ -141,11 +205,11 @@ void activationLayer::backwardPropagation(float Momentum)
 			                              height,
 			                              width));
 
-	float alpha = 1.0f;
-	float beta = 0.0f;
-	int nIndex = m_nCurBranchIndex;
-	checkCUDNN(cudnnActivationBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-			                           ActivationMode,
+		float alpha = 1.0f;
+		float beta = 0.0f;
+		int nIndex = m_nCurBranchIndex;
+		checkCUDNN(cudnnActivationBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
+			                           cudnnActivationMode,
 			                           &alpha,
 			                           dstTensorDesc,
 			                           dstData,
@@ -156,6 +220,8 @@ void activationLayer::backwardPropagation(float Momentum)
 			                           &beta,
 			                           dstDiffTensorDesc,
 			                           diffData));
+
+		}
 
 }
 

@@ -101,7 +101,7 @@ void activationLayer::forwardPropagation(string train_or_test)
 		int num_block = (data_size + num_threads - 1) / num_threads;
 
 	    LreluForward<<<num_block, num_threads>>>(srcData, dstData, data_size);
-
+        cudaThreadSynchronize();
 	}
 	else
 	{
@@ -168,7 +168,7 @@ void activationLayer::backwardPropagation(float Momentum)
 		int num_block = (data_size + num_threads - 1) / num_threads;
 
 		LreluBackward<<<num_block, num_threads>>>(nextLayer[nIndex]->diffData, diffData, srcData, data_size);
-
+        cudaThreadSynchronize();
 	}
 	else
 	{

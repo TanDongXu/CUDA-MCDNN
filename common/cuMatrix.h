@@ -100,6 +100,18 @@ public:
         return devData;
     }
 
+    T* &getHost()
+    {
+    	mallocHostMemory();
+    	return hostData;
+    }
+
+    T* &getDev()
+    {
+    	mallocDeviceMemory();
+    	return devData;
+    }
+
 
 public:
     int rows;

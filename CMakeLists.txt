@@ -59,6 +59,7 @@ file(GLOB CUDA_MCDNN_CU_SOURCES  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "tests/*"
     "config/*"
     "composite/*"
+    "dataAugmentation/*"
     "examples/*"
     "main.cpp"
     "columnNet.*"

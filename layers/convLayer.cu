@@ -558,7 +558,7 @@ void convLayer:: destroyHandles()
 	checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
 	checkCUDNN(cudnnDestroyTensorDescriptor(dstDiffTensorDesc));
 	curandDestroyGenerator(curandGenerator_W);
-	curandDestroyGenerator(curandGenerator_B);
+//	curandDestroyGenerator(curandGenerator_B);
 }
 
 

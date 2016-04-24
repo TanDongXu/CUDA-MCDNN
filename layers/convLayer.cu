@@ -12,7 +12,7 @@ void convLayer::createHandles()
 	checkCUDNN(cudnnCreateConvolutionDescriptor(&convDesc));
 
 	curandCreateGenerator(&curandGenerator_W, CURAND_RNG_PSEUDO_MTGP32);
-	curandCreateGenerator(&curandGenerator_B, CURAND_RNG_PSEUDO_MTGP32);
+//	curandCreateGenerator(&curandGenerator_B, CURAND_RNG_PSEUDO_MTGP32);
 }
 
 void convLayer::initRandom()
@@ -451,6 +451,7 @@ void convLayer::backwardPropagation(float Momentum)
 				                  dev_Wgrad,
 				                  1));
 
+	scalVal = 2 * lrate * 1.0f / batchSize;
 	size = kernelAmount * 1 * 1 * 1;
 	checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
 					              size,

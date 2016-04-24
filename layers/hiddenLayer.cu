@@ -3,13 +3,13 @@
 void hiddenLayer::createHandles()
 {
 	curandCreateGenerator(&curandGenerator_W, CURAND_RNG_PSEUDO_MTGP32);
-	curandCreateGenerator(&curandGenerator_B, CURAND_RNG_PSEUDO_MTGP32);
+//	curandCreateGenerator(&curandGenerator_B, CURAND_RNG_PSEUDO_MTGP32);
 }
 
 void hiddenLayer::destroyHandles()
 {
 	curandDestroyGenerator(curandGenerator_W);
-	curandDestroyGenerator(curandGenerator_B);
+//	curandDestroyGenerator(curandGenerator_B);
 }
 
 void hiddenLayer::initRandom()
@@ -309,6 +309,7 @@ void hiddenLayer::backwardPropagation(float Momentum)
 					                  dev_Wgrad,
 					                  1));
 
+	scalVal = 2 * lrate;
 	size = outputSize * 1 * 1 * 1;
 	checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
 						          size,

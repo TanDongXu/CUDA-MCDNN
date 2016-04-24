@@ -3,21 +3,42 @@
 void hiddenLayer::createHandles()
 {
 	curandCreateGenerator(&curandGenerator_W, CURAND_RNG_PSEUDO_MTGP32);
+	curandCreateGenerator(&curandGenerator_B, CURAND_RNG_PSEUDO_MTGP32);
 }
 
 void hiddenLayer::destroyHandles()
 {
 	curandDestroyGenerator(curandGenerator_W);
+	curandDestroyGenerator(curandGenerator_B);
 }
 
 void hiddenLayer::initRandom()
 {
+    srand((unsigned)time(NULL));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, outputSize * inputSize * 1 * 1 * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, outputSize * 1 * 1 * 1 * sizeof(float));
-    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * outputSize * 1 * 1 * sizeof(float));
-    /*initial weight*/
-	curandSetPseudoRandomGeneratorSeed(curandGenerator_W, time(NULL));
-	curandGenerateNormal(curandGenerator_W, dev_Weight, outputSize * inputSize, 0, epsilon);
+//	/*initial weight*/
+//	curandSetPseudoRandomGeneratorSeed(curandGenerator_W, time(NULL));
+//	curandSetPseudoRandomGeneratorSeed(curandGenerator_B, time(NULL));
+//	curandGenerateNormal(curandGenerator_W, dev_Weight, outputSize * inputSize, 0, epsilon);
+//	curandGenerateNormal(curandGenerator_B, dev_Bias, outputSize, 0, epsilon);
+
+
+    float* tmpWeight;
+    tmpWeight = (float*)MemoryMonitor::instanceObject()->cpuMallocMemory(outputSize * inputSize * 1 * 1 * sizeof(float));
+
+    for(int h = 0; h < outputSize; h++)
+    {
+        for(int w = 0; w < inputSize; w++)
+        {
+            tmpWeight[w + inputSize * h] = epsilon * (2.0f * rand() / RAND_MAX - 1.0f);
+        }
+    }
+
+    MemoryMonitor::instanceObject()->cpu2Gpu(dev_Weight, tmpWeight, outputSize * inputSize * 1 * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bias, outputSize * 1 * 1 * 1 * sizeof(float));
+
+    delete tmpWeight;
 
 }
 
@@ -147,9 +168,11 @@ hiddenLayer::hiddenLayer(hiddenLayer* layer)
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, outputSize * batchSize * sizeof(float));
 	MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, inputSize * batchSize * sizeof(float));
 
-	MemoryMonitor::instanceObject()->gpu2gpu(dev_Wgrad, layer->dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
-	MemoryMonitor::instanceObject()->gpu2gpu(dev_Bgrad, layer->dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
+	//MemoryMonitor::instanceObject()->gpu2gpu(dev_Wgrad, layer->dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
+    //	MemoryMonitor::instanceObject()->gpu2gpu(dev_Bgrad, layer->dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
 
+	MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
+	MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
 	this->createHandles();
     this->initRandom();
 }

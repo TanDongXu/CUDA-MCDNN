@@ -1,9 +1,9 @@
 /*
- * InceptionLayer.h
- *
- *  Created on: Mar 5, 2016
- *      Author: tdx
- */
+* InceptionLayer.h
+*
+*  Created on: Mar 5, 2016
+*      Author: tdx
+*/
 
 #ifndef INCEPTIONLAYER_H_
 #define INCEPTIONLAYER_H_
@@ -16,35 +16,35 @@
 
 class InceptionLayer : public layersBase
 {
-public:
-	InceptionLayer(string name, int sign);
-	void forwardPropagation(string train_or_test);
-	void backwardPropagation(float Momentum);
-	void saveWeight(FILE* file){};
-	void readWeight(FILE* file){};
+    public:
+    InceptionLayer(string name, int sign);
+    void forwardPropagation(string train_or_test);
+    void backwardPropagation(float Momentum);
+    void saveWeight(FILE* file){};
+    void readWeight(FILE* file){};
 
-	~InceptionLayer()
-	{
-		delete inception;
-	};
+    ~InceptionLayer()
+    {
+        delete inception;
+    };
 
-	int getOutputSize()
-	{
-		return outputSize;
-	}
+    int getOutputSize()
+    {
+        return outputSize;
+    }
 
 
-private:
-	int one;
-	int three;
-	int five;
-	int three_reduce;
-	int five_reduce;
-	int pool_proj;
-	int outputSize;
-	float lambda;
-	float epsilon;
-	Inception * inception;
+    private:
+    int one;
+    int three;
+    int five;
+    int three_reduce;
+    int five_reduce;
+    int pool_proj;
+    int outputSize;
+    float lambda;
+    float epsilon;
+    Inception * inception;
 
 };
 

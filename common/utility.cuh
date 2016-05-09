@@ -1,9 +1,9 @@
 /*
- * utility.cuh
- *
- *  Created on: Mar 11, 2016
- *      Author: tdx
- */
+* utility.cuh
+*
+*  Created on: Mar 11, 2016
+*      Author: tdx
+*/
 
 #ifndef UTILITY_CUH_
 #define UTILITY_CUH_
@@ -34,14 +34,14 @@ const double FLAGS_lr_power = 0.75;     //Learing rate policy power
 template<class T>
 T getMax(T*value, int size)
 {
-	int max = value[0];
-	for(int i = 1; i < size; i++)
-	{
-		if(value[i] > max)
-			max = value[i];
-	}
+    int max = value[0];
+    for(int i = 1; i < size; i++)
+    {
+        if(value[i] > max)
+        max = value[i];
+    }
 
-	return max;
+    return max;
 }
 
 

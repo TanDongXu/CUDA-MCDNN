@@ -8,14 +8,14 @@
 
 /*allocate cpu memory*/
 void * MemoryMonitor::cpuMallocMemory(int size){
-	void* p=NULL;
-	p = malloc(size);
-	return p;
+    void* p=NULL;
+    p = malloc(size);
+    return p;
 }
 
 void MemoryMonitor::cpu2cpu(void* host_data2, void* host_data1, int size)
 {
-	memcpy(host_data2, host_data1, size);
+    memcpy(host_data2, host_data1, size);
 }
 
 void MemoryMonitor::cpu2Gpu(void* dev_data, void* host_data, int size)
@@ -36,7 +36,7 @@ void MemoryMonitor::gpu2gpu(void* dev_data2, void* dev_data1, int size)
 /*allocate GPU memory*/
 void MemoryMonitor::gpuMallocMemory(void**devPtr, int size)
 {
-    if(*devPtr != NULL)
+    if(NULL != (*devPtr))
     {
         checkCudaErrors(cudaFree(*devPtr));
     }

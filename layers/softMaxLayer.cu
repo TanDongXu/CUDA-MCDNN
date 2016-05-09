@@ -156,32 +156,32 @@ void softMaxLayer::forwardPropagation(string train_or_test)
     srcData = prevLayer[0]->dstData;
 
     checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
-                cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                number,
-                channels,
-                height,
-                width));
+                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
+                                          number,
+                                          channels,
+                                          height,
+                                          width));
 
     checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
-                cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                number,
-                channels,
-                height,
-                width));
+                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
+                                          number,
+                                          channels,
+                                          height,
+                                          width));
 
     float alpha = 1.0;
     float beta = 0.0;
     checkCUDNN(cudnnSoftmaxForward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-                CUDNN_SOFTMAX_ACCURATE,
-                CUDNN_SOFTMAX_MODE_CHANNEL,
-                &alpha,
-                srcTensorDesc,
-                srcData,
-                &beta,
-                dstTensorDesc,
-                dstData));
+                                   CUDNN_SOFTMAX_ACCURATE,
+                                   CUDNN_SOFTMAX_MODE_CHANNEL,
+                                   &alpha,
+                                   srcTensorDesc,
+                                   srcData,
+                                   &beta,
+                                   dstTensorDesc,
+                                   dstData));
 
     if(train_or_test == "test" )
         ClassificationResults();
@@ -214,36 +214,36 @@ void softMaxLayer::backwardPropagation(float Momentum)
 {
     getBackPropDiffData();
     checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
-                cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                number,
-                channels,
-                height,
-                width));
+                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
+                                          number,
+                                          channels,
+                                          height,
+                                          width));
 
 
     checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
-                cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                number,
-                channels,
-                height,
-                width));
+                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
+                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
+                                          number,
+                                          channels,
+                                          height,
+                                          width));
 
     float alpha = 1.0f;
     float beta = 0.0f;
     /*computes the gridient of the softmax*/
     checkCUDNN(cudnnSoftmaxBackward(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
-                CUDNN_SOFTMAX_ACCURATE,
-                CUDNN_SOFTMAX_MODE_CHANNEL,
-                &alpha,
-                dstTensorDesc,
-                dstData,
-                srcDiffTensorDesc,
-                srcDiff,
-                &beta,
-                dstDiffTensorDesc,
-                diffData));
+                                    CUDNN_SOFTMAX_ACCURATE,
+                                    CUDNN_SOFTMAX_MODE_CHANNEL,
+                                    &alpha,
+                                    dstTensorDesc,
+                                    dstData,
+                                    srcDiffTensorDesc,
+                                    srcDiff,
+                                    &beta,
+                                    dstDiffTensorDesc,
+                                    diffData));
 }
 
 

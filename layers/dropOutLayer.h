@@ -1,9 +1,9 @@
 /*
- * dropOutLayer.h
- *
- *  Created on: Mar 15, 2016
- *      Author: tdx
- */
+* dropOutLayer.h
+*
+*  Created on: Mar 15, 2016
+*      Author: tdx
+*/
 
 #ifndef DROPOUTLAYER_H_
 #define DROPOUTLAYER_H_
@@ -17,39 +17,37 @@
 
 class dropOutLayer : public layersBase
 {
-public:
-	dropOutLayer(string name);
-	dropOutLayer(dropOutLayer* layer);
-	void CreateUniform(int size);
-	void Dropout_TrainSet(float* data, int size, float dropout_rate);
-	void Dropout_TestSet(float* data, int size, float dropout_rate);
-	void forwardPropagation(string train_or_test);
-	void backwardPropagation(float Momemtum);
-	void saveWeight(FILE* file){}
-	void readWeight(FILE* file){}
-	void createHandles();
-	void destroyHandles();
+    public:
+    dropOutLayer(string name);
+    dropOutLayer(dropOutLayer* layer);
+    void CreateUniform(int size);
+    void Dropout_TrainSet(float* data, int size, float dropout_rate);
+    void Dropout_TestSet(float* data, int size, float dropout_rate);
+    void forwardPropagation(string train_or_test);
+    void backwardPropagation(float Momemtum);
+    void saveWeight(FILE* file){}
+    void readWeight(FILE* file){}
+    void createHandles();
+    void destroyHandles();
 
+    ~dropOutLayer()
+    {
+        MemoryMonitor::instanceObject()->freeGpuMemory(outputPtr);
+        destroyHandles();
+    }
 
-	~dropOutLayer()
-	{
-		MemoryMonitor::instanceObject()->freeGpuMemory(outputPtr);
-		destroyHandles();
-	}
+    int getOutputSize()
+    {
+        return outputSize;
+    }
 
-	int getOutputSize()
-	{
-		return outputSize;
-	}
+    private:
+    int outputSize;
+    float DropOut_rate;
+    float* outputPtr;
 
-private:
-	 int outputSize;
-	 float DropOut_rate;
-	 float* outputPtr;
-
-
-private:
-	 curandGenerator_t curandGenerator_DropOut;
+    private:
+    curandGenerator_t curandGenerator_DropOut;
 };
 
 

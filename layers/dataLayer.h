@@ -1,9 +1,9 @@
 /*
- * dataLayer.h
- *
- *  Created on: Nov 29, 2015
- *      Author: tdx
- */
+* dataLayer.h
+*
+*  Created on: Nov 29, 2015
+*      Author: tdx
+*/
 
 #ifndef DATALAYER_H_
 #define DATALAYER_H_
@@ -20,43 +20,43 @@
 
 class dataLayer: public layersBase
 {
-public:
-	dataLayer(string name);
-	dataLayer(dataLayer* layer);
-	void getBatch_Images_Label(int index, cuMatrixVector<float> &inputData, cuMatrix<int>* &inputLabel);
-	void RandomBatch_Images_Label(cuMatrixVector<float> &inputData, cuMatrix<int>* &inputLabel);
-	void forwardPropagation(string train_or_test);
-	void backwardPropagation(float Momentum);
-	void saveWeight(FILE*file){}
-	void readWeight(FILE*file){}
+    public:
+    dataLayer(string name);
+    dataLayer(dataLayer* layer);
+    void getBatch_Images_Label(int index, cuMatrixVector<float> &inputData, cuMatrix<int>* &inputLabel);
+    void RandomBatch_Images_Label(cuMatrixVector<float> &inputData, cuMatrix<int>* &inputLabel);
+    void forwardPropagation(string train_or_test);
+    void backwardPropagation(float Momentum);
+    void saveWeight(FILE*file){}
+    void readWeight(FILE*file){}
 
-	~dataLayer()
-	{
-		MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-		MemoryMonitor::instanceObject()->freeCpuMemory(srcLabel);
-		MemoryMonitor::instanceObject()->freeCpuMemory(batchImage);
-	}
-	int getOutputSize()
-	{
-		return channels * height * width;
-	}
+    ~dataLayer()
+    {
+        MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+        MemoryMonitor::instanceObject()->freeCpuMemory(srcLabel);
+        MemoryMonitor::instanceObject()->freeCpuMemory(batchImage);
+    }
+    int getOutputSize()
+    {
+        return channels * height * width;
+    }
 
-	int getDataSize()
-	{
-		return dataSize;
-	}
+    int getDataSize()
+    {
+        return dataSize;
+    }
 
-	int* getDataLabel()
-	{
-		return srcLabel;
-	}
+    int* getDataLabel()
+    {
+        return srcLabel;
+    }
 
-private:
+    private:
 
-	int dataSize;
-	int batchSize;
-	int *srcLabel;
-	float* batchImage;
+    int dataSize;
+    int batchSize;
+    int *srcLabel;
+    float* batchImage;
 
 };
 

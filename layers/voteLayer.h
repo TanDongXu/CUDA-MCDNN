@@ -8,7 +8,7 @@
 
 class VoteLayer
 {
-public:
+    public:
     static VoteLayer* instance();
     VoteLayer();
     ~VoteLayer();
@@ -16,7 +16,8 @@ public:
     float result();
     void init(int nNumOfTestData, int nClasses, cuMatrix<int>* pLabels);
     void clear();
-private:
+
+    private:
     int m_nNumOfTestData;
     int m_nClasses;
     float* m_pHostVote;// m_nNumOfTestData * m_nClasses

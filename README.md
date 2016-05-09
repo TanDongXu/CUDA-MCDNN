@@ -1,8 +1,10 @@
 >CUDA-MCDNN
 >==========
+/*
 >Document   
 >1. The first version author is <a href="https://github.com/zhxfl/CUDA-CNN"> zhxfl </a>   
 >
+*/
 >Results
 >--------
 >CNN accelerated by cuda and lib <a href ="https://developer.nvidia.com/cudnn">CUDNN</a>

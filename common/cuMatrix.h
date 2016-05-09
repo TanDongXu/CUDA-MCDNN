@@ -1,9 +1,9 @@
 /*
- * cuMatrix.h
- *
- *  Created on: Nov 19, 2015
- *      Author: tdx
- */
+* cuMatrix.h
+*
+*  Created on: Nov 19, 2015
+*      Author: tdx
+*/
 
 #ifndef CUMATRIX_H_
 #define CUMATRIX_H_
@@ -19,9 +19,9 @@
 template<typename T>
 class cuMatrix
 {
-public:
-	cuMatrix(T * _data, int _r, int _c, int _ch, bool _isGpuData = false):rows(_r),cols(_c),channels(_ch),hostData(NULL),devData(NULL){
-        if( _isGpuData == false){
+    public:
+    cuMatrix(T * _data, int _r, int _c, int _ch, bool _isGpuData = false):rows(_r),cols(_c),channels(_ch),hostData(NULL),devData(NULL){
+        if(false == _isGpuData){
             /*allocate host memory*/
             mallocHostMemory();
             /*deep copy*/
@@ -39,11 +39,11 @@ public:
     /*destructor*/
     ~cuMatrix()
     {
-        if(hostData != NULL)
+        if(NULL != hostData)
         {
             MemoryMonitor::instanceObject()->freeCpuMemory(hostData);
         }
-        if(devData != NULL)
+        if(NULL != devData)
         {
             MemoryMonitor::instanceObject()->freeGpuMemory(devData);
         }
@@ -102,14 +102,14 @@ public:
 
     T* &getHost()
     {
-    	mallocHostMemory();
-    	return hostData;
+        mallocHostMemory();
+        return hostData;
     }
 
     T* &getDev()
     {
-    	mallocDeviceMemory();
-    	return devData;
+        mallocDeviceMemory();
+        return devData;
     }
 
 
@@ -128,7 +128,7 @@ private:
     /*allocate host memory*/
     void mallocHostMemory()
     {
-        if(hostData==NULL)
+        if(NULL == hostData)
         {
             hostData=(T*)MemoryMonitor::instanceObject()->cpuMallocMemory(rows * cols * sizeof(*hostData) * channels);
             if(!hostData)
@@ -146,14 +146,14 @@ private:
     /*allocate device memory*/
     void mallocDeviceMemory()
     {
-        if(devData == NULL)
+        if(NULL == devData)
         {
             /*malloc device data*/
             MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&devData, rows * cols * channels * sizeof(*devData));
             checkCudaErrors(cudaMemset(devData, 0, rows * cols * channels * sizeof(*devData)));
         }
     }
-};
+    };
 
 
 

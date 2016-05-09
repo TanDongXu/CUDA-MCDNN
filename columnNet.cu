@@ -41,31 +41,31 @@ void creatColumnNet(int sign)
     while(!que.empty()){
         layer = que.front();
         que.pop();
-        if((layer->_type) == "DATA")
+        if(string("DATA") == (layer->_type))
         {
             baseLayer = new dataLayer(layer->_name);
-        }else if((layer->_type) == "CONV")
+        }else if(string("CONV") == (layer->_type))
         {
             baseLayer = new convLayer (layer->_name, sign);
-        }else if((layer->_type == "POOLING"))
+        }else if(string("POOLING") == (layer->_type))
         {
             baseLayer = new poolLayer (layer->_name);
-        }else if((layer->_type) == "HIDDEN")
+        }else if(string("HIDDEN") == (layer->_type))
         {
             baseLayer = new hiddenLayer(layer->_name, sign);
-        }else if((layer->_type) == "SOFTMAX")
+        }else if(string("SOFTMAX") == (layer->_type))
         {
             baseLayer = new softMaxLayer(layer->_name);
-        }else if((layer->_type) == "ACTIVATION")
+        }else if(string("ACTIVATION") == (layer->_type))
         {
             baseLayer = new activationLayer(layer->_name);
-        }else if((layer->_type) == "LRN")
+        }else if(string("LRN") == (layer->_type))
         {
             baseLayer = new LRNLayer(layer->_name);
-        }else if((layer->_type) == "INCEPTION")
+        }else if(string("INCEPTION") == (layer->_type))
         {
             baseLayer = new InceptionLayer(layer->_name, sign);
-        }else if((layer->_type) == "DROPOUT")
+        }else if(string("DROPOUT") == (layer->_type))
         {
             baseLayer = new dropOutLayer(layer->_name);
         }
@@ -181,10 +181,10 @@ void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMa
             {
                 layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[j]->_name);
                 layer->forwardPropagation("test");
-//                if(i == 0)
-//                {
-//                	cout<<layer->_name<<endl;
-//                }
+                //                if(i == 0)
+                //                {
+                //                	cout<<layer->_name<<endl;
+                //                }
                 // is softmax, then vote
                 if( j == g_vQue.size() - 1 ){
                     VoteLayer::instance()->vote( i , nBatchSize, layer->dstData );
@@ -219,12 +219,12 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
 
         for( int i = g_vQue.size() - 1; i>= 0; i--){
             layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
-           // if(layer->getRateReduce() > 1e-4){
-              layer->backwardPropagation( nMomentum );
-          //  }
-           // else{
-          //      break;
-         //   }
+            // if(layer->getRateReduce() > 1e-4){
+            layer->backwardPropagation( nMomentum );
+            //  }
+            // else{
+            //      break;
+            //   }
         }
     }
     /*如果不是叶子节点*/
@@ -240,78 +240,78 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
 //ascend order
 bool cmp_ascend_Order( softMaxLayer* a, softMaxLayer* b)
 {
-	return (a->getCorrectNum()) < (b->getCorrectNum());
+    return (a->getCorrectNum()) < (b->getCorrectNum());
 }
 
 /*get min result branch*/
 void getBranchResult(layersBase*curLayer)
 {
-	//叶子节点
-	if (curLayer->nextLayer.size() == 0)
-	{
-		softMaxLayer* tmp = (softMaxLayer*) curLayer;
-		g_vBranchResult.push_back(tmp);
-	}
+    //叶子节点
+    if (curLayer->nextLayer.size() == 0)
+    {
+        softMaxLayer* tmp = (softMaxLayer*) curLayer;
+        g_vBranchResult.push_back(tmp);
+    }
 
-	for (int i = 0; i < curLayer->nextLayer.size(); i++) {
-		layersBase* tmpLayer = curLayer->nextLayer[i];
-		getBranchResult(tmpLayer);
-	}
-//	//叶子节点
-//	if (curLayer->nextLayer.size() == 0)
-//	{
-//		softMaxLayer* tmp = (softMaxLayer*)curLayer;
-//		if(tmp->getCorrectNum() < g_nMinCorrSize)
-//		{
-//			g_nMinCorrSize = tmp->getCorrectNum();
-//			g_vMinBranch.push_back(tmp);
-//		}
-//	}
-//
-//	for(int i = 0; i < curLayer->nextLayer.size(); i++)
-//	{
-//		layersBase* tmpLayer =  curLayer->nextLayer[i];
-//		ascend_OrderBranch(tmpLayer);
-//	}
+    for (int i = 0; i < curLayer->nextLayer.size(); i++) {
+        layersBase* tmpLayer = curLayer->nextLayer[i];
+        getBranchResult(tmpLayer);
+    }
+    //	//叶子节点
+    //	if (curLayer->nextLayer.size() == 0)
+    //	{
+    //		softMaxLayer* tmp = (softMaxLayer*)curLayer;
+    //		if(tmp->getCorrectNum() < g_nMinCorrSize)
+    //		{
+    //			g_nMinCorrSize = tmp->getCorrectNum();
+    //			g_vMinBranch.push_back(tmp);
+    //		}
+    //	}
+    //
+    //	for(int i = 0; i < curLayer->nextLayer.size(); i++)
+    //	{
+    //		layersBase* tmpLayer =  curLayer->nextLayer[i];
+    //		ascend_OrderBranch(tmpLayer);
+    //	}
 }
 
 
 /*get Fissnode and Fission*/
 void performFiss()
 {
-	for(int i = 0; i < g_vBranchResult.size(); i++)
-	{
-		layersBase* tmpCur = (layersBase*)g_vBranchResult[i];
+    for(int i = 0; i < g_vBranchResult.size(); i++)
+    {
+        layersBase* tmpCur = (layersBase*)g_vBranchResult[i];
 
-		while (tmpCur->prevLayer[0]->_name != string("data") && tmpCur->prevLayer[0]->nextLayer.size() == 1)
-		{
-			tmpCur = tmpCur->prevLayer[0];
-		}
-		//if curBranch is Fiss to data layer, then fiss another
-		if (tmpCur->prevLayer[0]->_name== "data" && (i != g_vBranchResult.size() - 1))
-			continue;
-		else if(i == g_vBranchResult.size() - 1)
-		{
-			softmaxFission(g_vBranchResult[0]);
-			break;
-		}
-		else
-		{
-			//Fission one Node every time
-			//cout<<tmpCur->prevLayer[0]->_name<<endl;
-			NodeFission(tmpCur->prevLayer[0], tmpCur);
-			break;
-		}
-	}
+        while (tmpCur->prevLayer[0]->_name != string("data") && tmpCur->prevLayer[0]->nextLayer.size() == 1)
+        {
+            tmpCur = tmpCur->prevLayer[0];
+        }
+        //if curBranch is Fiss to data layer, then fiss another
+        if (tmpCur->prevLayer[0]->_name== "data" && (i != g_vBranchResult.size() - 1))
+        continue;
+        else if(i == g_vBranchResult.size() - 1)
+        {
+            softmaxFission(g_vBranchResult[0]);
+            break;
+        }
+        else
+        {
+            //Fission one Node every time
+            //cout<<tmpCur->prevLayer[0]->_name<<endl;
+            NodeFission(tmpCur->prevLayer[0], tmpCur);
+            break;
+        }
+    }
 }
 
 /*training netWork*/
 void cuTrainNetWork(cuMatrixVector<float> &trainData, 
-        cuMatrix<int>* &trainLabel, 
-        cuMatrixVector<float> &testData,
-        cuMatrix<int>*&testLabel,
-        int batchSize
-        )
+                    cuMatrix<int>* &trainLabel, 
+                    cuMatrixVector<float> &testData,
+                    cuMatrix<int>*&testLabel,
+                    int batchSize
+                   )
 {
     //configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
     //dfsGetLearningRateReduce( config );
@@ -343,7 +343,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         clock_t inStart, inEnd;
         inStart = clock();
         configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
-        if( DFS_TRAINING == false ){
+        if( false == DFS_TRAINING ){
             /*train network*/
             for(int iter = 0 ; iter < iter_per_epo; iter++)
             {
@@ -382,8 +382,8 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
                 }
             }
         }
-//        if( epo% 50 == 0 && epo != 0 ){
-//            config = (configBase*) config::instanceObjtce()->getFirstLayers();
+        //        if( epo% 50 == 0 && epo != 0 ){
+        //            config = (configBase*) config::instanceObjtce()->getFirstLayers();
 //            //adjust learning rate
 //            queue<configBase*> que;
 //            set<configBase*> hash;
@@ -416,7 +416,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
 
         /*test network*/
-       cout<<"epochs: "<<epo<<" ,Time: "<<(inEnd - inStart)/CLOCKS_PER_SEC<<"s,";
+        cout<<"epochs: "<<epo<<" ,Time: "<<(inEnd - inStart)/CLOCKS_PER_SEC<<"s,";
         if( DFS_TEST == false){
             predictTestData( testData, testLabel, batchSize );
         }
@@ -433,24 +433,24 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
 
         if (DFS_TRAINING == true && FISS_TRAINING == true )
         {
-			if ((epo < 30 && ((epo + 1) % 15) == 0) || (epo >= 30 && ((epo + 1) % 10) == 0)) {
-				//g_vFissNode.clear();
-				g_vBranchResult.clear();
-				layersBase* curLayer = Layers::instanceObject()->getLayer("data");
-				//dataLayer* tmpLayer = (dataLayer*) curLayer;
-				//g_nMinCorrSize = tmpLayer->getDataSize();
-				getBranchResult(curLayer);
-				sort(g_vBranchResult.begin(), g_vBranchResult.end(), cmp_ascend_Order);
-//				vector<softMaxLayer*> ::iterator it;
-//				for(it  = g_vBranchResult.begin(); it != g_vBranchResult.end(); it++)
-//				{
-//					cout<<(*it)->_name<<endl;
-//				}
-				//ascending order softmax result
+            if ((epo < 30 && ((epo + 1) % 15) == 0) || (epo >= 30 && ((epo + 1) % 10) == 0)) {
+                //g_vFissNode.clear();
+                g_vBranchResult.clear();
+                layersBase* curLayer = Layers::instanceObject()->getLayer("data");
+                //dataLayer* tmpLayer = (dataLayer*) curLayer;
+                //g_nMinCorrSize = tmpLayer->getDataSize();
+                getBranchResult(curLayer);
+                sort(g_vBranchResult.begin(), g_vBranchResult.end(), cmp_ascend_Order);
+                //				vector<softMaxLayer*> ::iterator it;
+                //				for(it  = g_vBranchResult.begin(); it != g_vBranchResult.end(); it++)
+                //				{
+                //					cout<<(*it)->_name<<endl;
+                //				}
+                //ascending order softmax result
 
-				performFiss();
-			}
-		}
+                performFiss();
+            }
+        }
 
     }
 

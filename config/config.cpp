@@ -10,7 +10,7 @@ using namespace std;
 void config::deleteSpace()
 {
     if(_configStr.empty())
-        return;
+    return;
 
     size_t pos1, pos2, e,t,n;
     while(1)
@@ -21,15 +21,15 @@ void config::deleteSpace()
 
         if(e == string::npos && t == string::npos && n == string::npos) break;
 
-        if(e<t || t==string::npos) pos1 =e;
+        if(e<t || t == string::npos) pos1 =e;
         else pos1 =t;
 
-        if(n<pos1 || pos1==string::npos) pos1=n;
+        if(n<pos1 || pos1 == string::npos) pos1=n;
 
-        for(pos2 = pos1+1; pos2<_configStr.size(); pos2++)
+        for(pos2 = pos1+1; pos2 < _configStr.size(); pos2++)
         {
             if(!(_configStr[pos2] == '\t' || _configStr[pos2] =='\n' ||_configStr[pos2] ==' '))
-                break;
+            break;
         }
         _configStr.erase(pos1, pos2 - pos1);
     }
@@ -46,12 +46,12 @@ void config::deleteComment()
         pos1=_configStr.find("/");
         /*if no found return npos*/
         if(pos1 == string::npos)
-            break;
+        break;
 
         for(pos2 = pos1 +1; pos2 < _configStr.size(); pos2++)
         {
             if(_configStr[pos2] == '/')
-                break;
+            break;
         }
 
         _configStr.erase(pos1, pos2 - pos1+1);
@@ -146,8 +146,7 @@ void config::get_layers_config(string &str)
     while(1)
     {
         if(head == str.length()) break ;
-        if(str[head] == '[')
-        {
+        if(str[head] == '['){
             tail = head + 1;
             while(1)
             {
@@ -182,7 +181,7 @@ void config::get_layers_config(string &str)
 
         configBase* layer;
 
-        if(type == string("CONV"))
+        if(string("CONV") == type)
         {
             int ks = get_word_int(layers[i], "KERNEL_SIZE");
             int ka = get_word_int(layers[i], "KERNEL_AMOUNT");
@@ -196,11 +195,11 @@ void config::get_layers_config(string &str)
             float weight_decay = get_word_float(layers[i], "WEIGHT_DECAY");
 
             layer = new configConv(type, name, input, sub_input, ks, pad_h, pad_w, stride_h,
-                    stride_w, ka, init_w, lrate, weight_decay);
+                                   stride_w, ka, init_w, lrate, weight_decay);
 
             cout << endl;
             cout << "***********************Conv layer**********************"
-                << endl;
+            << endl;
             cout << "              NAME : " << name         << endl;
             cout << "             INPUT : " << input        << endl;
             cout << "         SUB_INPUT : " << sub_input    << endl;
@@ -214,7 +213,7 @@ void config::get_layers_config(string &str)
             cout << "        LEARN_RATE : " << lrate        << endl;
             cout << "      WEIGHT_DECAY : " << weight_decay << endl;
 
-        }else if(type == string("POOLING"))
+        }else if(string("POOLING") == type)
         {
             string poolType = get_word_type(layers[i], "POOLING_TYPE");
             m_poolMethod = new ConfigPoolMethod(poolType);
@@ -225,11 +224,11 @@ void config::get_layers_config(string &str)
             int stride_w = get_word_int(layers[i], "STRIDE_W");
 
             layer = new configPooling(type, name, input, sub_input, size, pad_h, pad_w, stride_h,
-                    stride_w, m_poolMethod->getValue());
+                                      stride_w, m_poolMethod->getValue());
 
             cout << endl;
             cout << "***********************Pooling layer*******************"
-                << endl;
+            << endl;
             cout << "              NAME : " << name        << endl;
             cout << "             INPUT : " << input       << endl;
             cout << "         SUB_INPUT : " << sub_input   << endl;
@@ -240,8 +239,7 @@ void config::get_layers_config(string &str)
             cout << "          STRIDE_H : " << stride_h    << endl;
             cout << "          STRIDE_W : " << stride_w    << endl;
 
-        }else if(type == string("HIDDEN"))
-        {
+        }else if(string("HIDDEN") == type){
             int NumHidden = get_word_int(layers[i], "NUM_HIDDEN_NEURONS");
             float init_w = get_word_float(layers[i], "INIT_W");
             float lrate = get_word_float(layers[i], "LEARN_RATE");
@@ -259,8 +257,7 @@ void config::get_layers_config(string &str)
             cout <<"        LEARN_RATE : " << lrate         << endl;
             cout <<"      WEIGHT_DECAY : " << weight_decay  << endl;
 
-        }else if(type == string("SOFTMAX"))
-        {
+        }else if(string("SOFTMAX") == type){
             int nclasses = get_word_int(layers[i], "NUM_CLASSES");
             float weight_decay = get_word_float(layers[i], "WEIGHT_DECAY");
             layer = new configSoftMax(type, name , input, sub_input, nclasses, weight_decay);
@@ -275,15 +272,13 @@ void config::get_layers_config(string &str)
             cout <<"      WEIGHT_DECAY : " << weight_decay << endl;
             cout << endl<<endl;
 
-        }else if(type == string("DATA"))
-        {
+        }else if(string("DATA") == type){
             layer = new configData(type ,name, input, sub_input);
             cout << endl ;
             cout <<"***********************Data layer**********************"<< endl;
             cout <<"              NAME : " << name  <<endl;
 
-        }else if(type == string("ACTIVATION"))
-        {
+        }else if(type == string("ACTIVATION")){
             string non_linearity = get_word_type(layers[i], "NON_LINEARITY");
             m_nonLinearity = new configNonLinearity(non_linearity);
             layer = new configActivation(type, name, input, sub_input, m_nonLinearity->getValue());
@@ -295,8 +290,7 @@ void config::get_layers_config(string &str)
             cout <<"        SUB_INPUT  : " << sub_input     << endl;
             cout <<"     NON_LINEARITY : " << non_linearity << endl;
 
-        }else if(type == string("LRN"))
-        {
+        }else if(string("LRN") == type){
             unsigned lrnN = get_word_int(layers[i],"LRNN");
             float lrnAlpha = get_word_float(layers[i], "LRNALPHA");
             float lrnBeta = get_word_float(layers[i], "LRNBETA");
@@ -312,8 +306,7 @@ void config::get_layers_config(string &str)
             cout <<"           LRNALPHA : " << lrnAlpha     << endl;
             cout <<"            LRNBETA : " << lrnBeta      << endl;
 
-        }else if(type == string("INCEPTION"))
-        {
+        }else if(string("INCEPTION") == type){
             int one = get_word_int(layers[i], "ONE");
             int three = get_word_int(layers[i], "THREE");
             int five = get_word_int(layers[i], "FIVE");
@@ -325,7 +318,7 @@ void config::get_layers_config(string &str)
             float weight_decay = get_word_float(layers[i], "WEIGHT_DECAY");
 
             layer = new configInception(type, name, input, sub_input, one, three, five, three_reduce, five_reduce,
-                    pool_proj, init_w, lrate, weight_decay);
+                                        pool_proj, init_w, lrate, weight_decay);
             cout << endl;
             cout <<"********************Inception layer*******************"<< endl;
             cout <<"              NAME : " << name         << endl;
@@ -341,8 +334,7 @@ void config::get_layers_config(string &str)
             cout <<"        LEARN_RATE : " << lrate        << endl;
             cout <<"      WEIGHT_DECAY : " << weight_decay << endl;
 
-        }else if(type == string("DROPOUT"))
-        {
+        }else if(string("DROPOUT") == type){
             float rate = get_word_float(layers[i], "DROP_RATE");
             layer = new configDropOut(type, name, input, sub_input, rate);
             cout << endl;
@@ -352,8 +344,7 @@ void config::get_layers_config(string &str)
             cout <<"         SUB_INPUT : " << sub_input    << endl;
             cout <<"         DROP_RATE : " << rate         << endl;
 
-        }else if(type == string("BRANCH"))
-        {
+        }else if(string("BRANCH") == type){
             vector<string> outputs = get_name_vector(layers[i], "OUTPUTS");
             layer = new configBranch(type, name, input, sub_input, outputs);
             cout << endl;
@@ -368,9 +359,10 @@ void config::get_layers_config(string &str)
             }
             cout<< endl;
         }
+
         insertLayerByName(name, layer);
 
-        if(type == std::string("DATA")){
+        if(std::string("DATA") == type){
             _firstLayers=layer;
         }
         else{
@@ -379,12 +371,12 @@ void config::get_layers_config(string &str)
             _layerMaps[name]->_prev.push_back(_layerMaps[layer->_input] );
         }
 
-        if(type == std::string("SOFTMAX"))
+        if(std::string("SOFTMAX") == type)
         {
             _lastLayer = layer;
         }
-    }
-}
+        }
+        }
 
 void config::init(string path)
 {

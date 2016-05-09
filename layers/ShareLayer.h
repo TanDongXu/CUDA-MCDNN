@@ -1,9 +1,9 @@
 /*
- * ShareLayer.h
- *
- *  Created on: Mar 7, 2016
- *      Author: tdx
- */
+* ShareLayer.h
+*
+*  Created on: Mar 7, 2016
+*      Author: tdx
+*/
 
 #ifndef SHARELAYER_H_
 #define SHARELAYER_H_
@@ -14,22 +14,22 @@
 
 class ShareLayer : public layersBase
 {
-public:
-	ShareLayer(string name);
-	ShareLayer(string name, layersBase* layer);
-	void forwardPropagation(string train_or_test){};
-	void backwardPropagation(float Momemtum){};
-	void readWeight(FILE* file){};
-	void saveWeight(FILE* file){};
+    public:
+    ShareLayer(string name);
+    ShareLayer(string name, layersBase* layer);
+    void forwardPropagation(string train_or_test){};
+    void backwardPropagation(float Momemtum){};
+    void readWeight(FILE* file){};
+    void saveWeight(FILE* file){};
 
-	int getOutputSize()
-	{
-		return outputSize;
-	}
+    int getOutputSize()
+    {
+        return outputSize;
+    }
 
 
-private:
-	int outputSize;
+    private:
+    int outputSize;
 
 };
 

@@ -1,9 +1,9 @@
 /*
- * cuMatrixVector.h
- *
- *  Created on: Nov 19, 2015
- *      Author: tdx
- */
+* cuMatrixVector.h
+*
+*  Created on: Nov 19, 2015
+*      Author: tdx
+*/
 
 #ifndef CUMATRIXVECTOR_H_
 #define CUMATRIXVECTOR_H_
@@ -17,49 +17,49 @@ using namespace std;
 template <typename T>
 class cuMatrixVector
 {
-public:
-	cuMatrixVector():m_hostPoint(0),m_devPoint(0){}
+    public:
+    cuMatrixVector():m_hostPoint(0),m_devPoint(0){}
 
-	~cuMatrixVector()
-	{
-		MemoryMonitor::instanceObject()->freeCpuMemory(m_hostPoint);
-		MemoryMonitor::instanceObject()->freeGpuMemory(m_devPoint);
-		m_vec.clear();
+    ~cuMatrixVector()
+    {
+        MemoryMonitor::instanceObject()->freeCpuMemory(m_hostPoint);
+        MemoryMonitor::instanceObject()->freeGpuMemory(m_devPoint);
+        m_vec.clear();
 
-	}
+    }
 
-	/*overload operator []*/
-	cuMatrix<T>* operator[](size_t index)
-	{
-		if(index > m_vec.size())
-		{
-			cout<<"cuMatrixVector:operator[] error "<<endl;
-			exit(0);
-		}
+    /*overload operator []*/
+    cuMatrix<T>* operator[](size_t index)
+    {
+        if(index > m_vec.size())
+        {
+            cout<<"cuMatrixVector:operator[] error "<<endl;
+            exit(0);
+        }
 
-		return m_vec[index];
-	}
+        return m_vec[index];
+    }
 
 
     //push_back
-	void push_back(cuMatrix<T>* m)
-	{
-		m_vec.push_back(m);
-	}
+    void push_back(cuMatrix<T>* m)
+    {
+        m_vec.push_back(m);
+    }
 
     //get size
-	size_t size()
-	{
-		return m_vec.size();
-	}
+    size_t size()
+    {
+        return m_vec.size();
+    }
 
 
 
 
-public:
-	T** m_hostPoint;
-	T** m_devPoint;
-	vector<cuMatrix<T>* > m_vec;
+    public:
+    T** m_hostPoint;
+    T** m_devPoint;
+    vector<cuMatrix<T>* > m_vec;
 
 };
 

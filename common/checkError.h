@@ -33,7 +33,6 @@
                                 }                                                                               \
                                }                                                                                  \
 
-
 //cudnn error check
 #define checkCUDNN(status){                                                                         \
                            std:: stringstream _error;                                               \
@@ -44,7 +43,6 @@
                            }                                                                        \
                           }                                                                            \
 
-
 #define checkCublasErrors(status){                                                                           \
                                   std::stringstream _error;                                                  \
                                   if(0 != status)                                                            \
@@ -54,8 +52,6 @@
                                   }                                                                          \
                                  }
 
-
-
 template<typename T>
 void CHECK_EQ(T a, T b)
 {
@@ -64,8 +60,6 @@ void CHECK_EQ(T a, T b)
     {
         FatalError(s);
     }
-
 }
-
 
 #endif /* CHECKERROR_H_ */

@@ -1,5 +1,5 @@
 #include"mnist.h"
-#include "../layers/voteLayer.h"
+#include "../layers/VoteLayer.h"
 
 void runMnist()
 {
@@ -11,7 +11,6 @@ void runMnist()
 	int batchSize;
 	int normalized_width;
 	int imageSize;
-
 
 	/*read the layers configure*/
 	config::instanceObjtce()->initConfig("profile/MnistConfig.txt");
@@ -49,5 +48,4 @@ void runMnist()
 
     /*training Network*/
     cuTrainNetWork(trainSetX, trainSetY, testSetX, testSetY, batchSize);
-
 }

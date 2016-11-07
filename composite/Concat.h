@@ -8,7 +8,7 @@
 #ifndef CONCAT_H_
 #define CONCAT_H_
 
-#include"../layers/layersBase.h"
+#include"../layers/LayersBase.h"
 #include"../common/MemoryMonitor.h"
 #include"../common/checkError.h"
 #include"../common/utility.cuh"
@@ -22,24 +22,11 @@ class Concat
     public:
     typedef tuple<int, int, int, int>param_tuple;
     Concat(Layers*& Inner_Layers, const param_tuple& args);
+    ~Concat();
     void concatInit();
     float* forwardSetup();
     float* backwardSetup();
     void split_DiffData(int index, float* diffData);
-
-    ~Concat()
-    {
-        MemoryMonitor::instanceObject()->freeCpuMemory(host_offset);
-        MemoryMonitor::instanceObject()->freeCpuMemory(host_channels);
-        MemoryMonitor::instanceObject()->freeCpuMemory(separateDim);
-        MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-        MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
-        MemoryMonitor::instanceObject()->freeGpuMemory(dev_offset);
-        MemoryMonitor::instanceObject()->freeGpuMemory(dev_channels);
-        MemoryMonitor::instanceObject()->freeGpuMemory(separate_diffData);
-        prevDiff.vector_clear();
-        separate_dstData.vector_clear();
-    }
 
     private:
     int number;

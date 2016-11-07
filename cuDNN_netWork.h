@@ -8,8 +8,8 @@
 #ifndef CUDNN_NETWORK_H_
 #define CUDNN_NETWORK_H_
 
-#include"./layers/convLayer.h"
-#include"./layers/hiddenLayer.h"
+#include"./layers/ConvLayer.h"
+#include"./layers/HiddenLayer.h"
 #include<cuda_runtime.h>
 #include<cudnn.h>
 #include<cublas.h>
@@ -24,7 +24,6 @@ void setTensorDesc(cudnnTensorDescriptor_t& tensorDesc,
                    int h,
                    int w);
 
-
 void matrixMulti(cublasHandle_t cublasHandle, 
                  int m, 
                  int n, 
@@ -34,8 +33,6 @@ void matrixMulti(cublasHandle_t cublasHandle,
                  const float*x, 
                  float beta, 
                  float *y);
-
-
 
 template <class T>
 class cuDNN_netWork
@@ -56,25 +53,45 @@ class cuDNN_netWork
         return cudnnHandle;
     }
 
-
     cublasHandle_t& GetcublasHandle()
     {
         return cublasHandle;
     }
 
-
-    int& GetconvAlgorithm()
+    int& getConvFwdAlgorithm()
     {
-        return convAlgorithm;
+        return convFwdAlgorithm;
     }
 
-    void setConvolutionAlgorithm(const cudnnConvolutionFwdAlgo_t& algo)
+    int& getConvolutionBwdFilterAlgorithm()
     {
-        convAlgorithm = (int)algo;
+    	return convBwdFilterAlgorithm;
+    }
+
+    int& getConvolutionBwdDataAlgorithm()
+    {
+    	return convBwdDataAlgorithm;
+    }
+
+    void setConvolutionFwdAlgorithm(const cudnnConvolutionFwdAlgo_t& algo)
+    {
+        convFwdAlgorithm = static_cast<int>(algo);
+    }
+
+    void setConvolutionBwdFilterAlgorithm(const cudnnConvolutionBwdFilterAlgo_t& algo)
+    {
+    	convBwdFilterAlgorithm = static_cast<int>(algo);
+    }
+
+    void setConvolutionBwdDataAlgorithm(const cudnnConvolutionBwdDataAlgo_t& algo)
+    {
+    	convBwdDataAlgorithm = static_cast<int>(algo);
     }
 
     private:
-    int convAlgorithm;
+    int convFwdAlgorithm;
+    int convBwdFilterAlgorithm;
+    int convBwdDataAlgorithm;
     /*inlcude 3 type：float32、double64、float16*/
     cudnnDataType_t dataType;
     cudnnTensorFormat_t tensorFormat;
@@ -87,55 +104,42 @@ class cuDNN_netWork
         checkCublasErrors(cublasCreate(&cublasHandle));
     }
 
-
     void destroyHandles()
     {
         checkCUDNN(cudnnDestroy(cudnnHandle));
         checkCublasErrors(cublasDestroy(cublasHandle));
     }
 
-
-
 public:
-
     static cuDNN_netWork<T>* instanceObject()
     {
         static cuDNN_netWork<T>* cudnn = new cuDNN_netWork<T>();
         return cudnn;
     }
-
-    cuDNN_netWork(){
-
-        convAlgorithm = -1;
+    cuDNN_netWork()
+    {
+    	convFwdAlgorithm = -1;
+    	convBwdFilterAlgorithm = -1;
+    	convBwdDataAlgorithm = -1;
 
         switch(sizeof(T))
         {
-            case 2:
-            dataType = CUDNN_DATA_HALF;break;
             case 4:
-            dataType = CUDNN_DATA_FLOAT;break;
+            	dataType = CUDNN_DATA_FLOAT;break;
             case 8:
-            dataType = CUDNN_DATA_DOUBLE;break;
-
-            default:FatalError("Unsupported data type");
+            	dataType = CUDNN_DATA_DOUBLE;break;
+            case 2:
+            	dataType = CUDNN_DATA_HALF;break;
+            default:FatalError("Unsupported data type");break;
         }
-
         /*format type*/
         tensorFormat = CUDNN_TENSOR_NCHW;
         createHandles();
     }
-
-
     ~cuDNN_netWork()
     {
         destroyHandles();
     }
-
 };
-
-
-
-
-
 
 #endif /* CUDNN_NETWORK_H_ */

@@ -10,30 +10,25 @@
 
 #include<tuple>
 #include<string>
-#include"layersBase.h"
+#include"LayersBase.h"
 
-class ShareLayer : public layersBase
+/*
+ * Class SharedLayer
+ * */
+class ShareLayer : public LayersBase
 {
     public:
     ShareLayer(string name);
-    ShareLayer(string name, layersBase* layer);
+    ShareLayer(string name, LayersBase* layer);
     void forwardPropagation(string train_or_test){};
     void backwardPropagation(float Momemtum){};
     void readWeight(FILE* file){};
     void saveWeight(FILE* file){};
-
-    int getOutputSize()
-    {
-        return outputSize;
-    }
-
+    int getOutputSize();
 
     private:
     int outputSize;
-
 };
-
-
 
 
 #endif /* SHARELAYER_H_ */

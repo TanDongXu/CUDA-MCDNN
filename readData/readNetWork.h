@@ -10,7 +10,7 @@
 
 #include<iostream>
 #include"../config/config.h"
-#include"../layers/layersBase.h"
+#include"../layers/LayersBase.h"
 
 void readNetWork();
 

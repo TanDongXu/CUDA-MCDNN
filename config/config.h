@@ -52,7 +52,6 @@ class configNonLinearity
 
 };
 
-
 class ConfigPoolMethod
 {
     public:
@@ -81,9 +80,7 @@ class ConfigPoolMethod
 
     private:
     int m_poolMethod;
-
 };
-
 
 /*the base of config*/
 class configBase
@@ -151,29 +148,29 @@ class config
 
     /*get channels*/
 
-     int getChannels(){
+     int getChannels()
+     {
          return _channels;
-
      }
 
-        /*read the configure from file*/
-        void initConfig(string path){
-            _path = path;
+    /*read the configure from file*/
+    void initConfig(string path)
+    {
+          _path = path;
+         init(_path);
+    }
 
-            init(_path);
-
-        }
-
-
-    configBase* getFirstLayers(){
+    configBase* getFirstLayers()
+    {
         return _firstLayers;
     }
 
-     configBase* getLastLayer(){
+    configBase* getLastLayer(){
          return _lastLayer;
      }
 
-    configBase* getLayersByName(std::string name){
+    configBase* getLayersByName(std::string name)
+    {
         if(_layerMaps.find(name) != _layerMaps.end()){
             return _layerMaps[name];
         }
@@ -183,27 +180,33 @@ class config
         }
     }
 
-        //insert layer
-        void insertLayerByName(std::string name, configBase* layer){
-            if(_layerMaps.find(name) == _layerMaps.end()){
-                _layerMaps[name] = layer;
-            }
-            else {
-                cout<<"config:layer "<<name<<" have already exist"<<endl;
-                exit(0);
-            }
+   //insert layer
+   void insertLayerByName(std::string name, configBase* layer)
+   {
+        if(_layerMaps.find(name) == _layerMaps.end())
+        {
+            _layerMaps[name] = layer;
         }
-
+        else
+        {
+            cout<<"config:layer "<<name<<" have already exist"<<endl;
+            exit(0);
+        }
+   }
 
     size_t getLayersNum()
     {
         return _layerMaps.size();
     }
 
-    config(){
+    config()
+    {
         _lrate = 123456;
+        _firstLayers = NULL;
+        _lastLayer = NULL;
+        m_poolMethod = NULL;
+        m_nonLinearity = NULL;
     }
-
 
     private:
         int _batch_size;
@@ -214,17 +217,11 @@ class config
         float _lrate;
         int _nclasses;
         int _channels;
-
-
         string _configStr;
         string _path;
-
         map<string, configBase*> _layerMaps;
         configBase* _firstLayers;
         configBase* _lastLayer;
-
-
-
         configNonLinearity* m_nonLinearity;
         ConfigPoolMethod * m_poolMethod;
 
@@ -237,9 +234,7 @@ class config
         void get_layers_config(string&str);
         vector<string> get_name_vector(string &str, string name);
         void init(string path);
-        };
-
-
+};
 
 /*Each layer config*/
 /*data layer config */
@@ -353,7 +348,6 @@ class configInception : public configBase
     float _lrate;
 };
 
-
 /*branch layer config*/
 class configBranch : public configBase
 {
@@ -366,11 +360,8 @@ class configBranch : public configBase
         _sub_input = sub_input;
         m_outputs = outputs;
     }
-
-
     vector<string> m_outputs;
 };
-
 
 /*hidden layer config*/
 class configHidden :public configBase
@@ -389,14 +380,11 @@ class configHidden :public configBase
         _weight_decay = weight_decay;
     }
 
-
     int _NumHiddenNeurons;
     float _init_w;
     float _lrate;
     float _weight_decay;
-
 };
-
 
 /*dropout layer config*/
 class configDropOut : public configBase
@@ -408,14 +396,11 @@ class configDropOut : public configBase
         _input = input;
         _sub_input = sub_input;
         dropOut_rate = rate;
-
     }
 
     public:
     float dropOut_rate;
-
 };
-
 
 /*activation layer config*/
 class configActivation : public configBase
@@ -429,7 +414,6 @@ class configActivation : public configBase
         _sub_input = sub_input;
         _non_linearity = non_linearity; 
     }
-
     int _non_linearity;
 };
 
@@ -446,16 +430,12 @@ class configLRN : public configBase
         _lrnN = lrnN;
         _lrnAlpha = lrnAlpha;
         _lrnBeta = lrnBeta;
-
     }
-
 
     unsigned _lrnN;
     float _lrnAlpha;
     float _lrnBeta;
-
 };
-
 
 /*softmax layer config*/
 class configSoftMax : public configBase
@@ -473,7 +453,6 @@ class configSoftMax : public configBase
 
     int _nclasses;
     float _weight_decay;
-
 };
 
 

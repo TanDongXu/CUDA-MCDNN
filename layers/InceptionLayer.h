@@ -9,30 +9,24 @@
 #define INCEPTIONLAYER_H_
 
 #include<tuple>
-#include"layersBase.h"
-#include"convLayer.h"
-#include"poolLayer.h"
+#include"LayersBase.h"
+#include"ConvLayer.h"
+#include"PoolLayer.h"
 #include"../composite/Inception.h"
 
-class InceptionLayer : public layersBase
+/*
+ * Class Inception layer
+ * */
+class InceptionLayer : public LayersBase
 {
     public:
     InceptionLayer(string name, int sign);
+    ~InceptionLayer();
+    int getOutputSize();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);
     void saveWeight(FILE* file){};
     void readWeight(FILE* file){};
-
-    ~InceptionLayer()
-    {
-        delete inception;
-    };
-
-    int getOutputSize()
-    {
-        return outputSize;
-    }
-
 
     private:
     int one;

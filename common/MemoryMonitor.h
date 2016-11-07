@@ -20,7 +20,6 @@ class MemoryMonitor
 
     void *cpuMallocMemory(int size);
     void gpuMallocMemory(void** devPtr ,int size);
-
     void freeCpuMemory(void* ptr);
     void freeGpuMemory(void*ptr);
     void gpuMemoryMemset(void* dev_data, int size);
@@ -29,7 +28,6 @@ class MemoryMonitor
     void cpu2Gpu(void* dev_data, void* host_data, int size);
     void gpu2cpu(void* host_data, void* dev_data, int size);
     void gpu2gpu(void* dev_data2, void* dev_data1, int size);
-
 };
 
 

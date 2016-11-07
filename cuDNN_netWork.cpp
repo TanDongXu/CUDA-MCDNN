@@ -18,7 +18,6 @@ void setTensorDesc(cudnnTensorDescriptor_t& tensorDesc,
                    int h,
                    int w){
 
-
                        #if SIMPLE_TENSOR_DESCRIPTOR
                        /*cudnn set 4d tensor*/
                        checkCUDNN(cudnnSetTensor4dDescriptor(tensorDesc, 
@@ -55,14 +54,8 @@ void setTensorDesc(cudnnTensorDescriptor_t& tensorDesc,
                        #endif
                    }
 
-
-
-
-
 /*matrixMulti*/
-
 #define DISABLE_GEMV
-
 void matrixMulti(cublasHandle_t cublasHandle, 
                  int m, 
                  int n,
@@ -90,7 +83,6 @@ void matrixMulti(cublasHandle_t cublasHandle,
                                   n));
 
     #else
-
     checkCublasErrors(cublasSgemv(cublasHandle, CUBLAS_OP_T,
                                   m, n,
                                   &alpha,
@@ -98,10 +90,7 @@ void matrixMulti(cublasHandle_t cublasHandle,
                                   x, 1,
                                   &beta,
                                   y, 1));
-
-
     #endif
-
 }
 
 

@@ -18,7 +18,8 @@
 #define ACTIVATION_SIGMOID 0
 #define ACTIVATION_RELU 1
 #define ACTIVATION_TANH 2
-#define ACTIVATION_LRELU 3
+#define ACTIVATION_CLIPPED_RELU 3
+#define ACTIVATION_LRELU 4
 
 #define POOLING_MAX      0
 #define POOLING_AVERAGE_COUNT_INCLUDE_PADDING  1 // count for average includes padded values

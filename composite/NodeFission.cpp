@@ -1,10 +1,10 @@
 #include"NodeFission.h"
 #include"../config/config.h"
-#include"../layers/layersBase.h"
+#include"../layers/LayersBase.h"
 
 //node fission
-void NodeFission(layersBase* splitNode, layersBase* nextNode) {
-    vector<layersBase*>::iterator l_iter;
+void NodeFission(LayersBase* splitNode, LayersBase* nextNode) {
+    vector<LayersBase*>::iterator l_iter;
     vector<configBase*>::iterator c_iter;
 
     //modify config
@@ -40,11 +40,11 @@ void NodeFission(layersBase* splitNode, layersBase* nextNode) {
 
 
     //modify Layers
-    layersBase* layerFiss = FissionFactory::instanceObject()->createLayer(splitNode);
+    LayersBase* layerFiss = FissionFactory::instanceObject()->createLayer(splitNode);
     layerFiss->nextLayer.clear();
     layerFiss->prevLayer.clear();
     //layerFiss
-    layersBase* prevLayer = Layers::instanceObject()->getLayer(splitNode->_inputName);
+    LayersBase* prevLayer = Layers::instanceObject()->getLayer(splitNode->_inputName);
     //prev
     Layers::instanceObject()->storLayers(prevLayer->_name, layerFiss->_name,layerFiss);
     //next
@@ -70,7 +70,7 @@ nextNode->insertPrevLayer(layerFiss);
 }
 
 /*softMaxLayer fission*/
-void softmaxFission(layersBase* splitNode)
+void softmaxFission(LayersBase* splitNode)
 {
     //modify config
     configBase* configFiss = FissionFactory::instanceObject()->createConfig(splitNode);
@@ -86,11 +86,11 @@ void softmaxFission(layersBase* splitNode)
 
 
     //modify Layers
-    layersBase* layerFiss = FissionFactory::instanceObject()->createLayer(splitNode);
+    LayersBase* layerFiss = FissionFactory::instanceObject()->createLayer(splitNode);
     layerFiss->nextLayer.clear();
     layerFiss->prevLayer.clear();
     //layerFiss
-    layersBase* prevLayer = Layers::instanceObject()->getLayer(splitNode->_inputName);
+    LayersBase* prevLayer = Layers::instanceObject()->getLayer(splitNode->_inputName);
     //prev
     Layers::instanceObject()->storLayers(prevLayer->_name, layerFiss->_name,layerFiss);
 }

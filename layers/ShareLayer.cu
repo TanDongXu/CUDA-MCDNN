@@ -18,3 +18,7 @@ ShareLayer::ShareLayer(string name)
     outputSize = 0;
 }
 
+int ShareLayer::getOutputSize()
+{
+    return outputSize;
+}

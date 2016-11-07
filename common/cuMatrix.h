@@ -112,7 +112,6 @@ class cuMatrix
         return devData;
     }
 
-
 public:
     int rows;
     int cols;
@@ -136,12 +135,10 @@ private:
                 printf("cuMatrix:cuMatrix host Memory allocation Failed\n");
                 exit(0);
             }
-
             /*init allocation memory*/
             memset(hostData,0,rows * cols * channels * sizeof(*hostData));
         }
     }
-
 
     /*allocate device memory*/
     void mallocDeviceMemory()
@@ -153,8 +150,7 @@ private:
             checkCudaErrors(cudaMemset(devData, 0, rows * cols * channels * sizeof(*devData)));
         }
     }
-    };
-
+};
 
 
 #endif /* CUMATRIX_H_ */

@@ -3,6 +3,9 @@
 #include"../config/config.h"
 #include"../cuDNN_netWork.h"
 
+/*
+ * Create CUDNN Handles
+ * */
 void LRNLayer::createHandles()
 {
     checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
@@ -12,6 +15,29 @@ void LRNLayer::createHandles()
     checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
 }
 
+/*
+ * Destroy CUDNN Handles
+ * */
+void LRNLayer::destroyHandles()
+{
+    checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
+    checkCUDNN(cudnnDestroyTensorDescriptor(dstTensorDesc))
+    checkCUDNN(cudnnDestroyLRNDescriptor(normDesc));
+    checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
+    checkCUDNN(cudnnDestroyTensorDescriptor(dstDiffTensorDesc));
+}
+
+/*
+ * Get outputSize
+ * */
+int LRNLayer::getOutputSize()
+{
+    return outputSize;
+}
+
+/*
+ * LRN layer constructor
+ * */
 LRNLayer::LRNLayer(string name)
 {
     _name = name;
@@ -21,10 +47,14 @@ LRNLayer::LRNLayer(string name)
     diffData = NULL;
     prevLayer.clear();
     nextLayer.clear();
+    srcTensorDesc = NULL;
+    dstTensorDesc = NULL;
+    srcDiffTensorDesc = NULL;
+    dstDiffTensorDesc = NULL;
 
     configLRN* curConfig = (configLRN*)config::instanceObjtce()->getLayersByName(_name);
     string prevLayerName = curConfig->_input;
-    layersBase* prev_Layer = (layersBase*)Layers::instanceObject()->getLayer(prevLayerName);
+    LayersBase* prev_Layer = (LayersBase*)Layers::instanceObject()->getLayer(prevLayerName);
 
     lrnN = curConfig->_lrnN;
     lrnAlpha = curConfig->_lrnAlpha;
@@ -46,7 +76,9 @@ LRNLayer::LRNLayer(string name)
     this->createHandles();
 }
 
-//deep copy constructor
+/*
+ * Deep copy constructor
+ */
 LRNLayer::LRNLayer(LRNLayer* layer)
 {
     srcData = NULL;
@@ -54,6 +86,10 @@ LRNLayer::LRNLayer(LRNLayer* layer)
     diffData = NULL;
     prevLayer.clear();
     nextLayer.clear();
+    srcTensorDesc = NULL;
+    dstTensorDesc = NULL;
+    srcDiffTensorDesc = NULL;
+    dstDiffTensorDesc = NULL;
 
     static int idx = 0;
     _name = layer->_name + string("_") + int_to_string(idx);
@@ -80,6 +116,19 @@ LRNLayer::LRNLayer(LRNLayer* layer)
     this->createHandles();
 }
 
+/*
+ * Destructor
+ * */
+LRNLayer::~LRNLayer()
+{
+    MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+    MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
+    destroyHandles();
+}
+
+/*
+ * LRN Forward propagation
+ * */
 void LRNLayer::forwardPropagation(string train_or_test)
 {
     srcData = prevLayer[0]->dstData;
@@ -117,10 +166,11 @@ void LRNLayer::forwardPropagation(string train_or_test)
                                            &beta,
                                            dstTensorDesc,
                                            dstData));
-
 }
 
-
+/*
+ * LRN Backward propagation
+ * */
 void LRNLayer::backwardPropagation(float Momentum)
 {
     checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
@@ -173,12 +223,3 @@ void LRNLayer::backwardPropagation(float Momentum)
                                             diffData));
 }
 
-
-void LRNLayer::destroyHandles()
-{
-    checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
-    checkCUDNN(cudnnDestroyTensorDescriptor(dstTensorDesc))
-    checkCUDNN(cudnnDestroyLRNDescriptor(normDesc));
-    checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
-    checkCUDNN(cudnnDestroyTensorDescriptor(dstDiffTensorDesc));
-}

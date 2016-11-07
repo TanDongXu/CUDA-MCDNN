@@ -34,12 +34,9 @@ void read_batch(string fileName,
                     }
                 }
             }
-
             image_data.push_back(channels);
         }
-
     }
-
 }
 
 void read_Cifar10_Data(cuMatrixVector<float>& trainX,

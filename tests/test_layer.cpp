@@ -26,9 +26,7 @@ void CHECK_DEV_HOST_MATRIX_EQ(float* A, int sizeA, float* B, int sizeB)
     tmpB = (float*)MemoryMonitor::instanceObject()->cpuMallocMemory(sizeB);
     checkCudaErrors(cudaMemcpy(tmpB, B, sizeB, cudaMemcpyDeviceToHost));
     CHECK_HOST_MATRIX_EQ(A, sizeA, tmpB, sizeB);
-
 }
-
 
 /*printf hostdata，channels,height,width*/
 //template<class T>
@@ -49,11 +47,9 @@ void printf_HostParameter(int number, int channels, int height,int width, float*
             cout<<endl;
         }
     }
-
     cout<<"over"<<endl;
     for(;;){}
 }
-
 
 /*printf devData*/
 void printf_DevParameter(int number, int channels, int height,int width, float*A)
@@ -77,18 +73,15 @@ void printf_DevParameter(int number, int channels, int height,int width, float*A
             cout<<endl;
         }
     }
-
     cout<<"sdfhdgggfhfhdfhdfgh"<<endl;
     for(;;){}
 }
-
 
 //the second parameter must be reference(引用)
 void copy_DeviceToHost(float*devData, float*&hostData, int number, int channels, int height, int width)
 {
     hostData = (float*)MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height * width * sizeof(float));
     checkCudaErrors(cudaMemcpy(hostData, devData, number * channels * height * width * sizeof(float), cudaMemcpyDeviceToHost));
-
 }
 
 void copy_HostToDevice(float*hostData, float*&devData, int number, int channels, int height, int width)
@@ -97,9 +90,7 @@ void copy_HostToDevice(float*hostData, float*&devData, int number, int channels,
     checkCudaErrors(cudaMemcpy(devData, hostData, number * channels * height * width * sizeof(float), cudaMemcpyHostToDevice));
 }
 
-
-
-void printfLayersParameter(layersBase* layer)
+void printfLayersParameter(LayersBase* layer)
 {
     cout<<"name: "<<layer->_name<<endl;
     cout<<"Input: "<<layer->_inputName<<endl;
@@ -109,8 +100,6 @@ void printfLayersParameter(layersBase* layer)
     cout<<"width: "<<layer->width<<endl;
     cout<<"InputAmount: "<<layer->inputAmount<<endl;
     cout<<"InputImageDim: "<<layer->inputImageDim<<endl;
-
-    //
     printf_DevParameter(layer->number, layer->channels, layer->height, layer->width, layer->dstData);
 
     for(;;){}

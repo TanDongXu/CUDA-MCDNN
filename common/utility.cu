@@ -33,7 +33,6 @@ void showDevices()
                prop.ECCEnabled,
                prop.multiGpuBoardGroupID);
     }
-
     printf("\n");
 
 }
@@ -68,7 +67,6 @@ __global__ void MultiChannelsMerge(float** inputs,
     }
 }
 
-
 /*multiChannels data split*/
 __global__ void MultiChannelsSplit(float* inputs, 
                                    float**outputs, 
@@ -95,9 +93,7 @@ __global__ void MultiChannelsSplit(float* inputs,
             output[pos + j] = input[j];
         }
     }
-
 }
-
 
 /*overload*/
 __global__ void MultiChannelsSplit(float* inputs, 
@@ -121,7 +117,6 @@ __global__ void MultiChannelsSplit(float* inputs,
         }
     }
 }
-
 
 /*multi array add*/
 __global__ void MultiArrayAdd(float** inputs, 

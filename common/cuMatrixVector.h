@@ -25,7 +25,6 @@ class cuMatrixVector
         MemoryMonitor::instanceObject()->freeCpuMemory(m_hostPoint);
         MemoryMonitor::instanceObject()->freeGpuMemory(m_devPoint);
         m_vec.clear();
-
     }
 
     /*overload operator []*/
@@ -36,10 +35,8 @@ class cuMatrixVector
             cout<<"cuMatrixVector:operator[] error "<<endl;
             exit(0);
         }
-
         return m_vec[index];
     }
-
 
     //push_back
     void push_back(cuMatrix<T>* m)
@@ -53,16 +50,10 @@ class cuMatrixVector
         return m_vec.size();
     }
 
-
-
-
     public:
     T** m_hostPoint;
     T** m_devPoint;
     vector<cuMatrix<T>* > m_vec;
-
 };
-
-
 
 #endif /* CUMATRIXVECTOR_H_ */

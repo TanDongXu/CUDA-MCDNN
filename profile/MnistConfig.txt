@@ -6,7 +6,7 @@
 *
 *              General Parameters Config
 *
-*NON_LINEARITY = NL_SIGMOID, NL_TANH, NL_RELU
+*NON_LINEARITY = NL_SIGMOID, NL_TANH, NL_RELU, NL_CLIPPED_RELU
 ********************************************************/
 
 BATCH_SIZE = 128;

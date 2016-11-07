@@ -1,16 +1,16 @@
 #include"columnNet.cuh"
 #include"config/config.h"
 #include"./readData/readNetWork.h"
-#include"./layers/dataLayer.h"
-#include"./layers/convLayer.h"
-#include"./layers/poolLayer.h"
+#include"./layers/DataLayer.h"
+#include"./layers/ConvLayer.h"
+#include"./layers/PoolLayer.h"
 #include"./layers/InceptionLayer.h"
-#include"./layers/hiddenLayer.h"
-#include"./layers/dropOutLayer.h"
-#include"./layers/activationLayer.h"
+#include"./layers/HiddenLayer.h"
+#include"./layers/DropOutLayer.h"
+#include"./layers/ActivationLayer.h"
 #include"./layers/LRNLayer.h"
-#include"./layers/softMaxLayer.h"
-#include "./layers/voteLayer.h"
+#include"./layers/SoftMaxLayer.h"
+#include "./layers/VoteLayer.h"
 #include"./common/cuMatrixVector.h"
 #include"./common/cuMatrix.h"
 #include"./common/utility.cuh"
@@ -22,8 +22,8 @@
 #include"math.h"
 #include<algorithm>
 
-const bool DFS_TRAINING = true;
-const bool DFS_TEST = true;
+const bool DFS_TRAINING = false;
+const bool DFS_TEST = false;
 const bool FISS_TRAINING = false;
 
 using namespace std;
@@ -31,7 +31,7 @@ using namespace std;
 /*create netWork*/
 void creatColumnNet(int sign)
 {
-    layersBase* baseLayer;
+    LayersBase* baseLayer;
     int layerNum = config::instanceObjtce()->getLayersNum();
     configBase* layer = config::instanceObjtce()->getFirstLayers();
     queue<configBase*>que;
@@ -43,22 +43,22 @@ void creatColumnNet(int sign)
         que.pop();
         if(string("DATA") == (layer->_type))
         {
-            baseLayer = new dataLayer(layer->_name);
+            baseLayer = new DataLayer(layer->_name);
         }else if(string("CONV") == (layer->_type))
         {
-            baseLayer = new convLayer (layer->_name, sign);
+            baseLayer = new ConvLayer (layer->_name, sign);
         }else if(string("POOLING") == (layer->_type))
         {
-            baseLayer = new poolLayer (layer->_name);
+            baseLayer = new PoolLayer (layer->_name);
         }else if(string("HIDDEN") == (layer->_type))
         {
-            baseLayer = new hiddenLayer(layer->_name, sign);
+            baseLayer = new HiddenLayer(layer->_name, sign);
         }else if(string("SOFTMAX") == (layer->_type))
         {
-            baseLayer = new softMaxLayer(layer->_name);
+            baseLayer = new SoftMaxLayer(layer->_name);
         }else if(string("ACTIVATION") == (layer->_type))
         {
-            baseLayer = new activationLayer(layer->_name);
+            baseLayer = new ActivationLayer(layer->_name);
         }else if(string("LRN") == (layer->_type))
         {
             baseLayer = new LRNLayer(layer->_name);
@@ -67,7 +67,7 @@ void creatColumnNet(int sign)
             baseLayer = new InceptionLayer(layer->_name, sign);
         }else if(string("DROPOUT") == (layer->_type))
         {
-            baseLayer = new dropOutLayer(layer->_name);
+            baseLayer = new DropOutLayer(layer->_name);
         }
 
         Layers::instanceObject()->storLayers(layer->_input, layer->_name, baseLayer);
@@ -94,7 +94,7 @@ void resultPredict(string train_or_test)
     while(!que.empty()){
         config = que.front();
         que.pop();
-        layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
+        LayersBase* layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
         layer->forwardPropagation(train_or_test);
         for(int i = 0; i < config->_next.size(); i++){
             if( hash.find( config->_next[i] ) == hash.end()){
@@ -106,7 +106,7 @@ void resultPredict(string train_or_test)
 }
 
 float dfsGetLearningRateReduce(configBase* config){
-    layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
+    LayersBase* layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
     if(config->_next.size() == 0){
         layer->setRateReduce( 1 );
         return 1;
@@ -126,7 +126,7 @@ float dfsGetLearningRateReduce(configBase* config){
 /*test netWork*/
 void predictTestData(cuMatrixVector<float>&testData, cuMatrix<int>* &testLabel, int batchSize)
 {
-    dataLayer* datalayer = static_cast<dataLayer*>( Layers::instanceObject()->getLayer("data"));
+    DataLayer* datalayer = static_cast<DataLayer*>( Layers::instanceObject()->getLayer("data"));
 
     for(int i=0;i<( testData.size() + batchSize - 1)/batchSize;i++)
     {
@@ -139,7 +139,6 @@ void predictTestData(cuMatrixVector<float>&testData, cuMatrix<int>* &testLabel, 
 void getNetWorkCost(float&Momentum)
 {
     resultPredict("train");
-
     configBase* config = (configBase*) config::instanceObjtce()->getLastLayer();
     queue<configBase*>que;
     que.push(config);
@@ -148,7 +147,7 @@ void getNetWorkCost(float&Momentum)
     while(!que.empty()){
         config = que.front();
         que.pop();
-        layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
+        LayersBase* layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
         layer->backwardPropagation(Momentum);
 
         for(int i = 0; i < config->_prev.size(); i++){
@@ -161,8 +160,8 @@ void getNetWorkCost(float&Momentum)
 }
 
 std::vector<configBase*> g_vQue;
-//std::map<layersBase*, size_t> g_vFissNode;
-std::vector<softMaxLayer*> g_vBranchResult;
+//std::map<LayersBase*, size_t> g_vFissNode;
+std::vector<SoftMaxLayer*> g_vBranchResult;
 //int g_nMinCorrSize;
 
 /* voting */
@@ -172,14 +171,14 @@ void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMa
     if( config->_next.size() == 0 ){
         //printf("%s\n", config->_name.c_str());
 
-        dataLayer* datalayer = static_cast<dataLayer*>( Layers::instanceObject()->getLayer("data"));
+        DataLayer* datalayer = static_cast<DataLayer*>( Layers::instanceObject()->getLayer("data"));
 
         for(int i = 0; i < (testData.size() + nBatchSize - 1) / nBatchSize; i++)
         {
             datalayer->getBatch_Images_Label(i , testData, testLabel);
             for(int j = 0; j < g_vQue.size(); j++)
             {
-                layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[j]->_name);
+                LayersBase* layer = (LayersBase*)Layers::instanceObject()->getLayer(g_vQue[j]->_name);
                 layer->forwardPropagation("test");
                 //                if(i == 0)
                 //                {
@@ -195,7 +194,7 @@ void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMa
 
     for(int i = 0; i < config->_next.size(); i++){
         configBase* tmpConfig = config->_next[i];
-        layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer( config->_name );
+        LayersBase* layer = (LayersBase*)Layers::instanceObject()->getLayer( config->_name );
         layer->setCurBranchIndex(i);
         dfsResultPredict( tmpConfig, testData, testLabel, nBatchSize );
     }
@@ -208,17 +207,17 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
 
     /*如果是一个叶子节点*/
     if (config->_next.size() == 0){
-        dataLayer* datalayer = static_cast<dataLayer*>(Layers::instanceObject()->getLayer("data"));
+        DataLayer* datalayer = static_cast<DataLayer*>(Layers::instanceObject()->getLayer("data"));
         datalayer->RandomBatch_Images_Label(trainData, trainLabel);
 
         for(int i = 0; i < g_vQue.size(); i++){
             //printf("f %d %s\n", i, g_vQue[i]->_name.c_str());
-            layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
+            LayersBase* layer = (LayersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
             layer->forwardPropagation( "train" );
         }
 
         for( int i = g_vQue.size() - 1; i>= 0; i--){
-            layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
+            LayersBase* layer = (LayersBase*)Layers::instanceObject()->getLayer(g_vQue[i]->_name);
             // if(layer->getRateReduce() > 1e-4){
             layer->backwardPropagation( nMomentum );
             //  }
@@ -230,7 +229,7 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
     /*如果不是叶子节点*/
     for(int i = 0; i < config->_next.size(); i++){
         configBase* tmpConfig = config->_next[i];
-        layersBase* layer = (layersBase*)Layers::instanceObject()->getLayer( config->_name );
+        LayersBase* layer = (LayersBase*)Layers::instanceObject()->getLayer( config->_name );
         layer->setCurBranchIndex(i);
         dfsTraining( tmpConfig, nMomentum, trainData, trainLabel, iter);
     }
@@ -238,29 +237,29 @@ void dfsTraining(configBase* config, float nMomentum, cuMatrixVector<float>& tra
 }
 
 //ascend order
-bool cmp_ascend_Order( softMaxLayer* a, softMaxLayer* b)
+bool cmp_ascend_Order( SoftMaxLayer* a, SoftMaxLayer* b)
 {
     return (a->getCorrectNum()) < (b->getCorrectNum());
 }
 
 /*get min result branch*/
-void getBranchResult(layersBase*curLayer)
+void getBranchResult(LayersBase*curLayer)
 {
     //叶子节点
     if (curLayer->nextLayer.size() == 0)
     {
-        softMaxLayer* tmp = (softMaxLayer*) curLayer;
+        SoftMaxLayer* tmp = (SoftMaxLayer*) curLayer;
         g_vBranchResult.push_back(tmp);
     }
 
     for (int i = 0; i < curLayer->nextLayer.size(); i++) {
-        layersBase* tmpLayer = curLayer->nextLayer[i];
+        LayersBase* tmpLayer = curLayer->nextLayer[i];
         getBranchResult(tmpLayer);
     }
     //	//叶子节点
     //	if (curLayer->nextLayer.size() == 0)
     //	{
-    //		softMaxLayer* tmp = (softMaxLayer*)curLayer;
+    //		SoftMaxLayer* tmp = (SoftMaxLayer*)curLayer;
     //		if(tmp->getCorrectNum() < g_nMinCorrSize)
     //		{
     //			g_nMinCorrSize = tmp->getCorrectNum();
@@ -270,7 +269,7 @@ void getBranchResult(layersBase*curLayer)
     //
     //	for(int i = 0; i < curLayer->nextLayer.size(); i++)
     //	{
-    //		layersBase* tmpLayer =  curLayer->nextLayer[i];
+    //		LayersBase* tmpLayer =  curLayer->nextLayer[i];
     //		ascend_OrderBranch(tmpLayer);
     //	}
 }
@@ -281,7 +280,7 @@ void performFiss()
 {
     for(int i = 0; i < g_vBranchResult.size(); i++)
     {
-        layersBase* tmpCur = (layersBase*)g_vBranchResult[i];
+        LayersBase* tmpCur = (LayersBase*)g_vBranchResult[i];
 
         while (tmpCur->prevLayer[0]->_name != string("data") && tmpCur->prevLayer[0]->nextLayer.size() == 1)
         {
@@ -336,7 +335,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     {
 
 
-        dataLayer* datalayer = static_cast<dataLayer*>(Layers::instanceObject()->getLayer("data"));
+        DataLayer* datalayer = static_cast<DataLayer*>(Layers::instanceObject()->getLayer("data"));
 
         Momentum = nMomentum[id];
 
@@ -372,7 +371,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         while( !que.empty() ){
             config = que.front();
             que.pop();
-            layersBase * layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
+            LayersBase * layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
             layer->adjust_learnRate(epo, FLAGS_lr_gamma, FLAGS_lr_power);
 
             for(int i = 0; i < config->_next.size(); i++){
@@ -392,7 +391,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
 //            while( !que.empty() ){
 //                config = que.front();
 //                que.pop();
-//                layersBase * layer = (layersBase*)Layers::instanceObject()->getLayer(config->_name);
+//                LayersBase * layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
 //                layer->rateReduce();
 //                /*
 //                if( layer->lrate >= 1e-4 && layer->lrate <= 1){
@@ -436,12 +435,12 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
             if ((epo < 30 && ((epo + 1) % 15) == 0) || (epo >= 30 && ((epo + 1) % 10) == 0)) {
                 //g_vFissNode.clear();
                 g_vBranchResult.clear();
-                layersBase* curLayer = Layers::instanceObject()->getLayer("data");
+                LayersBase* curLayer = Layers::instanceObject()->getLayer("data");
                 //dataLayer* tmpLayer = (dataLayer*) curLayer;
                 //g_nMinCorrSize = tmpLayer->getDataSize();
                 getBranchResult(curLayer);
                 sort(g_vBranchResult.begin(), g_vBranchResult.end(), cmp_ascend_Order);
-                //				vector<softMaxLayer*> ::iterator it;
+                //				vector<SoftMaxLayer*> ::iterator it;
                 //				for(it  = g_vBranchResult.begin(); it != g_vBranchResult.end(); it++)
                 //				{
                 //					cout<<(*it)->_name<<endl;

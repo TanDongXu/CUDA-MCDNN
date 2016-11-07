@@ -1,8 +1,10 @@
 #include"Inception.h"
 
 
-/*Inception constructor*/
-Inception::Inception(layersBase* prevLayer,
+/*
+ * Inception constructor
+ * */
+Inception::Inception(LayersBase* prevLayer,
                      int sign, 
                      float* rate, 
                      const param_tuple& args)
@@ -15,8 +17,8 @@ Inception::Inception(layersBase* prevLayer,
     lrate = rate;
     InnerLayers = new Layers[4];
 
-    Conv_one = new convLayer("one", sign,
-                             convLayer::param_tuple(0, 0, 1, 1, 1, 
+    Conv_one = new ConvLayer("one", sign,
+                             ConvLayer::param_tuple(0, 0, 1, 1, 1,
                                                     one,
                                                     inputAmount, 
                                                     inputImageDim, 
@@ -24,8 +26,8 @@ Inception::Inception(layersBase* prevLayer,
                                                     *lrate, 
                                                     lambda));
 
-    Conv_three_reduce = new convLayer("three_reduce", sign,
-                                      convLayer::param_tuple(0, 0, 1, 1, 1,
+    Conv_three_reduce = new ConvLayer("three_reduce", sign,
+                                      ConvLayer::param_tuple(0, 0, 1, 1, 1,
                                                              three_reduce,
                                                              inputAmount, 
                                                              inputImageDim, 
@@ -33,8 +35,8 @@ Inception::Inception(layersBase* prevLayer,
                                                              *lrate, 
                                                              lambda));
 
-    Conv_three = new convLayer("three", sign,
-                               convLayer::param_tuple(1, 1, 1, 1, 3,
+    Conv_three = new ConvLayer("three", sign,
+                               ConvLayer::param_tuple(1, 1, 1, 1, 3,
                                                       three,
                                                       three_reduce, 
                                                       inputImageDim, 
@@ -42,8 +44,8 @@ Inception::Inception(layersBase* prevLayer,
                                                       *lrate, 
                                                       lambda));
 
-    Conv_five_reduce = new convLayer("five_reduce", sign,
-                                     convLayer::param_tuple(0, 0, 1, 1, 1, 
+    Conv_five_reduce = new ConvLayer("five_reduce", sign,
+                                     ConvLayer::param_tuple(0, 0, 1, 1, 1,
                                                             five_reduce,
                                                             inputAmount, 
                                                             inputImageDim, 
@@ -51,8 +53,8 @@ Inception::Inception(layersBase* prevLayer,
                                                             *lrate, 
                                                             lambda));
 
-    Conv_five = new convLayer("five", sign,
-                              convLayer::param_tuple(2, 2, 1, 1, 5, 
+    Conv_five = new ConvLayer("five", sign,
+                              ConvLayer::param_tuple(2, 2, 1, 1, 5,
                                                      five,
                                                      five_reduce, 
                                                      inputImageDim,
@@ -60,20 +62,19 @@ Inception::Inception(layersBase* prevLayer,
                                                      *lrate, 
                                                      lambda));
 
-    max_pool = new poolLayer("max_pool", 
-                             poolLayer::param_tuple("POOL_MAX", 3, 1, 1, 1, 1,
+    max_pool = new PoolLayer("max_pool",
+                             PoolLayer::param_tuple("POOL_MAX", 3, 1, 1, 1, 1,
                                                     inputImageDim, 
                                                     inputAmount));
 
-    Conv_pool_proj = new convLayer("pool_proj",sign,
-                                   convLayer::param_tuple(0, 0, 1, 1, 1,
+    Conv_pool_proj = new ConvLayer("pool_proj",sign,
+                                   ConvLayer::param_tuple(0, 0, 1, 1, 1,
                                                           pool_proj,
                                                           inputAmount, 
                                                           inputImageDim, 
                                                           epsilon, 
                                                           *lrate, 
                                                           lambda));
-
     /*mainly use in backpropagation*/
     share_Layer = new ShareLayer("share");
 
@@ -94,13 +95,40 @@ Inception::Inception(layersBase* prevLayer,
     }
 
     concat = new Concat(InnerLayers, Concat::param_tuple(one, three, five, pool_proj));
-    }
+}
 
+/*get result*/
+float* Inception::getConcatData()
+{
+    return dstData;
+}
 
-/*Inception forwardPropagation*/
+/*get delta*/
+float* Inception::getInceptionDiffData()
+{
+    return diffData;
+}
+
+Inception::~Inception()
+{
+    delete share_Layer;
+    delete concat;
+    delete InnerLayers;
+    delete Conv_one;
+    delete Conv_three_reduce;
+    delete Conv_three;
+    delete Conv_five;
+    delete Conv_five_reduce;
+    delete Conv_pool_proj;
+    delete max_pool;
+}
+
+/*
+ * Inception forwardPropagation
+ * */
 void Inception::forwardPropagation(string train_or_test)
 {
-    layersBase* layer;
+    LayersBase* layer;
 
     for(int i = 0; i < 4; i++)
     {
@@ -116,10 +144,12 @@ void Inception::forwardPropagation(string train_or_test)
 }
 
 
-/*inception backwardPropagation*/
+/*
+ * Inception backwardPropagation
+ * */
 void Inception::backwardPropagation(float*& nextLayerDiffData, float Momentum)
 {
-    layersBase* layer;
+    LayersBase* layer;
     for(int i = 0; i < 4; i++)
     {
         concat->split_DiffData(i, nextLayerDiffData);

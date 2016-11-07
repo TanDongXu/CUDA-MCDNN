@@ -10,52 +10,40 @@
 
 #include<string>
 #include<cudnn.h>
-#include"layersBase.h"
+#include"LayersBase.h"
 #include"../common/utility.cuh"
 
 using namespace std;
 
-class LRNLayer : public layersBase
+/*
+ * Class LRN layer
+ * */
+class LRNLayer : public LayersBase
 {
     public:
     LRNLayer(string name);
     LRNLayer(LRNLayer* layer);
+    ~LRNLayer();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);
     void saveWeight(FILE*file){}
     void readWeight(FILE*file){}
-    ~LRNLayer()
-    {
-        MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
-        MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
-        destroyHandles();
-    }
-
     void createHandles();
     void destroyHandles();
-
-    int getOutputSize()
-    {
-        return outputSize;
-    }
+    int getOutputSize();
 
     private:
+    cudnnLRNDescriptor_t normDesc;
+    cudnnTensorDescriptor_t srcTensorDesc;
+    cudnnTensorDescriptor_t dstTensorDesc;
+    cudnnTensorDescriptor_t srcDiffTensorDesc;
+    cudnnTensorDescriptor_t dstDiffTensorDesc;
     int outputSize;
     int inputSize;
     unsigned lrnN ;
     double lrnAlpha;
     double lrnBeta;
     double lrnK;
-
-    private:
-    cudnnTensorDescriptor_t srcTensorDesc = NULL;
-    cudnnTensorDescriptor_t dstTensorDesc = NULL;
-    cudnnLRNDescriptor_t normDesc;
-
-    cudnnTensorDescriptor_t srcDiffTensorDesc = NULL;
-    cudnnTensorDescriptor_t dstDiffTensorDesc = NULL;
 };
-
-
 
 #endif /* LRNLAYER_H_ */

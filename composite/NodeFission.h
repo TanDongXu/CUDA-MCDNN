@@ -8,22 +8,22 @@
 #ifndef NODEFISSION_H_
 #define NODEFISSION_H_
 
-#include"../layers/layersBase.h"
+#include"../layers/LayersBase.h"
 #include"../common/utility.cuh"
 #include"../config/config.h"
-#include"../layers/dataLayer.h"
-#include"../layers/convLayer.h"
-#include"../layers/activationLayer.h"
-#include"../layers/dropOutLayer.h"
-#include"../layers/hiddenLayer.h"
+#include"../layers/DataLayer.h"
+#include"../layers/ConvLayer.h"
+#include"../layers/ActivationLayer.h"
+#include"../layers/DropOutLayer.h"
+#include"../layers/HiddenLayer.h"
 #include"../layers/LRNLayer.h"
-#include"../layers/poolLayer.h"
-#include"../layers/softMaxLayer.h"
+#include"../layers/PoolLayer.h"
+#include"../layers/SoftMaxLayer.h"
 
 
 
-void NodeFission(layersBase* splitNode, layersBase* nextNode);
-void softmaxFission(layersBase* splitNode);
+void NodeFission(LayersBase* splitNode, LayersBase* nextNode);
+void softmaxFission(LayersBase* splitNode);
 
 
 //static factory
@@ -36,36 +36,36 @@ class FissionFactory
         return factory;
     }
 
-    static layersBase* createLayer(layersBase* node)
+    static LayersBase* createLayer(LayersBase* node)
     {
 
         string nodeType = config::instanceObjtce()->getLayersByName(node->_name)->_type;
 
         if(string("DATA") == nodeType)
         {
-            return new dataLayer((dataLayer*)node);
+            return new DataLayer((DataLayer*)node);
         }else if(string("CONV") == nodeType)
         {
-            return new convLayer((convLayer*)node);
+            return new ConvLayer((ConvLayer*)node);
         }else if(string("POOLING") == nodeType)
         {
-            return new poolLayer((poolLayer*)node);;
+            return new PoolLayer((PoolLayer*)node);;
 
         }else if(string("HIDDEN") == nodeType)
         {
-            return new hiddenLayer((hiddenLayer*)node);
+            return new HiddenLayer((HiddenLayer*)node);
         }else if(string("SOFTMAX") == nodeType)
         {
-            return new softMaxLayer((softMaxLayer*)node);
+            return new SoftMaxLayer((SoftMaxLayer*)node);
         }else if(string("ACTIVATION") == nodeType)
         {
-            return new activationLayer((activationLayer*)node);
+            return new ActivationLayer((ActivationLayer*)node);
         }else if(string("LRN") == nodeType)
         {
             return new LRNLayer((LRNLayer*)node);
         }else if(string("DROPOUT") == nodeType)
         {
-            return new dropOutLayer((dropOutLayer*)node);
+            return new DropOutLayer((DropOutLayer*)node);
         }else
         {
             cout<< "NodeFisson: Layer not exist" << endl;
@@ -74,7 +74,7 @@ class FissionFactory
     }
 
 
-    static configBase* createConfig(layersBase* node)
+    static configBase* createConfig(LayersBase* node)
     {
         configBase* curConfig = config::instanceObjtce()->getLayersByName(node->_name);
         string nodeType = config::instanceObjtce()->getLayersByName(node->_name)->_type;

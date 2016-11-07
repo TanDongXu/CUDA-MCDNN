@@ -22,7 +22,7 @@ void readNetWork()
         while( !que.empty() ){
             config = que.front();
             que.pop();
-			layersBase *layer = (layersBase*) Layers::instanceObject()->getLayer(config->_name);
+			LayersBase *layer = (LayersBase*) Layers::instanceObject()->getLayer(config->_name);
 			layer->readWeight(file);
             for(int i = 0; i < config->_next.size(); i++){
                 configBase* tmp = config->_next[i];

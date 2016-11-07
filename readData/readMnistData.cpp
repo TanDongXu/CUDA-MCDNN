@@ -19,9 +19,7 @@ int ReverseInt(int digit)
     ch2 = (digit >> 8) & 255;
     ch3 = (digit >> 16) & 255;
     ch4 = (digit >> 24) & 255;
-
     return ((int)ch1 << 24) + ((int)ch2 << 16) + ((int)ch3 << 8) + ((int)ch4);
-
 }
 
 /*read the data from mnist*/
@@ -40,10 +38,8 @@ void read_Mnist(string xpath, vector<Mat> &get_image_data)
         file.read((char*) &number_of_images, sizeof(number_of_images));
         number_of_images = ReverseInt(number_of_images);
 
-
         file.read((char*) &n_rows, sizeof(n_rows));
         n_rows = ReverseInt(n_rows);
-
 
         file.read((char*) &n_cols, sizeof(n_cols));
         n_cols = ReverseInt(n_cols);
@@ -68,9 +64,7 @@ void read_Mnist(string xpath, vector<Mat> &get_image_data)
         printf("read_Mnist:DataSet open error\n");
         exit(1);
     }
-
 }
-
 
 /*read the label from mnist*/
 void read_Mnist_label(string ypath, cuMatrix<int>* &image_label)
@@ -97,7 +91,6 @@ void read_Mnist_label(string ypath, cuMatrix<int>* &image_label)
             file.read((char*) &temp,sizeof(temp));
             image_label->setValue(i, 0, 0, temp);
         }
-
     }else{
 
         printf("read_Mnist_label:labelSet open error\n");
@@ -127,11 +120,9 @@ Mat pad_image(Mat& input_mat, int end_size)
         int end_index = input_mat.cols + right_down_pad;
         out_Mat = input_mat(Range(start_index,end_index), Range(start_index,end_index));
     }
-
     return out_Mat;
 
 }
-
 
 /*normalized digit*/
 Mat normalized_digit(Mat &inputMat, int normalized_width, int end_size)
@@ -150,7 +141,6 @@ Mat normalized_digit(Mat &inputMat, int normalized_width, int end_size)
         if(tempSum != 0) nZeroCols++;
     }
 
-
     Mat temp_outMat = inputMat;
 
     /*The difference between the current pixel of the normalized digital pixel*/
@@ -161,11 +151,8 @@ Mat normalized_digit(Mat &inputMat, int normalized_width, int end_size)
         int re_size = inputMat.cols + width_diff;
         resize(inputMat, temp_outMat, Size(re_size,re_size));
     }
-
     return pad_image(temp_outMat,end_size);
-
 }
-
 
 /*normalized dataset*/
 void get_normalizedData(vector<Mat> &train_data, 
@@ -195,9 +182,7 @@ void get_normalizedData(vector<Mat> &train_data,
             {
                 tempTrainData.push_back(pad_image(train_data[i],end_size));
             }
-
         }
-
     }else
     {
         cout<<"... skipping digit normalization and image padding"<<endl;
@@ -218,9 +203,7 @@ void get_normalizedData(vector<Mat> &train_data,
         }
         normalizedData.push_back(tmpmat);
     }
-
 }
-
 
 /*read the data and label*/
 void readMnistData(cuMatrixVector<float>& normalizedData, 
@@ -243,5 +226,4 @@ void readMnistData(cuMatrixVector<float>& normalizedData,
                        normalizedData,
                        normalized_width,
                        out_imageSize);
-
 }

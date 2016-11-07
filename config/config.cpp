@@ -33,13 +33,11 @@ void config::deleteSpace()
         }
         _configStr.erase(pos1, pos2 - pos1);
     }
-
 }
 
 void config::deleteComment()
 {
     size_t pos1, pos2;
-
     while(1)
     {
         /**find the string first occur,0 begin*/
@@ -53,11 +51,9 @@ void config::deleteComment()
             if(_configStr[pos2] == '/')
             break;
         }
-
         _configStr.erase(pos1, pos2 - pos1+1);
     }
 }
-
 
 string config::read_to_string(string file_name)
 {
@@ -87,7 +83,6 @@ string config::read_to_string(string file_name)
     return res;
 }
 
-
 int config::get_word_int(string&str, string name)
 {
     size_t pos = str.find(name);
@@ -107,7 +102,6 @@ int config::get_word_int(string&str, string name)
         string content =sub.substr(name.length() + 1, sub.length() - name.length() - 2);
         res = atoi(content.c_str());
     }
-
     str.erase(pos, i - pos + 1);
     return res;
 }
@@ -130,11 +124,9 @@ float config::get_word_float(string&str, string name)
         string content = sub.substr(name.length() + 1, sub.length() - name.length() - 2);
         res = atof(content.c_str());
     }
-
     str.erase(pos ,i - pos + 1);
     return res;
 }
-
 
 void config::get_layers_config(string &str)
 {
@@ -154,7 +146,6 @@ void config::get_layers_config(string &str)
                 if(str[tail] == ']') break;
                 ++ tail;
             }
-
             string sub =str.substr(head, tail - head + 1);
             if(sub[sub.length()-1] == ']')
             {
@@ -165,12 +156,8 @@ void config::get_layers_config(string &str)
                 layers.push_back(sub);
             }
             str.erase(head, tail - head + 1);
-
         }else ++ head;
-
     }
-
-
     cout<<endl<<endl<<"...Read The Layers Configure :"<< endl;;
     for(int i=0; i< layers.size(); i++)
     {
@@ -178,9 +165,7 @@ void config::get_layers_config(string &str)
         string name = get_word_type(layers[i], "NAME");
         string input = get_word_type(layers[i], "INPUT");
         string sub_input = get_word_type(layers[i], "SUB_INPUT");
-
         configBase* layer;
-
         if(string("CONV") == type)
         {
             int ks = get_word_int(layers[i], "KERNEL_SIZE");
@@ -359,9 +344,7 @@ void config::get_layers_config(string &str)
             }
             cout<< endl;
         }
-
         insertLayerByName(name, layer);
-
         if(std::string("DATA") == type){
             _firstLayers=layer;
         }
@@ -375,8 +358,8 @@ void config::get_layers_config(string &str)
         {
             _lastLayer = layer;
         }
-        }
-        }
+    }
+}
 
 void config::init(string path)
 {
@@ -385,58 +368,44 @@ void config::init(string path)
     /*delete the comment and space*/
     deleteComment();
     deleteSpace();
-
     /*batch_size*/
     _batch_size = get_word_int(_configStr, "BATCH_SIZE");
     /*normalized_width*/
     _normalized_width = get_word_int(_configStr, "NORMALIZED_WIDTH");
     /*imageSize*/
     _imageSize = get_word_int(_configStr, "IMAGES_SIZE");
-
     /*channels*/
     _channels = get_word_int(_configStr, "CNANNELS");
-
     /*learn_rate*/
     // _lrate = get_word_float(_configStr, "LEARN_RATE");
     /*epochs*/
     _training_epochs = get_word_int(_configStr, "EPOCHS");
-
     /*iter_per_epo*/
     _iter_per_epo = get_word_int(_configStr, "ITER_PER_EPO");
-
     /*layers*/
     get_layers_config(_configStr);
-
 }
-
 
 /*get the type of layers*/
 string config::get_word_type(string &str, string name)
 {
     size_t pos = str.find(name);
     if(pos == str.npos) return "NULL";
-
     int i = pos + 1;
-
     while(1)
     {
         if(i == str.length()) break;
         if(str[i] == ';') break;
         ++ i;
     }
-
     string sub = str.substr(pos, i - pos + 1);
     string content ;
     if(sub[sub.length()-1] == ';')
     {
         content = sub.substr(name.length() + 1, sub.length() - name.length() - 2);
-
     }
-
     str.erase(pos, i - pos + 1);
-
     return content;
-
 }
 
 vector<string> config::get_name_vector(string &str, string name)
@@ -444,16 +413,13 @@ vector<string> config::get_name_vector(string &str, string name)
     vector<string> result;
     size_t pos = str.find(name);
     if(pos == str.npos) return result;
-
     int i = pos + 1;
-
     while(1)
     {
         if(i ==  str.length()) break;
         if(str[i] == ';') break;
         ++ i;
     }
-
     string sub = str.substr(pos , i - pos + 1);
     string content;
     if(sub[sub.length()-1] == ';' )
@@ -462,11 +428,9 @@ vector<string> config::get_name_vector(string &str, string name)
     }
 
     str.substr(pos ,i - pos + 1);
-
     while(content.size())
     {
         size_t pos = content.find(",");
-
         if(pos == str.npos)
         {
             result.push_back(content);
@@ -477,6 +441,5 @@ vector<string> config::get_name_vector(string &str, string name)
             content.erase(0, pos + 1);
         }
     }
-
     return result;
 }

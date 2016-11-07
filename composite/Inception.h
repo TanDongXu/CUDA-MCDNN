@@ -12,9 +12,9 @@
 #include<tuple>
 #include<time.h>
 #include"Concat.h"
-#include"../layers/convLayer.h"
-#include"../layers/poolLayer.h"
-#include"../layers/layersBase.h"
+#include"../layers/ConvLayer.h"
+#include"../layers/PoolLayer.h"
+#include"../layers/LayersBase.h"
 #include"../layers/ShareLayer.h"
 #include"../tests/test_layer.h"
 
@@ -26,36 +26,14 @@ class Inception
 {
     public:
     typedef tuple<int, int, int, int, int, int, int, int, float, float>param_tuple;
-    Inception(layersBase* prevLayer, int sign, float* rate, const param_tuple& args);
+    Inception(LayersBase* prevLayer, int sign, float* rate, const param_tuple& args);
+    ~Inception();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float*& nextLayerDiffData, float Momemtum);
-
     /*get result*/
-    float* getConcatData()
-    {
-        return dstData;
-    }
-
-
+    float* getConcatData();
     /*get delta*/
-    float* getInceptionDiffData()
-    {
-        return diffData;
-    }
-
-    ~Inception()
-    {
-        delete share_Layer;
-        delete concat;
-        delete InnerLayers;
-        delete Conv_one;
-        delete Conv_three_reduce;
-        delete Conv_three;
-        delete Conv_five;
-        delete Conv_five_reduce;
-        delete Conv_pool_proj;
-        delete max_pool;
-    }
+    float* getInceptionDiffData();
 
     private:
     int one;
@@ -71,18 +49,16 @@ class Inception
     float* lrate;
     float* dstData;
     float* diffData;
-
-    private:
     Concat* concat;
     ShareLayer* share_Layer;
     Layers* InnerLayers;
-    convLayer* Conv_one;
-    convLayer* Conv_three_reduce;
-    convLayer* Conv_three;
-    convLayer* Conv_five;
-    convLayer* Conv_five_reduce;
-    convLayer* Conv_pool_proj;
-    poolLayer* max_pool;
+    ConvLayer* Conv_one;
+    ConvLayer* Conv_three_reduce;
+    ConvLayer* Conv_three;
+    ConvLayer* Conv_five;
+    ConvLayer* Conv_five_reduce;
+    ConvLayer* Conv_pool_proj;
+    PoolLayer* max_pool;
 
 };
 

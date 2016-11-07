@@ -20,7 +20,6 @@ class cuBaseVector
     public:
     /*constructed function*/
     cuBaseVector():hostPoint(0),devPoint(0){}
-
     /*free memory*/
     void vector_clear()
     {
@@ -60,7 +59,6 @@ class cuBaseVector
         return m_vec.size();
     }
 
-
     void toGpu()
     {
         hostPoint = (T**) MemoryMonitor::instanceObject()->cpuMallocMemory(m_vec.size() * sizeof(T*));
@@ -75,22 +73,16 @@ class cuBaseVector
 
         for (int p = 0; p < m_vec.size(); p++) {
             hostPoint[p] = m_vec[p];
-
         }
-
         checkCudaErrors(cudaMemcpy(devPoint, hostPoint, sizeof(T*) * m_vec.size(), cudaMemcpyHostToDevice));
     }
-
-
 
 public:
     T** hostPoint;
     T** devPoint;
 
 private:
-
     vector<T*> m_vec;
-
 };
 
 

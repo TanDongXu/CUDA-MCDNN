@@ -1,7 +1,25 @@
 #include"InceptionLayer.h"
 #include"../config/config.h"
 
+/*
+ * Destructor
+ * */
+InceptionLayer::~InceptionLayer()
+{
+     delete inception;
+};
 
+/*
+ * Get the outputSize
+ * */
+int InceptionLayer::getOutputSize()
+{
+    return outputSize;
+}
+
+/*
+ * Inception layer constructor
+ * */
 InceptionLayer::InceptionLayer(string name, int sign)
 {
     _name = name;
@@ -18,7 +36,7 @@ InceptionLayer::InceptionLayer(string name, int sign)
 
     configInception* curConfig = (configInception*) config::instanceObjtce()->getLayersByName(_name);
     string prevLayerName = curConfig->_input;
-    layersBase* prev_Layer = (layersBase*) Layers::instanceObject()->getLayer(prevLayerName);
+    LayersBase* prev_Layer = (LayersBase*) Layers::instanceObject()->getLayer(prevLayerName);
 
     one = curConfig->_one;
     three = curConfig->_three;
@@ -44,7 +62,9 @@ InceptionLayer::InceptionLayer(string name, int sign)
                                                      pool_proj, inputAmount, inputImageDim, epsilon, lambda));
 }
 
-
+/*
+ * Inception layer forward propagation
+ * */
 void InceptionLayer::forwardPropagation(string train_or_test)
 {
     srcData = prevLayer[0]->dstData;
@@ -52,7 +72,9 @@ void InceptionLayer::forwardPropagation(string train_or_test)
     dstData = inception->getConcatData();
 }
 
-
+/*
+ * Inception layer backward propagation
+ * */
 void InceptionLayer::backwardPropagation(float Momentum)
 {
     int nIndex = m_nCurBranchIndex;

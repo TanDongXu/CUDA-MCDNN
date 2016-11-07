@@ -12,6 +12,23 @@ void Concat::concatInit()
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_channels, 4 * sizeof(int));
 }
 
+/*
+ * Destructor
+ * */
+Concat::~Concat()
+{
+    MemoryMonitor::instanceObject()->freeCpuMemory(host_offset);
+    MemoryMonitor::instanceObject()->freeCpuMemory(host_channels);
+    MemoryMonitor::instanceObject()->freeCpuMemory(separateDim);
+    MemoryMonitor::instanceObject()->freeGpuMemory(dstData);
+    MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
+    MemoryMonitor::instanceObject()->freeGpuMemory(dev_offset);
+    MemoryMonitor::instanceObject()->freeGpuMemory(dev_channels);
+    MemoryMonitor::instanceObject()->freeGpuMemory(separate_diffData);
+    prevDiff.vector_clear();
+    separate_dstData.vector_clear();
+}
+
 /*incetion concat*/
 Concat::Concat(Layers*& Inner_Layers, const param_tuple& args)
 {

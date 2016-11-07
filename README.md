@@ -2,7 +2,7 @@
 >==========
 >Results
 >--------
->CNN accelerated by cuda and lib <a href ="https://developer.nvidia.com/cudnn">CUDNN</a>
+>CNN accelerated by cuda and lib <a href ="https://developer.nvidia.com/cudnn">CUDNN v5</a>
 >* The training time is greatly reduced compared to the first version 
 >1. Test on <a href="http://yann.lecun.com/exdb/mnist/"> mnist</a>    
 >2. Test on cifar-10
@@ -11,7 +11,7 @@
 >--------
 >1. Use cudnn lib to develop CNN
 >2. Use<a href="http://cs.nyu.edu/~wanli/dropc/"> Dropout</a> and<a href="http://arxiv.org/abs/1312.4400"> NetWork In NetWork(NIN)</a> to train the NetWork
->3. Use <a href="http://arxiv.org/abs/1409.4842">GoogLeNet Inception</a> structure to train NetWork
+>3. Use <a href="http://arxiv.org/abs/1409.4842">GoogLeNet Inception(no use CUDNN v5 lib)</a> structure to train NetWork
 
 >Compile
 >-------
@@ -29,7 +29,7 @@
 >* ***cublas***   
 >* ***curand***   
 >* ***cudadevrt***   
->
+>* ***cudnn***   
 
 ###GPU compute 
 >* capability 2.0   
@@ -78,5 +78,4 @@
 >* Author :tdx  
 >* Mail   :sa614149@mail.ustc.edu.cn  
 >* Welcome for any suggest!!   
->* 
 

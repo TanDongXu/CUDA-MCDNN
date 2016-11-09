@@ -165,6 +165,7 @@ std::vector<SoftMaxLayer*> g_vBranchResult;
 //int g_nMinCorrSize;
 /*多少次迭代进行分裂*/
 int g_nSplitIndex = 15;
+int g_nCount = 0;
 
 /* voting */
 void dfsResultPredict( configBase* config, cuMatrixVector<float>& testData, cuMatrix<int>*& testLabel, int nBatchSize)
@@ -309,7 +310,8 @@ void performFiss()
             /*全连接层和卷积层需要经过g_nSplitIndex迭代之后才裂变,其他层直接裂变*/
             if(layerType == string("HIDDEN") || layerType == string("CONV"))
             {
-                g_nSplitIndex = 15;
+                //cifar-10 set 15
+                g_nSplitIndex = 10;
             }else
             {
                 g_nSplitIndex = 1;
@@ -402,8 +404,8 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
         */
 
-        //只调整三次学习率
-        if( epo == 200 || epo == 500 || epo == 750 ){
+        //**只调整三次学习率, 可修改
+        if( epo == 50 || epo == 150 || epo == 350 ){
             config = (configBase*) config::instanceObjtce()->getFirstLayers();
             //adjust learning rate
             queue<configBase*> que;
@@ -415,7 +417,8 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
                 que.pop();
                 LayersBase * layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
                 //layer->rateReduce();
-                layer->lrate /= 2.0f;
+                //**可修改
+                layer->lrate /= 10.0f;
                 
                 /*
                 if( layer->lrate >= 1e-4 && layer->lrate <= 1){
@@ -457,12 +460,14 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         /*在进入下一次训练之前进行裂变*/
         if (DFS_TRAINING == true && FISS_TRAINING == true )
         {
-            if ((epo > 40 && ((epo + 1) % g_nSplitIndex) == 0) || (epo >= 30 && ((epo + 1) % 10) == 0)) {
+            g_nCount ++;
+            if (epo >= 40 && (epo % g_nSplitIndex) == 0 && (g_nCount >= g_nSplitIndex)) {
                 g_vBranchResult.clear();
                 LayersBase* curLayer = Layers::instanceObject()->getLayer("data");
                 getBranchResult(curLayer);
                 sort(g_vBranchResult.begin(), g_vBranchResult.end(), cmp_ascend_Order);
                 performFiss();
+                g_nCount = 0;
             }
         }
     }

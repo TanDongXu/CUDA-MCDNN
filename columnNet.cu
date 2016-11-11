@@ -334,7 +334,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
 {
     configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
     /*裂变学习率的初始设定*/
-    dfsGetLearningRateReduce( config );
+    //dfsGetLearningRateReduce( config );
     
     cout<<"TestData Forecast The Result..."<<endl;
     predictTestData(testData, testLabel, batchSize);
@@ -345,7 +345,8 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     int iter_per_epo = config::instanceObjtce()->get_iterPerEpo();
     int layerNum = Layers::instanceObject()->getLayersNum();
     double nMomentum[]={0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99};
-    int epoCount[]={80,80,80,80,80,80,80,80,80,80};
+    //int epoCount[]={80,80,80,80,80,80,80,80,80,80};
+    int epoCount[]={100,300,500,700,900,1100,1300,1500,1700,80};
     float Momentum = 0.9;
     int id = 0;
 
@@ -356,8 +357,8 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     for(int epo = 0; epo < epochs; epo++)
     {
         DataLayer* datalayer = static_cast<DataLayer*>(Layers::instanceObject()->getLayer("data"));
-        //Momentum = nMomentum[id];
-        Momentum = 0.9;
+        Momentum = nMomentum[id];
+        //Momentum = 0.9;
 
         clock_t inStart, inEnd;
         inStart = clock();
@@ -405,7 +406,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         */
 
         //**只调整三次学习率, 可修改
-        if( epo == 50 || epo == 150 || epo == 350 ){
+        if( epo == 150 || epo == 450 || epo == 750 ){
             config = (configBase*) config::instanceObjtce()->getFirstLayers();
             //adjust learning rate
             queue<configBase*> que;
@@ -418,7 +419,11 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
                 LayersBase * layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
                 //layer->rateReduce();
                 //**可修改
-                layer->lrate /= 10.0f;
+                if(epo == 150)
+                    layer->lrate /= 10.0f;
+                else if(epo == 450)
+                    layer->lrate /= 5.0f;
+                else layer->lrate /= 2.0f;
                 
                 /*
                 if( layer->lrate >= 1e-4 && layer->lrate <= 1){

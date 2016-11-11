@@ -38,7 +38,7 @@ PAD_H = 2;
 PAD_W = 2;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.05;
+INIT_W = 0.1;
 LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-5;
 ]
@@ -60,7 +60,7 @@ PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.05;
+INIT_W = 0.1;
 LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-5;
 ]
@@ -82,7 +82,7 @@ PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.05;
+INIT_W = 0.1;
 LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-5;
 ]
@@ -133,7 +133,7 @@ PAD_H = 2;
 PAD_W = 2;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.05;
+INIT_W = 0.1;
 LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-5;
 ]
@@ -155,7 +155,7 @@ PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.05;
+INIT_W = 0.1;
 LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-6;
 ]
@@ -177,7 +177,7 @@ PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.05;
+INIT_W = 0.1;
 LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-6;
 ]
@@ -219,7 +219,7 @@ PAD_H = 1;
 PAD_W = 1;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.05;
+INIT_W = 0.1;
 LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-6;
 ]
@@ -241,8 +241,8 @@ PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.05;
-LEARN_RATE = 0.005;
+INIT_W = 0.1;
+LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-6;
 ]
 
@@ -263,8 +263,8 @@ PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.05;
-LEARN_RATE = 0.005;
+INIT_W = 0.1;
+LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-6;
 ]
 

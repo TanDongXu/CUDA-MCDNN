@@ -14,7 +14,7 @@ void ConvLayer::createHandles()
     checkCUDNN(cudnnCreateFilterDescriptor(&filterDesc));
     checkCUDNN(cudnnCreateConvolutionDescriptor(&convDesc));
     curandCreateGenerator(&curandGenerator_W, CURAND_RNG_PSEUDO_MTGP32);
-    //curandCreateGenerator(&curandGenerator_B, CURAND_RNG_PSEUDO_MTGP32);
+    curandCreateGenerator(&curandGenerator_B, CURAND_RNG_PSEUDO_MTGP32);
 }
 
 /*
@@ -30,7 +30,7 @@ void ConvLayer:: destroyHandles()
     checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
     checkCUDNN(cudnnDestroyTensorDescriptor(dstDiffTensorDesc));
     curandDestroyGenerator(curandGenerator_W);
-    //	curandDestroyGenerator(curandGenerator_B);
+   	curandDestroyGenerator(curandGenerator_B);
 }
 
 /*
@@ -50,33 +50,33 @@ void ConvLayer::initRandom()
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
 
-    // //set seed
-    // curandSetPseudoRandomGeneratorSeed(curandGenerator_W, time(NULL));
-    // curandSetPseudoRandomGeneratorSeed(curandGenerator_B, time(NULL));
-    // curandGenerateNormal(curandGenerator_W, dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize, 0, epsilon);
-    // curandGenerateNormal(curandGenerator_B, dev_Bias, kernelAmount, 0, epsilon);
+    //set seed
+    curandSetPseudoRandomGeneratorSeed(curandGenerator_W, time(NULL));
+    curandSetPseudoRandomGeneratorSeed(curandGenerator_B, time(NULL));
+    curandGenerateNormal(curandGenerator_W, dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize, 0, epsilon);
+    //curandGenerateNormal(curandGenerator_B, dev_Bias, kernelAmount, 0, 0);
 
-    float* tmpWeight;
-    tmpWeight = (float*)MemoryMonitor::instanceObject()->cpuMallocMemory(kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+   // float* tmpWeight;
+   // tmpWeight = (float*)MemoryMonitor::instanceObject()->cpuMallocMemory(kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
 
-    for(int n = 0; n < kernelAmount; n++)
-    {
-        for(int c = 0; c < inputAmount; c++)
-        {
-            for(int h = 0; h < kernelSize; h++)
-            {
-                for(int w = 0; w < kernelSize; w++)
-                {
-                    tmpWeight[w + kernelSize * h + kernelSize * kernelSize * c + kernelSize * kernelSize * inputAmount * n] = epsilon * (2.0f * rand() / RAND_MAX - 1.0f);
-                }
-            }
-        }
-    }
+   // for(int n = 0; n < kernelAmount; n++)
+   // {
+   //     for(int c = 0; c < inputAmount; c++)
+   //     {
+   //         for(int h = 0; h < kernelSize; h++)
+   //         {
+   //             for(int w = 0; w < kernelSize; w++)
+   //             {
+   //                 tmpWeight[w + kernelSize * h + kernelSize * kernelSize * c + kernelSize * kernelSize * inputAmount * n] = epsilon * (2.0f * rand() / RAND_MAX - 1.0f);
+   //             }
+   //         }
+   //     }
+   // }
 
-    MemoryMonitor::instanceObject()->cpu2Gpu(dev_Weight, tmpWeight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+   // MemoryMonitor::instanceObject()->cpu2Gpu(dev_Weight, tmpWeight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
 
-    delete tmpWeight;
+   // delete tmpWeight;
 }
 
 /*
@@ -568,7 +568,7 @@ void ConvLayer::backwardPropagation(float Momentum)
     }
 
     //Note:if use convBwdDataAlgo above,it will return error in running.
-    convBwdDataAlgo = CUDNN_CONVOLUTION_BWD_DATA_ALGO_0;
+    // convBwdDataAlgo = CUDNN_CONVOLUTION_BWD_DATA_ALGO_0;
     /*Compute the convolution gradient with respect to the output tensor using the specified algo*/
     alpha = 1.0f;
     beta = 0.0f;

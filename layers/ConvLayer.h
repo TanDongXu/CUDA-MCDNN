@@ -77,6 +77,7 @@ private:
     cudnnConvolutionBwdFilterAlgo_t convBwdFilterAlgo;
     cudnnConvolutionBwdDataAlgo_t convBwdDataAlgo;
     curandGenerator_t curandGenerator_W;
+    curandGenerator_t curandGenerator_B;
 };
 
 

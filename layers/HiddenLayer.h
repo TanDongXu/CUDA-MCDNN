@@ -41,6 +41,7 @@ public:
 private:
 
     curandGenerator_t curandGenerator_W;
+    curandGenerator_t curandGenerator_B;
 	float* dev_Weight, *host_Weight;
 	float* dev_Bias, *host_Bias;
 	float* dev_Wgrad,*dev_Bgrad;

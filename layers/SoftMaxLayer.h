@@ -25,7 +25,7 @@ class SoftMaxLayer : public LayersBase
 {
     public:
     SoftMaxLayer(string name);
-    SoftMaxLayer(SoftMaxLayer* layer);
+    SoftMaxLayer(const SoftMaxLayer* layer);
     ~SoftMaxLayer();
     void initRandom();
     void forwardPropagation(string train_or_test);

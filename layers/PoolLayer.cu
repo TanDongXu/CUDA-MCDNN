@@ -128,7 +128,7 @@ PoolLayer::PoolLayer(string name, const param_tuple& args)
 /*
  * Deep copy constructor
  */
-PoolLayer::PoolLayer(PoolLayer* layer)
+PoolLayer::PoolLayer(const PoolLayer* layer)
 {
     srcData = NULL;
     dstData = NULL;
@@ -171,6 +171,7 @@ PoolLayer::PoolLayer(PoolLayer* layer)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
 
     this->createHandles();
+    cout<<"Pool-copy"<<endl;
 }
 
 /*

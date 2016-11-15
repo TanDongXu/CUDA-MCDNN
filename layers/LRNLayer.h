@@ -22,7 +22,7 @@ class LRNLayer : public LayersBase
 {
     public:
     LRNLayer(string name);
-    LRNLayer(LRNLayer* layer);
+    LRNLayer(const LRNLayer* layer);
     ~LRNLayer();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);

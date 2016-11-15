@@ -217,7 +217,7 @@ ConvLayer::ConvLayer(string name, int sign, const param_tuple& args)
 /*
  * Deep copy constructor for convolution layers
  */
-ConvLayer::ConvLayer(ConvLayer* layer)
+ConvLayer::ConvLayer(const ConvLayer* layer)
 {
     srcData = NULL;
     dstData = NULL;
@@ -282,6 +282,7 @@ ConvLayer::ConvLayer(ConvLayer* layer)
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
     this->createHandles();
     this->initRandom();
+    cout<<"Conv-copy"<<endl;
 }
 /*
  * Destructor

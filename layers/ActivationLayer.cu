@@ -75,7 +75,7 @@ ActivationLayer::ActivationLayer(string name)
 /*
  * Deep copy constructor
  * */
-ActivationLayer::ActivationLayer(ActivationLayer* layer)
+ActivationLayer::ActivationLayer(const ActivationLayer* layer)
 {
     srcData = NULL;
     dstData = NULL;
@@ -103,10 +103,9 @@ ActivationLayer::ActivationLayer(ActivationLayer* layer)
 
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
-    MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData, number * channels * width * sizeof(float));
-    MemoryMonitor::instanceObject()->gpu2gpu(diffData, layer->diffData, number * channels * height * width * sizeof(float));
 
     this->createHandles();
+    cout<<"Activation-copy"<<endl;
 }
 
 /*

@@ -135,7 +135,7 @@ HiddenLayer::HiddenLayer(string name, int sign)
 /*
  * Deep copy constructor
  */
-HiddenLayer::HiddenLayer(HiddenLayer* layer)
+HiddenLayer::HiddenLayer(const HiddenLayer* layer)
 {
     srcData = NULL;
     dstData = NULL;
@@ -195,6 +195,7 @@ HiddenLayer::HiddenLayer(HiddenLayer* layer)
     
     this->createHandles();
     this->initRandom();
+    cout<<"Hidden-copy"<<endl;
 }
 
 /*

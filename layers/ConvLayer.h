@@ -33,7 +33,7 @@ class ConvLayer:public LayersBase
 
     ConvLayer(string name, int sign);
     ConvLayer(string name, int sign, const param_tuple& args);
-    ConvLayer(ConvLayer* layer);
+    ConvLayer(const ConvLayer* layer);
     ~ConvLayer();
     void initRandom();
     void forwardPropagation(string train_or_test);

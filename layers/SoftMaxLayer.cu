@@ -116,7 +116,7 @@ SoftMaxLayer::SoftMaxLayer(string name)
 /*
  * Deep copy constructor
  * */
-SoftMaxLayer::SoftMaxLayer(SoftMaxLayer* layer)
+SoftMaxLayer::SoftMaxLayer(const SoftMaxLayer* layer)
 {
     srcData = NULL;
     dstData = NULL;

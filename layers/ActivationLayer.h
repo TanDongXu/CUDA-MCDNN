@@ -18,7 +18,7 @@ class ActivationLayer: public LayersBase
 {
     public:
     ActivationLayer(string name);
-    ActivationLayer(ActivationLayer* layer);
+    ActivationLayer(const ActivationLayer* layer);
     ~ActivationLayer();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);

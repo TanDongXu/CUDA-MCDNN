@@ -33,7 +33,7 @@ DropOutLayer::DropOutLayer(string name)
 /*
  * overload constructor
  * */
-DropOutLayer::DropOutLayer(DropOutLayer* layer)
+DropOutLayer::DropOutLayer(const DropOutLayer* layer)
 {
     srcData = NULL;
     dstData = NULL;
@@ -58,7 +58,7 @@ DropOutLayer::DropOutLayer(DropOutLayer* layer)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &outputPtr, number * channels * height * width * sizeof(float));
 
     this->createHandles();
-
+    cout<<"Drop-copy"<<endl;
 }
 
 /*

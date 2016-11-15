@@ -67,7 +67,7 @@ DataLayer::DataLayer(string name)
 /*
  * Deep copy constructor
  */
-DataLayer::DataLayer(DataLayer* layer)
+DataLayer::DataLayer(const DataLayer* layer)
 {
     srcData = NULL;
     dstData = NULL;

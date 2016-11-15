@@ -79,7 +79,7 @@ LRNLayer::LRNLayer(string name)
 /*
  * Deep copy constructor
  */
-LRNLayer::LRNLayer(LRNLayer* layer)
+LRNLayer::LRNLayer(const LRNLayer* layer)
 {
     srcData = NULL;
     dstData = NULL;

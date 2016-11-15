@@ -29,7 +29,7 @@ class PoolLayer : public LayersBase
     typedef tuple<string, int, int, int, int, int, int, int> param_tuple;
     PoolLayer(string name);
     PoolLayer(string name, const param_tuple& agrs);
-    PoolLayer(PoolLayer* layer);
+    PoolLayer(const PoolLayer* layer);
     ~PoolLayer();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);

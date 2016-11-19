@@ -36,16 +36,17 @@ void LayersBase::insertNextlayer(LayersBase* layer)
  * */
 void LayersBase::rateReduce()
 {
-    if( lrate < 1 )
-    {
-    //	if( m_fReduceRate <= 1.0f)
-    //    lrate /= 2.0f;
-    //    else if( m_fReduceRate <= 2.0f)
-    //    	lrate /= 2.5f;
-    //    else if( m_fReduceRate <= 5.0f)
-    //        lrate /= 3.0f;
-        lrate /= m_fReduceRate;
-    }
+   // if( lrate < 1 )
+   // {
+   // 	if( m_fReduceRate <= 1.0f)
+   //     lrate /= 2.0f;
+   //     else if( m_fReduceRate <= 2.0f)
+   //     	lrate /= 2.5f;
+   //     else if( m_fReduceRate <= 5.0f)
+   //         lrate /= 3.0f;
+   //     lrate /= m_fReduceRate;
+   // }
+   lrate /= m_fReduceRate;
 }
 
 void LayersBase::setRateReduce( float fReduce)

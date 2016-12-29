@@ -11,8 +11,6 @@ void LRNLayer::createHandles()
     checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
     checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
     checkCUDNN(cudnnCreateLRNDescriptor(&normDesc));
-    checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
-    checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
 }
 
 /*
@@ -23,8 +21,6 @@ void LRNLayer::destroyHandles()
     checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
     checkCUDNN(cudnnDestroyTensorDescriptor(dstTensorDesc))
     checkCUDNN(cudnnDestroyLRNDescriptor(normDesc));
-    checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
-    checkCUDNN(cudnnDestroyTensorDescriptor(dstDiffTensorDesc));
 }
 
 /*
@@ -49,8 +45,6 @@ LRNLayer::LRNLayer(string name)
     nextLayer.clear();
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
-    srcDiffTensorDesc = NULL;
-    dstDiffTensorDesc = NULL;
 
     configLRN* curConfig = (configLRN*)config::instanceObjtce()->getLayersByName(_name);
     string prevLayerName = curConfig->_input;
@@ -88,8 +82,6 @@ LRNLayer::LRNLayer(const LRNLayer* layer)
     nextLayer.clear();
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
-    srcDiffTensorDesc = NULL;
-    dstDiffTensorDesc = NULL;
 
     static int idx = 0;
     _name = layer->_name + string("_") + int_to_string(idx);
@@ -173,38 +165,6 @@ void LRNLayer::forwardPropagation(string train_or_test)
  * */
 void LRNLayer::backwardPropagation(float Momentum)
 {
-    checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          number,
-                                          channels,
-                                          height,
-                                          width));
-
-    checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          number,
-                                          channels,
-                                          height,
-                                          width));
-
-    checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          number,
-                                          channels,
-                                          height,
-                                          width));
-
-    checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          number,
-                                          channels,
-                                          height,
-                                          width));
-
     float alpha = 1.0f;
     float beta = 0.0f;
     int nIndex = m_nCurBranchIndex;
@@ -214,12 +174,12 @@ void LRNLayer::backwardPropagation(float Momentum)
                                             &alpha,
                                             dstTensorDesc,
                                             dstData,
-                                            srcDiffTensorDesc,
+                                            dstTensorDesc,
                                             nextLayer[nIndex]->diffData,
                                             srcTensorDesc,
                                             srcData,
                                             &beta,
-                                            dstDiffTensorDesc,
+                                            srcTensorDesc,
                                             diffData));
 }
 

@@ -9,8 +9,6 @@ void ConvLayer::createHandles()
     checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
     checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
     checkCUDNN(cudnnCreateTensorDescriptor(&biasTensorDesc));
-    checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
-    checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
     checkCUDNN(cudnnCreateFilterDescriptor(&filterDesc));
     checkCUDNN(cudnnCreateConvolutionDescriptor(&convDesc));
     curandCreateGenerator(&curandGenerator_W, CURAND_RNG_PSEUDO_MTGP32);
@@ -27,8 +25,6 @@ void ConvLayer:: destroyHandles()
     checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
     checkCUDNN(cudnnDestroyTensorDescriptor(dstTensorDesc));
     checkCUDNN(cudnnDestroyTensorDescriptor(biasTensorDesc));
-    checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
-    checkCUDNN(cudnnDestroyTensorDescriptor(dstDiffTensorDesc));
     curandDestroyGenerator(curandGenerator_W);
    	curandDestroyGenerator(curandGenerator_B);
 }
@@ -105,8 +101,6 @@ ConvLayer::ConvLayer(string name, int sign)
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
     biasTensorDesc = NULL;
-    srcDiffTensorDesc = NULL;
-    dstDiffTensorDesc = NULL;
     convFwdAlgo = (cudnnConvolutionFwdAlgo_t)-1;
     convBwdFilterAlgo = (cudnnConvolutionBwdFilterAlgo_t)-1;
     convBwdDataAlgo = (cudnnConvolutionBwdDataAlgo_t)-1;
@@ -183,8 +177,6 @@ ConvLayer::ConvLayer(string name, int sign, const param_tuple& args)
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
     biasTensorDesc = NULL;
-    srcDiffTensorDesc = NULL;
-    dstDiffTensorDesc = NULL;
     convFwdAlgo = (cudnnConvolutionFwdAlgo_t)-1;
     convBwdFilterAlgo = (cudnnConvolutionBwdFilterAlgo_t)-1;
     convBwdDataAlgo = (cudnnConvolutionBwdDataAlgo_t)-1;
@@ -238,8 +230,6 @@ ConvLayer::ConvLayer(const ConvLayer* layer)
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
     biasTensorDesc = NULL;
-    srcDiffTensorDesc = NULL;
-    dstDiffTensorDesc = NULL;
     convFwdAlgo = (cudnnConvolutionFwdAlgo_t)-1;
     convBwdFilterAlgo = (cudnnConvolutionBwdFilterAlgo_t)-1;
     convBwdDataAlgo = (cudnnConvolutionBwdDataAlgo_t)-1;
@@ -432,45 +422,13 @@ void ConvLayer::forwardPropagation(string train_or_test)
  * */
 void ConvLayer::backwardPropagation(float Momentum)
 {
-    checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          number,
-                                          channels,
-                                          height,
-                                          width));
-
-    checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          number,
-                                          channels,
-                                          height,
-                                          width));
-
-    checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          prev_num,
-                                          prev_channels,
-                                          prev_height,
-                                          prev_width));
-
-    checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          prev_num,
-                                          prev_channels,
-                                          prev_height,
-                                          prev_width));
-
     /*Get the convolutuion function gradient with respect to the bias*/
     float alpha = 1.0f;
     float beta = 0.0f;
     int nIndex = m_nCurBranchIndex;
     checkCUDNN(cudnnConvolutionBackwardBias(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
                                             &alpha,
-                                            srcDiffTensorDesc,
+                                            dstTensorDesc,
                                             nextLayer[nIndex]->diffData,
                                             &beta,
                                             biasTensorDesc,
@@ -482,7 +440,7 @@ void ConvLayer::backwardPropagation(float Momentum)
     {
     	checkCUDNN(cudnnGetConvolutionBackwardFilterAlgorithm(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
     			                                               srcTensorDesc,
-    			                                               srcDiffTensorDesc,
+    			                                               dstTensorDesc,
     			                                               convDesc,
     			                                               filterDesc,
     			                                               CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST,
@@ -501,7 +459,7 @@ void ConvLayer::backwardPropagation(float Momentum)
     void* convBwdFilterWorkSpace = NULL;
     checkCUDNN(cudnnGetConvolutionBackwardFilterWorkspaceSize(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
     		                                                  srcTensorDesc,
-    		                                                  srcDiffTensorDesc,
+    		                                                  dstTensorDesc,
     		                                                  convDesc,
     		                                                  filterDesc,
     		                                                  convBwdFilterAlgo,
@@ -517,7 +475,7 @@ void ConvLayer::backwardPropagation(float Momentum)
                                               &alpha,
                                               srcTensorDesc,
                                               srcData,
-                                              srcDiffTensorDesc,
+                                              dstTensorDesc,
                                               nextLayer[nIndex]->diffData,
                                               convDesc,
                                               convBwdFilterAlgo,
@@ -537,7 +495,7 @@ void ConvLayer::backwardPropagation(float Momentum)
     {
     	checkCUDNN(cudnnGetConvolutionBackwardDataAlgorithm(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
     			                                            filterDesc,
-    			                                            srcDiffTensorDesc,
+    			                                            dstTensorDesc,
     			                                            convDesc,
     			                                            dstTensorDesc,
     			                                            CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST,
@@ -557,7 +515,7 @@ void ConvLayer::backwardPropagation(float Momentum)
     /*按照接口说明srcTensorDesc应该是dstTensorDesc的,参考一个代码是用srcTensorDesc*/
     checkCUDNN(cudnnGetConvolutionBackwardDataWorkspaceSize(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
     		                                                filterDesc,
-    		                                                srcDiffTensorDesc,
+    		                                                dstTensorDesc,
     		                                                convDesc,
     		                                                srcTensorDesc,
     		                                                convBwdDataAlgo,
@@ -577,14 +535,14 @@ void ConvLayer::backwardPropagation(float Momentum)
                                             &alpha,
                                             filterDesc,
                                             dev_Weight,
-                                            srcDiffTensorDesc,
+                                            dstTensorDesc,
                                             nextLayer[nIndex]->diffData,
                                             convDesc,
                                             convBwdDataAlgo,
                                             convBwdDataWorkSpace,
                                             convBwdDataSizeInBytes,
                                             &beta,
-                                            dstDiffTensorDesc,
+                                            srcTensorDesc,
                                             diffData));
 
     if(convBwdDataSizeInBytes != 0)

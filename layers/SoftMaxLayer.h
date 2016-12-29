@@ -43,8 +43,6 @@ class SoftMaxLayer : public LayersBase
     private:
     cudnnTensorDescriptor_t srcTensorDesc;
     cudnnTensorDescriptor_t dstTensorDesc;
-    cudnnTensorDescriptor_t srcDiffTensorDesc;
-    cudnnTensorDescriptor_t dstDiffTensorDesc;
     int inputSize;
     int outputSize;
     int nclasses;

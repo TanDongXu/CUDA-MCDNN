@@ -7,8 +7,6 @@ void SoftMaxLayer::createHandles()
 {
     checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
     checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
-    checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
-    checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
 }
 
 /*
@@ -18,8 +16,6 @@ void SoftMaxLayer:: destroyHandles()
 {
     checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
     checkCUDNN(cudnnDestroyTensorDescriptor(dstTensorDesc));
-    checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
-    checkCUDNN(cudnnDestroyTensorDescriptor(dstDiffTensorDesc));
 }
 
 /*
@@ -78,8 +74,6 @@ SoftMaxLayer::SoftMaxLayer(string name)
     srcLabel = NULL;
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
-    srcDiffTensorDesc = NULL;
-    dstDiffTensorDesc = NULL;
     nextLayer.clear();
     prevLayer.clear();
     flag = 0;
@@ -128,8 +122,6 @@ SoftMaxLayer::SoftMaxLayer(const SoftMaxLayer* layer)
     srcLabel = NULL;
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
-    srcDiffTensorDesc = NULL;
-    dstDiffTensorDesc = NULL;
     nextLayer.clear();
     prevLayer.clear();
     flag = 0;
@@ -275,22 +267,6 @@ void SoftMaxLayer::getBackPropDiffData()
 void SoftMaxLayer::backwardPropagation(float Momentum)
 {
     getBackPropDiffData();
-    checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          number,
-                                          channels,
-                                          height,
-                                          width));
-
-    checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          number,
-                                          channels,
-                                          height,
-                                          width));
-
     float alpha = 1.0f;
     float beta = 0.0f;
     /*
@@ -302,10 +278,10 @@ void SoftMaxLayer::backwardPropagation(float Momentum)
                                     &alpha,
                                     dstTensorDesc,
                                     dstData,
-                                    srcDiffTensorDesc,
+                                    dstTensorDesc,
                                     srcDiff,
                                     &beta,
-                                    dstDiffTensorDesc,
+                                    srcTensorDesc,
                                     diffData));
 }
 

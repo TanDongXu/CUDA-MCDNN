@@ -69,8 +69,6 @@ private:
     cudnnTensorDescriptor_t srcTensorDesc;
     cudnnTensorDescriptor_t dstTensorDesc;
     cudnnTensorDescriptor_t biasTensorDesc;
-    cudnnTensorDescriptor_t srcDiffTensorDesc;
-    cudnnTensorDescriptor_t dstDiffTensorDesc;
     cudnnFilterDescriptor_t filterDesc;
     cudnnConvolutionDescriptor_t convDesc;
     cudnnConvolutionFwdAlgo_t convFwdAlgo;

@@ -34,8 +34,6 @@ class ActivationLayer: public LayersBase
     cudnnActivationMode_t cudnnActivationMode;
     cudnnTensorDescriptor_t srcTensorDesc;
     cudnnTensorDescriptor_t dstTensorDesc;
-    cudnnTensorDescriptor_t srcDiffTensorDesc;
-    cudnnTensorDescriptor_t dstDiffTensorDesc;
     cudnnActivationDescriptor_t activDesc;
 };
 

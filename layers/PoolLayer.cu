@@ -8,8 +8,6 @@ void PoolLayer:: createHandles()
     checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
     checkCUDNN(cudnnCreateTensorDescriptor(&dstTensorDesc));
     checkCUDNN(cudnnCreatePoolingDescriptor(&poolingDesc));
-    checkCUDNN(cudnnCreateTensorDescriptor(&srcDiffTensorDesc));
-    checkCUDNN(cudnnCreateTensorDescriptor(&dstDiffTensorDesc));
 }
 
 /*
@@ -20,8 +18,6 @@ void PoolLayer:: destroyHandles()
     checkCUDNN(cudnnDestroyPoolingDescriptor(poolingDesc));
     checkCUDNN(cudnnDestroyTensorDescriptor(srcTensorDesc));
     checkCUDNN(cudnnDestroyTensorDescriptor(dstTensorDesc))
-    checkCUDNN(cudnnDestroyTensorDescriptor(srcDiffTensorDesc));
-    checkCUDNN(cudnnDestroyTensorDescriptor(dstDiffTensorDesc));
 }
 
 PoolLayer::~PoolLayer()
@@ -53,8 +49,6 @@ PoolLayer::PoolLayer(string name)
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
     poolingDesc = NULL;
-    srcDiffTensorDesc = NULL;
-    dstDiffTensorDesc = NULL;
 
     configPooling* curConfig = (configPooling*) config::instanceObjtce()->getLayersByName(_name);
     string prevLayerName = curConfig->_input;
@@ -105,8 +99,6 @@ PoolLayer::PoolLayer(string name, const param_tuple& args)
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
     poolingDesc = NULL;
-    srcDiffTensorDesc = NULL;
-    dstDiffTensorDesc = NULL;
 
     m_poolMethod = new ConfigPoolMethod(pool_Type);
     PoolingMode = (cudnnPoolingMode_t)m_poolMethod->getValue();
@@ -139,8 +131,6 @@ PoolLayer::PoolLayer(const PoolLayer* layer)
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
     poolingDesc = NULL;
-    srcDiffTensorDesc = NULL;
-    dstDiffTensorDesc = NULL;
 
 
     static int idx = 0;
@@ -225,38 +215,6 @@ void PoolLayer::forwardPropagation(string train_or_test)
  * */
 void PoolLayer::backwardPropagation(float Momentum)
 {
-    checkCUDNN(cudnnSetTensor4dDescriptor(dstTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          number,
-                                          channels,
-                                          height,
-                                          width));
-
-    checkCUDNN(cudnnSetTensor4dDescriptor(srcDiffTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          number,
-                                          channels,
-                                          height,
-                                          width));
-
-    checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          prev_num,
-                                          prev_channels,
-                                          prev_height,
-                                          prev_width));
-
-    checkCUDNN(cudnnSetTensor4dDescriptor(dstDiffTensorDesc,
-                                          cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
-                                          cuDNN_netWork<float>::instanceObject()->GetDataType(),
-                                          prev_num,
-                                          prev_channels,
-                                          prev_height,
-                                          prev_width));
-
     float alpha = 1.0f;
     float beta = 0.0;
     int nIndex = m_nCurBranchIndex;
@@ -265,12 +223,12 @@ void PoolLayer::backwardPropagation(float Momentum)
                                     &alpha,
                                     dstTensorDesc,
                                     dstData,
-                                    srcDiffTensorDesc,
+                                    dstTensorDesc,
                                     nextLayer[nIndex]->diffData,
                                     srcTensorDesc,
                                     srcData,
                                     &beta,
-                                    dstDiffTensorDesc,
+                                    srcTensorDesc,
                                     diffData));
 }
 

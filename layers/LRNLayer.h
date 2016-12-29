@@ -36,8 +36,6 @@ class LRNLayer : public LayersBase
     cudnnLRNDescriptor_t normDesc;
     cudnnTensorDescriptor_t srcTensorDesc;
     cudnnTensorDescriptor_t dstTensorDesc;
-    cudnnTensorDescriptor_t srcDiffTensorDesc;
-    cudnnTensorDescriptor_t dstDiffTensorDesc;
     int outputSize;
     int inputSize;
     unsigned lrnN ;

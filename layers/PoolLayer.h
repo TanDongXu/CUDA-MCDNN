@@ -45,8 +45,6 @@ class PoolLayer : public LayersBase
     cudnnTensorDescriptor_t srcTensorDesc;
     cudnnTensorDescriptor_t dstTensorDesc;
     cudnnPoolingDescriptor_t poolingDesc;
-    cudnnTensorDescriptor_t srcDiffTensorDesc;
-    cudnnTensorDescriptor_t dstDiffTensorDesc;
     string pool_Type;
     int poolDim;
     int pad_h;

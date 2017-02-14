@@ -36,6 +36,10 @@ void read_batch(string fileName,
             }
             image_data.push_back(channels);
         }
+    }else
+    {
+        cout<<"ReadData: Can not find the data: "<< fileName << endl;
+        exit(-1);
     }
 }
 

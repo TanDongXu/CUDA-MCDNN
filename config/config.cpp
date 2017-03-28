@@ -4,6 +4,7 @@
 #include<string.h>
 #include<iostream>
 #include<map>
+#include<glog/logging.h>
 #include"opencv2/highgui.hpp"
 using namespace std;
 
@@ -62,8 +63,7 @@ string config::read_to_string(string file_name)
     fp=fopen(file_name.c_str(),"r");
     if(!fp)
     {
-        cout<<"read_to_string:Can not open the file"<<endl;
-        exit(1);
+        LOG(FATAL) << "read_to_string:Can not open " << file_name;
     }
     /*move pointer to the end of the file*/
     fseek(fp,0,SEEK_END);
@@ -75,7 +75,7 @@ string config::read_to_string(string file_name)
 
     if(fread(pBuf,1,lenght,fp) != lenght)
     {
-        cout<<"read_to_string: fread error"<<endl;
+        LOG(FATAL) <<"read_to_string: fread error";
     }
 
     fclose(fp);

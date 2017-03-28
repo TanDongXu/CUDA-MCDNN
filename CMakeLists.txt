@@ -19,6 +19,9 @@ include_directories ("${CUDA_INCLUDE_DIRS}/../samples/common/inc")
 #/usr/local/cuda/NVIDIA_CUDA-7.0_Samples/common/inc")
 set(CUDA_SEPARABLE_COMPILATION ON)
 
+# glog
+SET(GOOGLE_GLOG_LIBRARY "/usr/lib/x86_64-linux-gnu/libglog.so")
+
 # opencv
 find_package( OpenCV REQUIRED )
 INCLUDE_DIRECTORIES( ${OPENCV_INCLUDE_DIR} )
@@ -61,6 +64,7 @@ file(GLOB CUDA_MCDNN_CU_SOURCES  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "composite/*"
     "dataAugmentation/*"
     "examples/*"
+    "examples/dynamic_g_model/*"
     "main.cpp"
     "columnNet.*"
     "cuDNN_netWork.*")
@@ -74,6 +78,7 @@ target_link_libraries(CUDA-MCDNN
   ${CUDA_curand_LIBRARY}
   ${CUDA_LIBRARIES}
   ${CUDA_CUDNN_LIBRARY}
+  ${GOOGLE_GLOG_LIBRARY}
   )
 CUDA_ADD_CUBLAS_TO_TARGET(CUDA-MCDNN)
 

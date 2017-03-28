@@ -1,0 +1,157 @@
+/*
+*  MnistConfig File
+*/
+
+/********************************************************
+*
+*              General Parameters Config
+*
+*NON_LINEARITY = NL_SIGMOID, NL_TANH, NL_RELU, NL_CLIPPED_RELU
+********************************************************/
+
+BATCH_SIZE = 128;
+NORMALIZED_WIDTH = 0;
+IMAGES_SIZE = 28;
+CNANNELS = 1;
+EPOCHS = 4000;
+ITER_PER_EPO = 400;
+
+
+
+/********************************************************
+*
+*              Layers Config
+*
+********************************************************/
+[
+LAYER = DATA;
+NAME = data;
+]
+
+[
+LAYER = CONV;
+NAME = conv1;
+INPUT =data;
+KERNEL_SIZE = 5;
+KERNEL_AMOUNT = 64;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation1;
+INPUT = conv1;
+NON_LINEARITY = NL_RELU;
+]
+
+
+[
+LAYER = POOLING;
+NAME = pooling1;
+INPUT = activation1;
+POOLING_TYPE = POOL_MAX;
+POOLDIM = 2;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 2;
+STRIDE_W = 2;
+]
+
+[
+LAYER = CONV;
+NAME = conv2;
+INPUT = pooling1;
+KERNEL_SIZE = 5;
+KERNEL_AMOUNT = 64;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+]
+
+
+[
+LAYER = ACTIVATION;
+NAME = activation2;
+INPUT = conv2;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = POOLING;
+NAME = pooling2;
+INPUT = activation2;
+POOLING_TYPE = POOL_MAX;
+POOLDIM = 2;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 2;
+STRIDE_W = 2;
+]
+
+[
+LAYER = DROPOUT;
+NAME = dropout1;
+INPUT = pooling2;
+DROP_RATE = 0.4;
+]
+
+[
+LAYER = CONV;
+NAME = conv3;
+INPUT = dropout1;
+KERNEL_SIZE = 1;
+KERNEL_AMOUNT = 64;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation3;
+INPUT = conv3;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = CONV;
+NAME = conv4;
+INPUT = activation3;
+KERNEL_SIZE = 1;
+KERNEL_AMOUNT = 10;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation4;
+INPUT = conv4;
+NON_LINEARITY = NL_RELU;
+]
+[
+LAYER = SOFTMAX;
+NAME = softmax;
+INPUT = conv4;
+NUM_CLASSES = 10;
+WEIGHT_DECAY = 1e-6;
+]

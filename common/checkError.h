@@ -52,14 +52,14 @@
                                   }                                                                          \
                                  }
 
-template<typename T>
-void CHECK_EQ(T a, T b)
-{
-    std::string s ="NOT_EQ";
-    if(a != b)
-    {
-        FatalError(s);
-    }
-}
+//template<typename T>
+//void CHECK_EQ(T a, T b)
+//{
+//    std::string s ="NOT_EQ";
+//    if(a != b)
+//    {
+//        FatalError(s);
+//    }
+//}
 
 #endif /* CHECKERROR_H_ */

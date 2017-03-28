@@ -27,6 +27,7 @@ class HiddenLayer: public LayersBase
 public:
 	HiddenLayer(string name, int sign);
 	HiddenLayer(const HiddenLayer* layer);
+    HiddenLayer(const configBase* templateConfig);
 	~HiddenLayer();
 	void initRandom();
 	void forwardPropagation(string train_or_test);

@@ -1,5 +1,6 @@
 #include"ConvLayer.h"
 #include<cuda_runtime_api.h>
+#include<glog/logging.h>
 
 /*
  * Create handles
@@ -274,6 +275,109 @@ ConvLayer::ConvLayer(const ConvLayer* layer)
     this->initRandom();
     cout<<"Conv-copy"<<endl;
 }
+
+/*
+ * Deep copy constructor for convolution layers
+ */
+ConvLayer::ConvLayer(const configBase* templateConfig)
+{
+    srcData = NULL;
+    dstData = NULL;
+    host_Weight = NULL;
+    host_Bias = NULL;
+    dev_Weight = NULL;
+    dev_Bias = NULL;
+    dev_Wgrad = NULL;
+    dev_Bgrad = NULL;
+    tmp_Wgrad = NULL;
+    tmp_Bgrad = NULL;
+    diffData = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
+
+    filterDesc = NULL;
+    convDesc = NULL;
+    srcTensorDesc = NULL;
+    dstTensorDesc = NULL;
+    biasTensorDesc = NULL;
+    convFwdAlgo = (cudnnConvolutionFwdAlgo_t)-1;
+    convBwdFilterAlgo = (cudnnConvolutionBwdFilterAlgo_t)-1;
+    convBwdDataAlgo = (cudnnConvolutionBwdDataAlgo_t)-1;
+
+    _name = templateConfig->_name;
+    _inputName = templateConfig->_input;
+    configConv* curConfig = (configConv*) templateConfig;
+    LayersBase* prev_Layer = (LayersBase*) Layers::instanceObject()->getLayer(_inputName);
+
+    epsilon = curConfig->_init_w;
+    lrate = curConfig->_lrate;
+    batchSize = config::instanceObjtce()->get_batchSize();
+    kernelAmount = curConfig->_kernelAmount;
+    kernelSize = curConfig->_kernelSize;
+    pad_h = curConfig->_pad_h;
+    pad_w = curConfig->_pad_w;
+    stride_h = curConfig->_stride_h;
+    stride_w = curConfig->_stride_w;
+    lambda = curConfig->_weight_decay;
+
+    inputAmount = prev_Layer->channels;
+    inputImageDim = prev_Layer->height;
+    prev_num = prev_Layer->number;
+    prev_channels = prev_Layer->channels;
+    prev_height = prev_Layer->height;
+    prev_width = prev_Layer->width;
+    number = prev_num;
+    channels = kernelAmount;
+    height = (inputImageDim + 2 * pad_h - kernelSize) / stride_h + 1;
+    width = (inputImageDim + 2 * pad_w - kernelSize) / stride_w + 1;
+    outputSize = channels * height * width;
+    
+    // malloc GPU memory
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Wgrad, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Wgrad, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, batchSize * kernelAmount * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, batchSize * inputAmount * inputImageDim * inputImageDim * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
+    
+    //find the same demension of conv layer weight from previous LayersBase
+    configBase* findConfig = const_cast<configBase*>(templateConfig);
+    ConvLayer* resultLayer = NULL;
+    bool bFind = false;
+    while(0 != findConfig->_prev.size())
+    {
+       if("CONV" == findConfig->_prev[0]->_type)
+        {
+            resultLayer = (ConvLayer*) Layers::instanceObject()->getLayer(findConfig->_prev[0]->_name);
+            //must make sure kernelAmount kernelSize inputAmount equal respectively
+            if((resultLayer->inputAmount == inputAmount) && (resultLayer->kernelSize == kernelSize) && (resultLayer->kernelAmount == kernelAmount))
+            {
+                bFind = true;
+                break;
+            }
+        } 
+
+        findConfig = findConfig->_prev[0];
+    }
+
+    this->createHandles();
+
+    if(bFind)
+    {
+        CHECK(resultLayer);
+        MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+        MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+        MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+        MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, resultLayer->dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+    }else
+    {
+        this->initRandom();
+    }
+    cout<<"Conv-copy"<<endl;
+}
+
 /*
  * Destructor
  * */

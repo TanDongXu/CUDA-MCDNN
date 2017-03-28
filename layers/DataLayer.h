@@ -25,6 +25,7 @@ class DataLayer: public LayersBase
     public:
     DataLayer(string name);
     DataLayer(const DataLayer* layer);
+    DataLayer(const configBase* templateConfig){}
     ~DataLayer();
     void getBatch_Images_Label(int index, cuMatrixVector<float> &inputData, cuMatrix<int>* &inputLabel);
     void RandomBatch_Images_Label(cuMatrixVector<float> &inputData, cuMatrix<int>* &inputLabel);

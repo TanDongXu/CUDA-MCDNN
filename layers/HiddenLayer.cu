@@ -1,8 +1,9 @@
 #include"HiddenLayer.h"
+#include<glog/logging.h>
 
 /*
  * Create CUDNN Handles
- * */
+ */
 void HiddenLayer::createHandles()
 {
     curandCreateGenerator(&curandGenerator_W, CURAND_RNG_PSEUDO_MTGP32);
@@ -195,6 +196,97 @@ HiddenLayer::HiddenLayer(const HiddenLayer* layer)
     
     this->createHandles();
     this->initRandom();
+    cout<<"Hidden-copy"<<endl;
+}
+
+/*
+ * Deep copy constructor
+ */
+HiddenLayer::HiddenLayer(const configBase* templateConfig)
+{
+    srcData = NULL;
+    dstData = NULL;
+    diffData = NULL;
+    host_Weight = NULL;
+    dev_Weight = NULL;
+    host_Bias = NULL;
+    dev_Bias = NULL;
+    dev_Wgrad = NULL;
+    dev_Bgrad = NULL;
+    tmp_Wgrad = NULL;
+    tmp_Bgrad = NULL;
+    VectorOnes = NULL;
+
+    prevLayer.clear();
+    nextLayer.clear();
+
+    _name = templateConfig->_name;
+    _inputName = templateConfig->_input;
+    configHidden* curConfig = (configHidden*) templateConfig;
+    LayersBase* prev_Layer = (LayersBase*) Layers::instanceObject()->getLayer(_inputName);
+
+    epsilon = curConfig->_init_w;
+    lrate = curConfig->_lrate;
+    inputSize = prev_Layer->getOutputSize();
+    outputSize = curConfig->_NumHiddenNeurons;
+    batchSize = config::instanceObjtce()->get_batchSize();
+    lambda = curConfig->_weight_decay;
+
+    inputAmount = prev_Layer->channels;
+    inputImageDim = prev_Layer->height;
+    prev_num = prev_Layer->number;
+    prev_channels = prev_Layer->channels;
+    prev_height = prev_Layer->height;
+    prev_width = prev_Layer->width;
+    number = prev_num;
+    channels = outputSize;
+    height = 1;
+    width = 1;
+
+    //1*batchSize
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &VectorOnes, 1 * 1 * 1 * batchSize * sizeof(float));
+    FillOnes<<<1, batchSize>>>(VectorOnes, batchSize);
+    cudaThreadSynchronize();
+
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &tmp_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &tmp_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, outputSize * batchSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, inputSize * batchSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
+    
+    configBase* findConfig = const_cast<configBase*>(templateConfig);
+    HiddenLayer* resultLayer = NULL;
+    bool bFind = false;
+    while(0 != findConfig->_prev.size())
+    {
+        if(string("HIDDEN") == findConfig->_prev[0]->_type)
+        {
+            resultLayer = (HiddenLayer*) Layers::instanceObject()->getLayer(findConfig->_prev[0]->_name);
+            if((resultLayer->inputSize == inputSize) && (resultLayer->outputSize == outputSize))
+            {
+                bFind = true;
+                break;
+            }
+        }
+        findConfig = findConfig->_prev[0];
+    }
+
+    this->createHandles();
+    
+    if(bFind)
+    {
+        CHECK(resultLayer);
+        MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, outputSize * inputSize * 1 * 1 * sizeof(float));
+        MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, outputSize * 1 * 1 * 1 * sizeof(float));
+        MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, resultLayer->dev_Weight, 1 * 1 * outputSize * inputSize * sizeof(float));
+        MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, resultLayer->dev_Bias, 1 * 1 * outputSize * 1 * sizeof(float));
+    }else
+    {
+        this->initRandom();
+    }
     cout<<"Hidden-copy"<<endl;
 }
 

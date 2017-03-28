@@ -8,8 +8,9 @@
 #ifndef ACTIVATIONLAYER_H_
 #define ACTIVATIONLAYER_H_
 
-#include"LayersBase.h"
 #include<cudnn.h>
+#include"LayersBase.h"
+#include"config/config.h"
 
 /*
  * Class activation layer
@@ -19,6 +20,7 @@ class ActivationLayer: public LayersBase
     public:
     ActivationLayer(string name);
     ActivationLayer(const ActivationLayer* layer);
+    ActivationLayer(const configBase* templateConfig);
     ~ActivationLayer();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);

@@ -68,7 +68,7 @@ ActivationLayer::ActivationLayer(string name)
 
 /*
  * Deep copy constructor
- * */
+ */
 ActivationLayer::ActivationLayer(const ActivationLayer* layer)
 {
     srcData = NULL;
@@ -101,8 +101,42 @@ ActivationLayer::ActivationLayer(const ActivationLayer* layer)
 }
 
 /*
+ * Deep copy constructor
+ */
+ActivationLayer::ActivationLayer(const configBase* templateConfig)
+{
+    srcData = NULL;
+    dstData = NULL;
+    diffData = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
+    activDesc = NULL;
+    srcTensorDesc = NULL;
+    dstTensorDesc = NULL;
+
+    _name = templateConfig->_name;
+    _inputName = templateConfig->_input;
+    configActivation* curConfig = (configActivation*) templateConfig;
+    LayersBase* prev_Layer = (LayersBase*)Layers::instanceObject()->getLayer(_inputName);
+    inputAmount = prev_Layer->channels;
+    inputImageDim = prev_Layer->height;
+    number = prev_Layer->number;
+    channels =  prev_Layer->channels;
+    height = prev_Layer->height;
+    width = prev_Layer->width;
+    outputSize = channels * height * width;
+    ActivationMode = curConfig->_non_linearity;
+
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
+
+    this->createHandles();
+    cout<<"Activation-copy"<<endl;
+}
+
+/*
  * Destructor
- * */
+ */
 ActivationLayer::~ActivationLayer()
 {
 	MemoryMonitor::instanceObject()->freeGpuMemory(dstData);

@@ -1,6 +1,5 @@
 #include"LRNLayer.h"
 #include"../common/checkError.h"
-#include"../config/config.h"
 #include"../cuDNN_netWork.h"
 
 /*
@@ -101,6 +100,43 @@ LRNLayer::LRNLayer(const LRNLayer* layer)
     width = layer->width;
     inputSize = layer->inputSize;
     outputSize = layer->outputSize;
+
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));
+
+    this->createHandles();
+}
+
+/*
+ * Deep copy constructor
+ */
+LRNLayer::LRNLayer(const configBase* templateConfig)
+{
+    srcData = NULL;
+    dstData = NULL;
+    diffData = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
+    srcTensorDesc = NULL;
+    dstTensorDesc = NULL;
+
+    _name = templateConfig->_name;
+    _inputName = templateConfig->_input;
+    configLRN* curConfig = (configLRN*) templateConfig;
+    LayersBase* prev_Layer = (LayersBase*) Layers::instanceObject()->getLayer(_inputName);
+    lrnN = curConfig->_lrnN;
+    lrnAlpha = curConfig->_lrnAlpha;
+    lrnBeta = curConfig->_lrnBeta;
+    lrnK = 1.0;
+
+    inputAmount = prev_Layer->channels;
+    inputImageDim = prev_Layer->height;
+    number = prev_Layer->number;
+    channels = prev_Layer->channels;
+    height = prev_Layer->height;
+    width = prev_Layer->width;
+    inputSize = prev_Layer->getOutputSize();
+    outputSize = inputSize;
 
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));

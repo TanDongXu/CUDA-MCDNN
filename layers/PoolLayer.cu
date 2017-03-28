@@ -163,6 +163,52 @@ PoolLayer::PoolLayer(const PoolLayer* layer)
     this->createHandles();
     cout<<"Pool-copy"<<endl;
 }
+/*
+ * Deep copy constructor
+ */
+PoolLayer::PoolLayer(const configBase* templateConfig)
+{
+    srcData = NULL;
+    dstData = NULL;
+    diffData = NULL;
+    m_poolMethod = NULL;
+    prevLayer.clear();
+    nextLayer.clear();
+    srcTensorDesc = NULL;
+    dstTensorDesc = NULL;
+    poolingDesc = NULL;
+
+    _name = templateConfig->_name;
+    _inputName = templateConfig->_input;
+    configPooling* curConfig = (configPooling*) templateConfig;
+    LayersBase* prev_Layer = (LayersBase*)Layers::instanceObject()->getLayer(_inputName);
+
+    PoolingMode = (cudnnPoolingMode_t)curConfig->_poolType;
+    poolDim = curConfig->_size;
+    pad_h = curConfig->_pad_h;
+    pad_w = curConfig->_pad_w;
+    stride_h = curConfig->_stride_h;
+    stride_w = curConfig->_stride_w;
+
+    prev_num = prev_Layer->number;
+    prev_channels = prev_Layer->channels;
+    prev_height = prev_Layer->height;
+    prev_width = prev_Layer->width;
+
+    inputImageDim = prev_Layer->height;
+    inputAmount = prev_Layer->channels;
+    number = prev_Layer->number;
+    channels = prev_Layer->channels;
+    height = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+    width = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+    outputSize = channels * height * width;
+
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
+
+    this->createHandles();
+    cout<<"Pool-copy"<<endl;
+}
 
 /*
  * Pool layer Forward propagation

@@ -32,7 +32,7 @@ DropOutLayer::DropOutLayer(string name)
 
 /*
  * overload constructor
- * */
+ */
 DropOutLayer::DropOutLayer(const DropOutLayer* layer)
 {
     srcData = NULL;
@@ -54,6 +54,37 @@ DropOutLayer::DropOutLayer(const DropOutLayer* layer)
     width = layer->width;
     outputSize = layer->outputSize;
     DropOut_rate = layer->DropOut_rate;
+
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &outputPtr, number * channels * height * width * sizeof(float));
+
+    this->createHandles();
+    cout<<"Drop-copy"<<endl;
+}
+
+/*
+ * overload constructor
+ */
+DropOutLayer::DropOutLayer(const configBase* templateConfig)
+{
+    srcData = NULL;
+    dstData = NULL;
+    nextLayer.clear();
+    prevLayer.clear();
+    outputPtr = NULL;
+
+    _name = templateConfig->_name;
+    _inputName = templateConfig->_input;
+    configDropOut* curConfig = (configDropOut*) templateConfig;
+    LayersBase* prev_Layer = (LayersBase*) Layers::instanceObject()->getLayer(_inputName);
+
+    inputAmount = prev_Layer->channels;
+    inputImageDim = prev_Layer->height;
+    number = prev_Layer->number;
+    channels = prev_Layer->channels;
+    height = prev_Layer->height;
+    width = prev_Layer->width;
+    outputSize = channels * height * width;
+    DropOut_rate = curConfig->dropOut_rate;
 
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &outputPtr, number * channels * height * width * sizeof(float));
 

@@ -34,6 +34,7 @@ class ConvLayer:public LayersBase
     ConvLayer(string name, int sign);
     ConvLayer(string name, int sign, const param_tuple& args);
     ConvLayer(const ConvLayer* layer);
+    ConvLayer(const configBase* templateConfig);
     ~ConvLayer();
     void initRandom();
     void forwardPropagation(string train_or_test);

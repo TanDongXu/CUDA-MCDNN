@@ -22,6 +22,7 @@ class DropOutLayer : public LayersBase
     public:
     DropOutLayer(string name);
     DropOutLayer(const DropOutLayer* layer);
+    DropOutLayer(const configBase* templateConfig);
     ~DropOutLayer();
     void CreateUniform(int size);
     void Dropout_TrainSet(float* data, int size, float dropout_rate);

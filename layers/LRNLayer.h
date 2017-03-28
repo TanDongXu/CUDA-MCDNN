@@ -12,6 +12,7 @@
 #include<cudnn.h>
 #include"LayersBase.h"
 #include"../common/utility.cuh"
+#include"config/config.h"
 
 using namespace std;
 
@@ -23,6 +24,7 @@ class LRNLayer : public LayersBase
     public:
     LRNLayer(string name);
     LRNLayer(const LRNLayer* layer);
+    LRNLayer(const configBase* templateConfig);
     ~LRNLayer();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);

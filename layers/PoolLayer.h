@@ -30,6 +30,7 @@ class PoolLayer : public LayersBase
     PoolLayer(string name);
     PoolLayer(string name, const param_tuple& agrs);
     PoolLayer(const PoolLayer* layer);
+    PoolLayer(const configBase* templateConfig);
     ~PoolLayer();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);

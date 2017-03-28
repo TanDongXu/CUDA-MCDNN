@@ -10,7 +10,7 @@
 
 #include"./common/cuMatrix.h"
 #include"./common/cuMatrixVector.h"
-
+#include"config/config.h"
 
 void creatColumnNet(int sign);
 void cuTrainNetWork(cuMatrixVector<float> &trainData, 
@@ -19,5 +19,11 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
                     cuMatrix<int>*&testLabel, 
                     int batchSize);
 
+void dynamic_g_trainNet(cuMatrixVector<float> &trainData, 
+                    cuMatrix<int>* &trainLabel, 
+                    cuMatrixVector<float> &testData, 
+                    cuMatrix<int>*&testLabel, 
+                    config* endConfig
+                    );
 
 #endif /* COLUMNNET_CUH_ */

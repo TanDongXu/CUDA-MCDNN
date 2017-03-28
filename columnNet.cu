@@ -480,4 +480,137 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     stop = clock();
     runtime = stop - start;
     cout<< epochs <<" epochs total rumtime is: "<<runtime /CLOCKS_PER_SEC<<" Seconds"<<endl;
+}
+
+// Train dynamic generation model
+void dynamic_g_trainNet(cuMatrixVector<float> &trainData, 
+                        cuMatrix<int>* &trainLabel, 
+                        cuMatrixVector<float> &testData,
+                        cuMatrix<int>*&testLabel,
+                        config* endConfig 
+                       )
+{
+    int epochs = config::instanceObjtce()->get_trainEpochs();
+    int iter_per_epo = config::instanceObjtce()->get_iterPerEpo();
+    int layerNum = Layers::instanceObject()->getLayersNum();
+    int batchSize = config::instanceObjtce()->get_batchSize();
+    double nMomentum[]={0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99};
+    int epoCount[]={100,300,500,700,900,1100,1300,1500,1700,80};
+    float Momentum = 0.9;
+    int id = 0;
+    clock_t start, stop;
+    double runtime;
+
+    configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
+    cout<<"TestData Forecast The Result..."<<endl;
+    predictTestData(testData, testLabel, batchSize);
+    cout<<endl;
+
+    cout<<"NetWork training......"<<endl;
+    start = clock();
+    for(int epo = 0; epo < epochs; epo++)
+    {
+        clock_t inStart, inEnd;
+        DataLayer* datalayer = static_cast<DataLayer*>(Layers::instanceObject()->getLayer("data"));
+        Momentum = nMomentum[id];
+        //Momentum = 0.9;
+
+        inStart = clock();
+        configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
+        // train one epoch
+        for(int iter = 0 ; iter < iter_per_epo; iter++)
+        {
+            datalayer->RandomBatch_Images_Label(trainData, trainLabel);
+            getNetWorkCost(Momentum);
+        }
+        inEnd = clock();
+
+        config = (configBase*) config::instanceObjtce()->getFirstLayers();
+        //adjust learning rate
+        /*
+        queue<configBase*> que;
+        set<configBase*> hash;
+        hash.insert(config);
+        que.push(config);
+        while( !que.empty() ){
+            config = que.front();
+            que.pop();
+            LayersBase * layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
+            layer->adjust_learnRate(epo, FLAGS_lr_gamma, FLAGS_lr_power);
+
+            for(int i = 0; i < config->_next.size(); i++){
+                if( hash.find(config->_next[i]) == hash.end()){
+                    hash.insert(config->_next[i]);
+                    que.push(config->_next[i]);
+                }
+            }
+        }
+        */
+
+        //**只调整三次学习率, 可修改
+        if( epo == 150 || epo == 450 || epo == 750 ){
+            config = (configBase*) config::instanceObjtce()->getFirstLayers();
+            //adjust learning rate
+            queue<configBase*> que;
+            set<configBase*> hash;
+            hash.insert(config);
+            que.push(config);
+            while( !que.empty() ){
+                config = que.front();
+                que.pop();
+                LayersBase * layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
+                //layer->rateReduce();
+                //**可修改
+                if(epo == 150)
+                    layer->lrate /= 10.0f;
+                else if(epo == 450)
+                    layer->lrate /= 5.0f;
+                else layer->lrate /= 2.0f;
+                
+                /*
+                if( layer->lrate >= 1e-4 && layer->lrate <= 1){
+                    printf("lRate %s %f\n", layer->_name.c_str(), layer->lrate);
+                }
+                */
+
+                for(int i = 0; i < config->_next.size(); i++){
+                    if( hash.find(config->_next[i]) == hash.end()){
+                        hash.insert(config->_next[i]);
+                        que.push(config->_next[i]);
+                    }
+                }
+            }
+        }
+
+        if(epo && epo % epoCount[id] == 0)
+        {
+            id++;
+            if(id>9) id=9;
+        }
+
+        // Test network
+        cout<<"epochs: "<<epo<<" ,Time: "<<(inEnd - inStart)/CLOCKS_PER_SEC<<"s,";
+        predictTestData( testData, testLabel, batchSize );
+        cout<<" ,Momentum: "<<Momentum<<endl;
+
+        
+        /*在进入下一次训练之前动态生成下一层*/
+        //if (DFS_TRAINING == true && FISS_TRAINING == true )
+        //{
+        //    g_nCount ++;
+        //    if (epo >= 40 && (epo % g_nSplitIndex) == 0 && (g_nCount >= g_nSplitIndex)) {
+        //        g_vBranchResult.clear();
+        //        LayersBase* curLayer = Layers::instanceObject()->getLayer("data");
+        //        getBranchResult(curLayer);
+        //        sort(g_vBranchResult.begin(), g_vBranchResult.end(), cmp_ascend_Order);
+        //        performFiss();
+        //        g_nCount = 0;
+        //    }
+        //}
+        nodeGenerate(endConfig);
     }
+
+    stop = clock();
+    runtime = stop - start;
+    cout<< epochs <<" epochs total rumtime is: "<<runtime /CLOCKS_PER_SEC<<" Seconds"<<endl;
+}

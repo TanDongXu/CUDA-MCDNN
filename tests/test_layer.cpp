@@ -1,6 +1,7 @@
 #include<iostream>
 #include<cuda_runtime.h>
 #include"test_layer.h"
+#include<glog/logging.h>
 #include"../common/checkError.h"
 #include"../common/MemoryMonitor.h"
 

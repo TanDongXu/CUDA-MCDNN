@@ -482,6 +482,9 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     cout<< epochs <<" epochs total rumtime is: "<<runtime /CLOCKS_PER_SEC<<" Seconds"<<endl;
 }
 
+// 动态生成全局参数
+int g_nGenerateIndex = 1;
+
 // Train dynamic generation model
 void dynamic_g_trainNet(cuMatrixVector<float> &trainData, 
                         cuMatrix<int>* &trainLabel, 
@@ -550,6 +553,7 @@ void dynamic_g_trainNet(cuMatrixVector<float> &trainData,
         //**只调整三次学习率, 可修改
         if( epo == 150 || epo == 450 || epo == 750 ){
             config = (configBase*) config::instanceObjtce()->getFirstLayers();
+
             //adjust learning rate
             queue<configBase*> que;
             set<configBase*> hash;
@@ -589,28 +593,48 @@ void dynamic_g_trainNet(cuMatrixVector<float> &trainData,
         }
 
         // Test network
-        cout<<"epochs: "<<epo<<" ,Time: "<<(inEnd - inStart)/CLOCKS_PER_SEC<<"s,";
+        cout<< "epochs: " << epo << " ,Time: " << (inEnd - inStart)/CLOCKS_PER_SEC << "s,";
         predictTestData( testData, testLabel, batchSize );
-        cout<<" ,Momentum: "<<Momentum<<endl;
+        cout<< " ,Momentum: " << Momentum << endl;
 
         
         /*在进入下一次训练之前动态生成下一层*/
-        //if (DFS_TRAINING == true && FISS_TRAINING == true )
-        //{
-        //    g_nCount ++;
-        //    if (epo >= 40 && (epo % g_nSplitIndex) == 0 && (g_nCount >= g_nSplitIndex)) {
-        //        g_vBranchResult.clear();
-        //        LayersBase* curLayer = Layers::instanceObject()->getLayer("data");
-        //        getBranchResult(curLayer);
-        //        sort(g_vBranchResult.begin(), g_vBranchResult.end(), cmp_ascend_Order);
-        //        performFiss();
-        //        g_nCount = 0;
-        //    }
-        //}
-        nodeGenerate(endConfig);
-    }
+        g_nCount ++;
+        if((epo % g_nGenerateIndex) == 0 && (g_nCount >= g_nGenerateIndex))
+        {
+            configBase* templateConfig = endConfig->getFirstLayers();
+            configBase* curConfig = config::instanceObjtce()->getFirstLayers();
+            configBase* newConfig_prev = NULL;
+            configBase* newConfig_next = NULL;
+            // find the first different node 
+            while(0 != templateConfig->_next.size() && 0 != curConfig->_next.size())
+            {
+                if(templateConfig->_type == string("SOFTMAX") || curConfig->_type == string("SOFTMAX"))
+                {
+                    LOG(FATAL) << "Config Table Error, SoftMax not finally layer." ;
+                }
 
+                if((templateConfig->_name == curConfig->_name) && (templateConfig->_type == curConfig->_type))
+                {
+                    newConfig_prev = curConfig;
+                    templateConfig = templateConfig->_next[0];
+                    curConfig = curConfig->_next[0];
+                }else
+                {
+                    newConfig_next = curConfig;
+                    break;
+                }
+            }
+
+            if(NULL != newConfig_prev && NULL != newConfig_next)
+            {
+                nodeGenerate(templateConfig, newConfig_prev, newConfig_next);
+                g_nCount = 0;
+            } 
+        }
+        
+    }
     stop = clock();
     runtime = stop - start;
-    cout<< epochs <<" epochs total rumtime is: "<<runtime /CLOCKS_PER_SEC<<" Seconds"<<endl;
+    cout<< epochs << " epochs total rumtime is: " << runtime /CLOCKS_PER_SEC << " Seconds" <<endl;
 }

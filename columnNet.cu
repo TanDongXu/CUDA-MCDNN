@@ -21,6 +21,7 @@
 #include <set>
 #include"math.h"
 #include<algorithm>
+#include<glog/logging.h>
 
 const bool DFS_TRAINING = false;
 const bool DFS_TEST = false;
@@ -31,6 +32,7 @@ using namespace std;
 /*create netWork*/
 void creatColumnNet(int sign)
 {
+    LOG(INFO) << "All Layers Initialization:";
     LayersBase* baseLayer;
     int layerNum = config::instanceObjtce()->getLayersNum();
     configBase* layer = config::instanceObjtce()->getFirstLayers();

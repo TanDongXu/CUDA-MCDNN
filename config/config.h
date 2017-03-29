@@ -86,6 +86,15 @@ class ConfigPoolMethod
 class configBase
 {
     public:
+    configBase()
+    {
+        _type = "";
+        _name = "";
+        _input = "";
+        _sub_input = "";
+        _next.clear();
+        _prev.clear();
+    }
     string _type;
     string _name;
     string _input;
@@ -206,6 +215,7 @@ class config
         _lastLayer = NULL;
         m_poolMethod = NULL;
         m_nonLinearity = NULL;
+        _layerMaps.clear();
     }
 
     private:

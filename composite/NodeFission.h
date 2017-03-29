@@ -25,7 +25,7 @@
 
 void NodeFission(LayersBase* splitNode, LayersBase* nextNode);
 void softmaxFission(LayersBase* splitNode);
-void nodeGenerate(config* endConfig);
+void nodeGenerate(configBase* templateConfig, configBase* newConfig_prev, configBase* newConfig_next);
 
 //static factory
 class FissionFactory
@@ -175,6 +175,7 @@ class DynamicFactory
         if(string("DATA") == nodeType)
         {
             return new DataLayer(node);
+
         }else if(string("CONV") == nodeType)
         {
             return new ConvLayer(node);

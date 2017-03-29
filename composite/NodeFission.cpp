@@ -75,36 +75,13 @@ void NodeFission(LayersBase* splitNode, LayersBase* nextNode) {
 }
 
 //node fission for dynamic_generate model
-void nodeGenerate(config* endConfig) 
+void nodeGenerate(configBase* templateConfig, configBase* newConfig_prev, configBase* newConfig_next) 
 {
     vector<LayersBase*>::iterator l_iter;
     vector<configBase*>::iterator c_iter;
 
-    configBase* templateConfig = endConfig->getFirstLayers();
-    configBase* curConfig = config::instanceObjtce()->getFirstLayers();
-    configBase* newConfig_prev = NULL;
-    configBase* newConfig_next = NULL;
-    //find the first different node 
-    while(0 != templateConfig->_next.size() && 0 != curConfig->_next.size())
-    {
-        if(templateConfig->_type == "SOFTMAX" || curConfig->_type == "SOFTMAX") 
-            LOG(FATAL) << " Config Table Error, SoftMax not finally layer.";
-        if(templateConfig->_name == curConfig->_name)
-        {
-            newConfig_prev = curConfig;
-            templateConfig = templateConfig->_next[0];
-            curConfig = curConfig->_next[0];
-        }else
-        {
-            //this time, templateConfig point to the first different node
-            newConfig_next = curConfig;
-            break;
-        }
-    }
-
-    cout<<"enter-1"<<endl;
-    //make sure the point is not null 
-    if(NULL == newConfig_prev && NULL == newConfig_next) return;
+    //make sure the point is not null, no use && 
+    if(NULL == newConfig_prev || NULL == newConfig_next) return;
     //modify config
     configBase* newConfig = DynamicFactory::instanceObject()->createConfig(templateConfig);
     //necessary

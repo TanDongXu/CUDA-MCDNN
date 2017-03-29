@@ -483,7 +483,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
 }
 
 // 动态生成全局参数
-int g_nGenerateIndex = 1;
+int g_nGenerateIndex = 50;
 
 // Train dynamic generation model
 void dynamic_g_trainNet(cuMatrixVector<float> &trainData, 
@@ -515,8 +515,8 @@ void dynamic_g_trainNet(cuMatrixVector<float> &trainData,
     {
         clock_t inStart, inEnd;
         DataLayer* datalayer = static_cast<DataLayer*>(Layers::instanceObject()->getLayer("data"));
-        Momentum = nMomentum[id];
-        //Momentum = 0.9;
+        //Momentum = nMomentum[id];
+        Momentum = 0.9;
 
         inStart = clock();
         configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
@@ -599,9 +599,9 @@ void dynamic_g_trainNet(cuMatrixVector<float> &trainData,
 
         
         /*在进入下一次训练之前动态生成下一层*/
-        g_nCount ++;
-        if((epo % g_nGenerateIndex) == 0 && (g_nCount >= g_nGenerateIndex))
+        while(((epo + 1) % g_nGenerateIndex) == 0)
         {
+            ++g_nCount;
             configBase* templateConfig = endConfig->getFirstLayers();
             configBase* curConfig = config::instanceObjtce()->getFirstLayers();
             configBase* newConfig_prev = NULL;
@@ -629,8 +629,16 @@ void dynamic_g_trainNet(cuMatrixVector<float> &trainData,
             if(NULL != newConfig_prev && NULL != newConfig_next)
             {
                 nodeGenerate(templateConfig, newConfig_prev, newConfig_next);
-                g_nCount = 0;
-            } 
+                if((templateConfig->_type == string("CONV") || templateConfig->_type == string("HIDDEN")))
+                {
+                    continue;
+                }else if(2 == g_nCount)
+                {
+                    g_nCount = 0;
+                    break;
+                }
+            }
+            break;
         }
         
     }

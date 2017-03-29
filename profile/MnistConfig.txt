@@ -85,11 +85,32 @@ NAME = activation2;
 INPUT = conv2;
 NON_LINEARITY = NL_RELU;
 ]
+[
+LAYER = CONV;
+NAME = conv3;
+INPUT = activation2;
+KERNEL_SIZE = 5;
+KERNEL_AMOUNT = 64;
+PAD_H = 2;
+PAD_W = 2;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation3;
+INPUT = conv3;
+NON_LINEARITY = NL_RELU;
+]
 
 [
 LAYER = POOLING;
 NAME = pooling2;
-INPUT = activation2;
+INPUT = activation3;
 POOLING_TYPE = POOL_MAX;
 POOLDIM = 2;
 PAD_H = 0;
@@ -117,7 +138,7 @@ WEIGHT_DECAY = 1e-8;
 
 [
 LAYER = ACTIVATION;
-NAME = activation3;
+NAME = activation4;
 INPUT = hidden1;
 NON_LINEARITY = NL_RELU;
 ]
@@ -125,7 +146,7 @@ NON_LINEARITY = NL_RELU;
 [
 LAYER = LRN;
 NAME = lrn;
-INPUT = activation3;
+INPUT = activation4;
 LRNN = 5;
 LRNALPHA = 0.0001;
 LRNBETA = 0.75;

@@ -44,9 +44,17 @@ WEIGHT_DECAY = 1e-8;
 ]
 
 [
+LAYER = ACTIVATION;
+NAME = activation1;
+INPUT = conv1;
+NON_LINEARITY = NL_RELU;
+]
+
+
+[
 LAYER = POOLING;
 NAME = pooling1;
-INPUT = conv1;
+INPUT = activation1;
 POOLING_TYPE = POOL_MAX;
 POOLDIM = 2;
 PAD_H = 0;
@@ -55,11 +63,33 @@ STRIDE_H = 2;
 STRIDE_W = 2;
 ]
 
+[
+LAYER = CONV;
+NAME = conv2;
+INPUT = pooling1;
+KERNEL_SIZE = 5;
+KERNEL_AMOUNT = 64;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.1;
+WEIGHT_DECAY = 1e-8;
+]
+
+
+[
+LAYER = ACTIVATION;
+NAME = activation2;
+INPUT = conv2;
+NON_LINEARITY = NL_RELU;
+]
 
 [
 LAYER = POOLING;
 NAME = pooling2;
-INPUT = pooling1;
+INPUT = activation2;
 POOLING_TYPE = POOL_MAX;
 POOLDIM = 2;
 PAD_H = 0;
@@ -67,10 +97,18 @@ PAD_W = 0;
 STRIDE_H = 2;
 STRIDE_W = 2;
 ]
+
+[
+LAYER = DROPOUT;
+NAME = dropout1;
+INPUT = pooling2;
+DROP_RATE = 0.4;
+]
+
 [
 LAYER = HIDDEN;
 NAME = hidden1;
-INPUT = pooling2;
+INPUT = dropout1;
 NUM_HIDDEN_NEURONS = 1024;
 INIT_W = 0.01;
 LEARN_RATE = 0.1;
@@ -78,14 +116,31 @@ WEIGHT_DECAY = 1e-8;
 ]
 
 [
+LAYER = ACTIVATION;
+NAME = activation4;
+INPUT = hidden1;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = LRN;
+NAME = lrn;
+INPUT = activation4;
+LRNN = 5;
+LRNALPHA = 0.0001;
+LRNBETA = 0.75;
+]
+
+[
 LAYER = HIDDEN;
 NAME = hidden2;
-INPUT = hidden1;
+INPUT = lrn;
 NUM_HIDDEN_NEURONS = 10;
 INIT_W = 0.01;
 LEARN_RATE = 0.1;
 WEIGHT_DECAY = 1e-8;
 ]
+
 
 [
 LAYER = SOFTMAX;

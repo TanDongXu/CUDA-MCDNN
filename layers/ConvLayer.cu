@@ -374,8 +374,10 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
     }else
     {
         this->initRandom();
+        //printf_DevParameter(kernelAmount,inputAmount, kernelSize, kernelSize, dev_Weight);
     }
-    cout<<"Conv-copy"<<endl;
+
+    cout<<"conv_copy"<<endl;
 }
 
 /*

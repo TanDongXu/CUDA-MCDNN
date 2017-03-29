@@ -1,4 +1,5 @@
 #include"PoolLayer.h"
+#include<glog/logging.h>
 
 /*
  * Create CUDNN handles
@@ -78,6 +79,7 @@ PoolLayer::PoolLayer(string name)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")" ;
 }
 
 /*
@@ -115,6 +117,7 @@ PoolLayer::PoolLayer(string name, const param_tuple& args)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")" ;
 }
 
 /*
@@ -161,6 +164,7 @@ PoolLayer::PoolLayer(const PoolLayer* layer)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")" ;
     cout<<"Pool-copy"<<endl;
 }
 /*
@@ -207,6 +211,7 @@ PoolLayer::PoolLayer(const configBase* templateConfig)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, prev_num * prev_channels * prev_height * prev_width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")" ;
     cout<<"Pool-copy"<<endl;
 }
 

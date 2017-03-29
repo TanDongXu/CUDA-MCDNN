@@ -3,10 +3,11 @@
 #include"../cuDNN_netWork.h"
 #include"../tests/test_layer.h"
 #include"../common/utility.cuh"
+#include<glog/logging.h>
 
 /*
  * Create CUDNN handles
- * */
+ */
 void ActivationLayer::createHandles()
 {
     checkCUDNN(cudnnCreateTensorDescriptor(&srcTensorDesc));
@@ -64,6 +65,7 @@ ActivationLayer::ActivationLayer(string name)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")";
 }
 
 /*
@@ -97,6 +99,7 @@ ActivationLayer::ActivationLayer(const ActivationLayer* layer)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")";
     cout<<"Activation-copy"<<endl;
 }
 
@@ -131,6 +134,7 @@ ActivationLayer::ActivationLayer(const configBase* templateConfig)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height * width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")";
     cout<<"Activation-copy"<<endl;
 }
 

@@ -1,6 +1,7 @@
 #include"LRNLayer.h"
 #include"../common/checkError.h"
 #include"../cuDNN_netWork.h"
+#include<glog/logging.h>
 
 /*
  * Create CUDNN Handles
@@ -67,6 +68,7 @@ LRNLayer::LRNLayer(string name)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, number * channels * height* width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number  << "," << channels << "," << height << "," << width << ")";
 }
 
 /*
@@ -105,6 +107,7 @@ LRNLayer::LRNLayer(const LRNLayer* layer)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number  << "," << channels << "," << height << "," << width << ")";
 }
 
 /*
@@ -142,6 +145,7 @@ LRNLayer::LRNLayer(const configBase* templateConfig)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number  << "," << channels << "," << height << "," << width << ")";
 }
 
 /*

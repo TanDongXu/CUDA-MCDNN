@@ -1,4 +1,5 @@
 #include"DropOutLayer.h"
+#include<glog/logging.h>
 
 /*
  * DropOut layer constructor
@@ -28,6 +29,7 @@ DropOutLayer::DropOutLayer(string name)
 
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &outputPtr, number * channels * height * width * sizeof(float));
     this->createHandles();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")";
 }
 
 /*
@@ -58,6 +60,7 @@ DropOutLayer::DropOutLayer(const DropOutLayer* layer)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &outputPtr, number * channels * height * width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")";
     cout<<"Drop-copy"<<endl;
 }
 
@@ -89,6 +92,7 @@ DropOutLayer::DropOutLayer(const configBase* templateConfig)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &outputPtr, number * channels * height * width * sizeof(float));
 
     this->createHandles();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")";
     cout<<"Drop-copy"<<endl;
 }
 

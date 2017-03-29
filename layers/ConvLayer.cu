@@ -146,6 +146,8 @@ ConvLayer::ConvLayer(string name, int sign)
     this->createHandles();
     if(sign == RANDOM)
         this->initRandom();
+
+    LOG(INFO) << "(" << number <<","<< channels << "," << height << "," << width <<")";
 }
 
 /*
@@ -205,6 +207,7 @@ ConvLayer::ConvLayer(string name, int sign, const param_tuple& args)
     this->createHandles();
     if(sign == RANDOM)
         this->initRandom();
+    LOG(INFO) << "(" << number <<","<< channels << "," << height << "," << width <<")";
 }
 
 /*
@@ -273,6 +276,7 @@ ConvLayer::ConvLayer(const ConvLayer* layer)
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
     this->createHandles();
     this->initRandom();
+    LOG(INFO) << "(" << number <<","<< channels << "," << height << "," << width <<")";
     cout<<"Conv-copy"<<endl;
 }
 
@@ -355,6 +359,7 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
             if((resultLayer->inputAmount == inputAmount) && (resultLayer->kernelSize == kernelSize) && (resultLayer->kernelAmount == kernelAmount))
             {
                 bFind = true;
+                cout<<"copy weight"<<endl;
                 break;
             }
         } 
@@ -374,9 +379,11 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
     }else
     {
         this->initRandom();
+        cout<<"random weight"<<endl;
         //printf_DevParameter(kernelAmount,inputAmount, kernelSize, kernelSize, dev_Weight);
     }
 
+    LOG(INFO) << "(" << number <<","<< channels << "," << height << "," << width <<")";
     cout<<"conv_copy"<<endl;
 }
 

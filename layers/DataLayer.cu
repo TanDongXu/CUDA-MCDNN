@@ -1,5 +1,5 @@
 #include"DataLayer.h"
-
+#include<glog/logging.h>
 /*
  * Datalayer destructor
  * */
@@ -61,7 +61,7 @@ DataLayer::DataLayer(string name)
     batchImage = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, number * channels * height * width * sizeof(float));
     srcLabel = (int*)MemoryMonitor::instanceObject()->cpuMallocMemory(batchSize * 1 * 1 * 1 * sizeof(int));
-
+    LOG(INFO) << "(" << number <<"," << channels << "," << height << "," << width << ")";;
 }
 
 /*
@@ -99,6 +99,7 @@ DataLayer::DataLayer(const DataLayer* layer)
     MemoryMonitor::instanceObject()->gpu2gpu(dstData, layer->dstData,  number * channels * height * width * sizeof(float));
 
     srcData = layer->dstData;
+    LOG(INFO) << "(" << number <<"," << channels << "," << height << "," << width << ")";;
 }
 
 /*

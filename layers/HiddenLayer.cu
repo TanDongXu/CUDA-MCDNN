@@ -131,6 +131,8 @@ HiddenLayer::HiddenLayer(string name, int sign)
     this->createHandles();
     if(sign == RANDOM)
         this->initRandom();
+
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")";
 }
 
 /*
@@ -196,6 +198,7 @@ HiddenLayer::HiddenLayer(const HiddenLayer* layer)
     
     this->createHandles();
     this->initRandom();
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")";
     cout<<"Hidden-copy"<<endl;
 }
 
@@ -287,6 +290,7 @@ HiddenLayer::HiddenLayer(const configBase* templateConfig)
     {
         this->initRandom();
     }
+    LOG(INFO) << "(" << number << "," << channels << "," << height << "," << width << ")";
     cout<<"Hidden-copy"<<endl;
 }
 

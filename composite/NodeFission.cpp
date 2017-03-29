@@ -88,18 +88,18 @@ void nodeGenerate(configBase* templateConfig, configBase* newConfig_prev, config
     newConfig->_prev.clear();
     newConfig->_next.clear();
 
-    cout<<newConfig->_name<<" "<<newConfig->_type<<" "<<newConfig->_input<<" "<<newConfig->_prev.size()<<" "<< newConfig->_next.size()<<endl;
+    //cout<<newConfig->_name<<" "<<newConfig->_type<<" "<<newConfig->_input<<" "<<newConfig->_prev.size()<<" "<< newConfig->_next.size()<<endl;
 
     newConfig_prev->_next.push_back(newConfig);
     newConfig->_prev.push_back(newConfig_prev);
     newConfig->_next.push_back(newConfig_next);
     newConfig_next->_prev.push_back(newConfig);
 
-    cout<<newConfig->_name<<" "<<newConfig->_type<<" "<<newConfig->_input<<" "<<newConfig->_prev[0]->_name<<" "<< newConfig->_next[0]->_name<<endl;
+    //cout<<newConfig->_name<<" "<<newConfig->_type<<" "<<newConfig->_input<<" "<<newConfig->_prev[0]->_name<<" "<< newConfig->_next[0]->_name<<endl;
     //insert into origin config table
-    cout<<"no hidden-1"<<endl;
+    //cout<<"no hidden-1"<<endl;
     config::instanceObjtce()->insertLayerByName(newConfig->_name, newConfig);
-    cout<<"no hidden"<<endl;
+    //cout<<"no hidden"<<endl;
     // prev layer delete origin next layer point
     for (c_iter = newConfig_prev->_next.begin(); c_iter != newConfig_prev->_next.end(); c_iter++) 
     {
@@ -116,11 +116,9 @@ void nodeGenerate(configBase* templateConfig, configBase* newConfig_prev, config
         }
     }
     
-    cout<<newConfig_next->_input<<endl;
+    //cout<<newConfig_next->_input<<endl;
     //modify nextConfig input name
     newConfig_next->_input = newConfig->_name;
-    cout<<newConfig_next->_input<<endl;
-
 
     //modify Layers by new config node
     LayersBase* newLayer = DynamicFactory::instanceObject()->createLayer(newConfig);
@@ -156,7 +154,7 @@ void nodeGenerate(configBase* templateConfig, configBase* newConfig_prev, config
     newLayer_next->_inputName = newLayer->_name;
     //insert one node
     newLayer_next->insertPrevLayer(newLayer);
-    cout<<"create layer success"<<endl;
+    //cout<<"create layer success"<<endl;
 }
 
 /*softMaxLayer fission*/

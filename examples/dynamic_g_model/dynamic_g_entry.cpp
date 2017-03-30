@@ -43,7 +43,6 @@ void dynamic_g_entry()
     if(1 == cmd)
     {
         const string sMnist_begin_dir = dirPath + sPhase_begin + "MnistConfig.txt";
-        cout<<sMnist_begin_dir<<endl;
         const string sMnist_end_dir = dirPath + sPhase_end + "MnistConfig.txt";
         // read the begin profile
         config::instanceObjtce()->initConfig(sMnist_begin_dir);

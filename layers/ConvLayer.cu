@@ -359,7 +359,6 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
             if((resultLayer->inputAmount == inputAmount) && (resultLayer->kernelSize == kernelSize) && (resultLayer->kernelAmount == kernelAmount))
             {
                 bFind = true;
-                cout<<"copy weight"<<endl;
                 break;
             }
         } 
@@ -375,7 +374,10 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
         MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
         MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
         MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
-        MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, resultLayer->dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+        reverseArray(dev_Weight, kernelAmount, inputAmount, kernelSize, kernelSize);
+        //MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, resultLayer->dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+        MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+        cout<<"copy weight"<<endl;
     }else
     {
         this->initRandom();

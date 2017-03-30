@@ -382,6 +382,7 @@ void config::init(string path)
     _training_epochs = get_word_int(_configStr, "EPOCHS");
     /*iter_per_epo*/
     _iter_per_epo = get_word_int(_configStr, "ITER_PER_EPO");
+    m_lr_policy = get_word_type(_configStr, "LR_POLICY");
     /*layers*/
     get_layers_config(_configStr);
 }

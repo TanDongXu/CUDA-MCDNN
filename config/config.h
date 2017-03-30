@@ -125,6 +125,10 @@ class config
         return _normalized_width;
     }
 
+    string get_lrPolicy()
+    {
+        return m_lr_policy;
+    }
     /*get imageSize*/
     int get_imageSize()
     {
@@ -229,6 +233,7 @@ class config
         int _channels;
         string _configStr;
         string _path;
+        string m_lr_policy;
         map<string, configBase*> _layerMaps;
         configBase* _firstLayers;
         configBase* _lastLayer;

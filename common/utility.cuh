@@ -28,7 +28,7 @@
 /*the ways of initial weight*/
 #define RANDOM 1
 #define READ_FROM_FILE 2
-const double FLAGS_lr_gamma = 0.0001;   //learning rate policy
+const double FLAGS_lr_gamma = 0.00001;   //learning rate policy
 const double FLAGS_lr_power = 0.75;     //Learing rate policy power
 
 /*get array maxValue*/

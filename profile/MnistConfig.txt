@@ -7,6 +7,7 @@
 *              General Parameters Config
 *
 *NON_LINEARITY = NL_SIGMOID, NL_TANH, NL_RELU, NL_CLIPPED_RELU
+*LR_POLICY = INV, STEP, FIXED
 ********************************************************/
 
 BATCH_SIZE = 128;
@@ -15,6 +16,7 @@ IMAGES_SIZE = 28;
 CNANNELS = 1;
 EPOCHS = 4000;
 ITER_PER_EPO = 400;
+LR_POLICY = FIXED;
 
 
 
@@ -33,13 +35,13 @@ LAYER = CONV;
 NAME = conv1;
 INPUT =data;
 KERNEL_SIZE = 5;
-KERNEL_AMOUNT = 32;
+KERNEL_AMOUNT = 64;
 PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
 INIT_W = 0.01;
-LEARN_RATE = 0.1;
+LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-8;
 ]
 
@@ -74,7 +76,7 @@ PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
 INIT_W = 0.01;
-LEARN_RATE = 0.1;
+LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-8;
 ]
 
@@ -96,7 +98,7 @@ PAD_W = 2;
 STRIDE_H = 1;
 STRIDE_W = 1;
 INIT_W = 0.01;
-LEARN_RATE = 0.1;
+LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-8;
 ]
 
@@ -131,8 +133,8 @@ LAYER = HIDDEN;
 NAME = hidden1;
 INPUT = dropout1;
 NUM_HIDDEN_NEURONS = 1024;
-INIT_W = 0.01;
-LEARN_RATE = 0.1;
+INIT_W = 0.1;
+LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-8;
 ]
 
@@ -157,8 +159,8 @@ LAYER = HIDDEN;
 NAME = hidden2;
 INPUT = lrn;
 NUM_HIDDEN_NEURONS = 10;
-INIT_W = 0.01;
-LEARN_RATE = 0.1;
+INIT_W = 0.1;
+LEARN_RATE = 0.05;
 WEIGHT_DECAY = 1e-8;
 ]
 

@@ -359,8 +359,8 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     for(int epo = 0; epo < epochs; epo++)
     {
         DataLayer* datalayer = static_cast<DataLayer*>(Layers::instanceObject()->getLayer("data"));
-        Momentum = nMomentum[id];
-        //Momentum = 0.9;
+        //Momentum = nMomentum[id];
+        Momentum = 0.9;
 
         clock_t inStart, inEnd;
         inStart = clock();
@@ -484,8 +484,65 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
     cout<< epochs <<" epochs total rumtime is: "<<runtime /CLOCKS_PER_SEC<<" Seconds"<<endl;
 }
 
+// all learn rate adjust
+void globalRateAdjust(int epoch)
+{
+    string sMethod = config::instanceObjtce()->get_lrPolicy();
+    configBase* config = (configBase*) config::instanceObjtce()->getFirstLayers();
+    if("INV" == sMethod)
+    {
+        queue<configBase*> que;
+        set<configBase*> hash;
+        hash.insert(config);
+        que.push(config);
+        while( !que.empty() ){
+            config = que.front();
+            que.pop();
+            LayersBase * layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
+            layer->adjust_learnRate(epoch, FLAGS_lr_gamma, FLAGS_lr_power);
+
+            for(int i = 0; i < config->_next.size(); i++){
+                if( hash.find(config->_next[i]) == hash.end()){
+                    hash.insert(config->_next[i]);
+                    que.push(config->_next[i]);
+                }
+            }
+        }
+
+    }else if("STEP")
+    {
+        if( epoch == 150 || epoch == 450 || epoch == 750 )
+        {
+            queue<configBase*> que;
+            set<configBase*> hash;
+            hash.insert(config);
+            que.push(config);
+            while(!que.empty())
+            {
+                config = que.front();
+                que.pop();
+                LayersBase * layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
+                if(epoch == 150)
+                    layer->lrate /= 10.0f;
+                else if(epoch == 450)
+                    layer->lrate /= 5.0f;
+                else layer->lrate /= 2.0f;
+                for(int i = 0; i < config->_next.size(); i++){
+                    if( hash.find(config->_next[i]) == hash.end()){
+                        hash.insert(config->_next[i]);
+                        que.push(config->_next[i]);
+                    }
+                }
+            }
+        }
+    }else
+    {
+        
+    }
+}
+
 // 动态生成全局参数
-int g_nGenerateIndex = 50;
+int g_nGenerateIndex = 40;
 
 // Train dynamic generation model
 void dynamic_g_trainNet(cuMatrixVector<float> &trainData, 
@@ -530,63 +587,8 @@ void dynamic_g_trainNet(cuMatrixVector<float> &trainData,
         }
         inEnd = clock();
 
-        config = (configBase*) config::instanceObjtce()->getFirstLayers();
-        //adjust learning rate
-        /*
-        queue<configBase*> que;
-        set<configBase*> hash;
-        hash.insert(config);
-        que.push(config);
-        while( !que.empty() ){
-            config = que.front();
-            que.pop();
-            LayersBase * layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
-            layer->adjust_learnRate(epo, FLAGS_lr_gamma, FLAGS_lr_power);
-
-            for(int i = 0; i < config->_next.size(); i++){
-                if( hash.find(config->_next[i]) == hash.end()){
-                    hash.insert(config->_next[i]);
-                    que.push(config->_next[i]);
-                }
-            }
-        }
-        */
-
-        //**只调整三次学习率, 可修改
-        if( epo == 150 || epo == 450 || epo == 750 ){
-            config = (configBase*) config::instanceObjtce()->getFirstLayers();
-
-            //adjust learning rate
-            queue<configBase*> que;
-            set<configBase*> hash;
-            hash.insert(config);
-            que.push(config);
-            while( !que.empty() ){
-                config = que.front();
-                que.pop();
-                LayersBase * layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
-                //layer->rateReduce();
-                //**可修改
-                if(epo == 150)
-                    layer->lrate /= 10.0f;
-                else if(epo == 450)
-                    layer->lrate /= 5.0f;
-                else layer->lrate /= 2.0f;
-                
-                /*
-                if( layer->lrate >= 1e-4 && layer->lrate <= 1){
-                    printf("lRate %s %f\n", layer->_name.c_str(), layer->lrate);
-                }
-                */
-
-                for(int i = 0; i < config->_next.size(); i++){
-                    if( hash.find(config->_next[i]) == hash.end()){
-                        hash.insert(config->_next[i]);
-                        que.push(config->_next[i]);
-                    }
-                }
-            }
-        }
+        // adjust learn rate
+        globalRateAdjust(epo);
 
         if(epo && epo % epoCount[id] == 0)
         {

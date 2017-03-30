@@ -47,6 +47,7 @@ T getMax(T*value, int size)
 
 
 string int_to_string(int num);
+void reverseArray(float* dev_array, int number, int channels, int height, int width);
 void showDevices();
 __global__ void MultiChannelsMerge(float** inputs, float* outputs, int* channels, int* indexs, int row, int outChannels);
 __global__ void MultiArrayAdd(float** inputs, float* outputs, int number,int channels, int height, int width);

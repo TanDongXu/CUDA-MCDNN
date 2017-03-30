@@ -1,5 +1,5 @@
 #include"utility.cuh"
-
+#include"common/MemoryMonitor.h"
 
 /*int to string*/
 string int_to_string(int num)
@@ -138,4 +138,37 @@ __global__ void MultiArrayAdd(float** inputs,
             }
         }
     }
+}
+
+//Reverse Array
+void reverseArray(float* dev_array, int number, int channels, int height, int width)
+{
+    int size = number * channels * height * width * sizeof(float);
+    int groupNum = number * channels;
+    int oBegin = 0;
+    int oEnd = groupNum - 1;
+    int times = height * width;
+    float fSwap;
+    float* cpuArray = (float*)MemoryMonitor::instanceObject()->cpuMallocMemory(size);
+    MemoryMonitor::instanceObject()->gpu2cpu(cpuArray, dev_array, size);
+
+    while(oBegin < oEnd)
+    {
+        int inBegin = oBegin * times;
+        int inEnd = oEnd * times;
+
+        for(int i = 0; i < times; i++)
+        {
+            fSwap = cpuArray[inBegin] * 0.5;
+            cpuArray[inBegin] = cpuArray[inEnd] * 0.5;
+            cpuArray[inEnd] = fSwap;
+
+           inBegin++;
+            inEnd ++;
+        }
+        oBegin ++;
+        oEnd --;
+    }
+    
+    MemoryMonitor::instanceObject()->cpu2Gpu(dev_array, cpuArray, size);
 }

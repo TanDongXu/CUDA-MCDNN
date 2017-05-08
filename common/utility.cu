@@ -159,8 +159,8 @@ void reverseArray(float* dev_array, int number, int channels, int height, int wi
 
         for(int i = 0; i < times; i++)
         {
-            fSwap = cpuArray[inBegin] * 0.5;
-            cpuArray[inBegin] = cpuArray[inEnd] * 0.5;
+            fSwap = cpuArray[inBegin];
+            cpuArray[inBegin] = cpuArray[inEnd];
             cpuArray[inEnd] = fSwap;
 
            inBegin++;

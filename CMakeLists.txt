@@ -63,8 +63,9 @@ file(GLOB CUDA_MCDNN_CU_SOURCES  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "config/*"
     "composite/*"
     "dataAugmentation/*"
-    "examples/*"
     "examples/dynamic_g_model/*"
+    "examples/mnist/*"
+    "examples/cifar10/*"
     "main.cpp"
     "columnNet.*"
     "cuDNN_netWork.*")

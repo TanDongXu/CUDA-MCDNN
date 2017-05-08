@@ -616,9 +616,9 @@ void ConvLayer::forwardPropagation(string train_or_test)
     /*
      * Obtain the best suited algorithm for cudnnConvolutinForward
      * */
-    if (cuDNN_netWork<float>::instanceObject()->getConvFwdAlgorithm() < 0)
-    {
-        checkCUDNN(cudnnGetConvolutionForwardAlgorithm(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
+    //if (cuDNN_netWork<float>::instanceObject()->getConvFwdAlgorithm() < 0)
+    //{
+    checkCUDNN(cudnnGetConvolutionForwardAlgorithm(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
                                                        srcTensorDesc,
                                                        filterDesc,
                                                        convDesc,
@@ -627,11 +627,11 @@ void ConvLayer::forwardPropagation(string train_or_test)
                                                        0,
                                                        &convFwdAlgo));
 
-        cuDNN_netWork<float>::instanceObject()->setConvolutionFwdAlgorithm(convFwdAlgo);
-    }else
-    {
-    	convFwdAlgo =(cudnnConvolutionFwdAlgo_t)cuDNN_netWork<float>::instanceObject()->getConvFwdAlgorithm();
-    }
+        //cuDNN_netWork<float>::instanceObject()->setConvolutionFwdAlgorithm(convFwdAlgo);
+    //}else
+    //{
+    //	convFwdAlgo =(cudnnConvolutionFwdAlgo_t)cuDNN_netWork<float>::instanceObject()->getConvFwdAlgorithm();
+    //}
 
     /*Get the amount of GPU memory for cudnnConvolutionForward*/
     size_t convFwdSizeInBytes = 0;
@@ -693,9 +693,9 @@ void ConvLayer::backwardPropagation(float Momentum)
                                            ));
 
     /*Obtain the best suited algorithm for cudnnConvolutionBackwardFilter*/
-    if(cuDNN_netWork<float>::instanceObject()->getConvolutionBwdFilterAlgorithm() < 0)
-    {
-    	checkCUDNN(cudnnGetConvolutionBackwardFilterAlgorithm(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
+    //if(cuDNN_netWork<float>::instanceObject()->getConvolutionBwdFilterAlgorithm() < 0)
+    //{
+    checkCUDNN(cudnnGetConvolutionBackwardFilterAlgorithm(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
     			                                               srcTensorDesc,
     			                                               dstTensorDesc,
     			                                               convDesc,
@@ -705,11 +705,11 @@ void ConvLayer::backwardPropagation(float Momentum)
     			                                               &convBwdFilterAlgo
     			                                               ));
 
-    	cuDNN_netWork<float>::instanceObject()->setConvolutionBwdFilterAlgorithm(convBwdFilterAlgo);
-    }else
-    {
-    	convBwdFilterAlgo = (cudnnConvolutionBwdFilterAlgo_t)cuDNN_netWork<float>::instanceObject()->getConvolutionBwdFilterAlgorithm();
-    }
+    //	cuDNN_netWork<float>::instanceObject()->setConvolutionBwdFilterAlgorithm(convBwdFilterAlgo);
+    //}else
+    //{
+    //	convBwdFilterAlgo = (cudnnConvolutionBwdFilterAlgo_t)cuDNN_netWork<float>::instanceObject()->getConvolutionBwdFilterAlgorithm();
+    //}
 
     /*Get the GPU memory workspace for cudnnConvolutionBackwardFilter*/
     size_t convBwdFilterSizeInBytes = 0;
@@ -748,9 +748,9 @@ void ConvLayer::backwardPropagation(float Momentum)
     }
 
     /*Obtaining the best suited algorithm for the cudnnConvolutionBackwardData*/
-    if(cuDNN_netWork<float>::instanceObject()->getConvolutionBwdDataAlgorithm() < 0)
-    {
-    	checkCUDNN(cudnnGetConvolutionBackwardDataAlgorithm(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
+    //if(cuDNN_netWork<float>::instanceObject()->getConvolutionBwdDataAlgorithm() < 0)
+    //{
+    checkCUDNN(cudnnGetConvolutionBackwardDataAlgorithm(cuDNN_netWork<float>::instanceObject()->GetcudnnHandle(),
     			                                            filterDesc,
     			                                            dstTensorDesc,
     			                                            convDesc,
@@ -759,12 +759,12 @@ void ConvLayer::backwardPropagation(float Momentum)
     			                                            0,
     			                                            &convBwdDataAlgo
     			                                            ));
-    	cuDNN_netWork<float>::instanceObject()->setConvolutionBwdDataAlgorithm(convBwdDataAlgo);
+    //	cuDNN_netWork<float>::instanceObject()->setConvolutionBwdDataAlgorithm(convBwdDataAlgo);
 
-    }else
-    {
-    	convBwdDataAlgo = (cudnnConvolutionBwdDataAlgo_t)cuDNN_netWork<float>::instanceObject()->getConvolutionBwdDataAlgorithm();
-    }
+    //}else
+    //{
+    //	convBwdDataAlgo = (cudnnConvolutionBwdDataAlgo_t)cuDNN_netWork<float>::instanceObject()->getConvolutionBwdDataAlgorithm();
+    //}
 
     /*Get the amount of GPU memory for the cudnnConvlotionBackwardData*/
     size_t convBwdDataSizeInBytes = 0;

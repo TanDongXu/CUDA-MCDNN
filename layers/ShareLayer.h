@@ -20,6 +20,7 @@ class ShareLayer : public LayersBase
     public:
     ShareLayer(string name);
     ShareLayer(string name, LayersBase* layer);
+    void ReShape(){}
     void forwardPropagation(string train_or_test){};
     void backwardPropagation(float Momemtum){};
     void readWeight(FILE* file){};

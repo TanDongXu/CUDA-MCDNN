@@ -29,6 +29,7 @@ class SoftMaxLayer : public LayersBase
     SoftMaxLayer(const configBase* templateConfig){}
     ~SoftMaxLayer();
     void initRandom();
+    void ReShape();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);
     void saveWeight(FILE*file){}

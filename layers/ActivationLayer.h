@@ -22,6 +22,7 @@ class ActivationLayer: public LayersBase
     ActivationLayer(const ActivationLayer* layer);
     ActivationLayer(const configBase* templateConfig);
     ~ActivationLayer();
+    void ReShape();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);
     void saveWeight(FILE*file){}

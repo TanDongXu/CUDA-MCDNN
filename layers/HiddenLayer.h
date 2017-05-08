@@ -30,6 +30,7 @@ public:
     HiddenLayer(const configBase* templateConfig);
 	~HiddenLayer();
 	void initRandom();
+    void ReShape(){}
 	void forwardPropagation(string train_or_test);
 	void backwardPropagation(float Momentum);
 	void saveWeight(FILE*file);

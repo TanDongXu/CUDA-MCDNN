@@ -82,8 +82,8 @@ SoftMaxLayer::SoftMaxLayer(string name)
     cur_correctSize = 0;
 
     configSoftMax* curConfig = (configSoftMax*) config::instanceObjtce()->getLayersByName(_name);
-    string prevLayerName = curConfig->_input;
-    LayersBase* prev_Layer =(LayersBase*) Layers::instanceObject()->getLayer(prevLayerName);
+    _inputName = curConfig->_input;
+    LayersBase* prev_Layer =(LayersBase*) Layers::instanceObject()->getLayer(_inputName);
 
     batchSize = config::instanceObjtce()->get_batchSize();
     inputSize = prev_Layer->getOutputSize();
@@ -196,6 +196,19 @@ void SoftMaxLayer::ClassificationResults()
     }
 }
 
+// ReShape the demension
+void SoftMaxLayer::ReShape()
+{
+    LayersBase* prev_Layer =(LayersBase*) Layers::instanceObject()->getLayer(_inputName);
+    inputSize = prev_Layer->getOutputSize();
+    inputAmount = prev_Layer->channels;
+    inputImageDim = prev_Layer->height;
+    number = prev_Layer->number;
+    channels = prev_Layer->channels;
+    height = prev_Layer->height;
+}
+
+
 /*
  * Softmax layer forward propagation
  * */
@@ -204,6 +217,8 @@ void SoftMaxLayer::forwardPropagation(string train_or_test)
     GetDataSize_BatchLabel();
     srcData = prevLayer[0]->dstData;
 
+    // dynamic adjust demension
+    ReShape();
     checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
                                           cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
                                           cuDNN_netWork<float>::instanceObject()->GetDataType(),

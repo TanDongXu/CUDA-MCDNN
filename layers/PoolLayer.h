@@ -32,6 +32,7 @@ class PoolLayer : public LayersBase
     PoolLayer(const PoolLayer* layer);
     PoolLayer(const configBase* templateConfig);
     ~PoolLayer();
+    void ReShape();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);
     void saveWeight(FILE*file){}

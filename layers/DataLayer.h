@@ -31,6 +31,7 @@ class DataLayer: public LayersBase
     void RandomBatch_Images_Label(cuMatrixVector<float> &inputData, cuMatrix<int>* &inputLabel);
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);
+    void ReShape(){}
     void saveWeight(FILE*file){}
     void readWeight(FILE*file){}
     int getOutputSize();

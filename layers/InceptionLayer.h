@@ -23,6 +23,7 @@ class InceptionLayer : public LayersBase
     InceptionLayer(string name, int sign);
     ~InceptionLayer();
     int getOutputSize();
+    void ReShape(){}
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);
     void saveWeight(FILE* file){};

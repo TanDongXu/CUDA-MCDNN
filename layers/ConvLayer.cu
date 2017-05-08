@@ -280,6 +280,7 @@ ConvLayer::ConvLayer(const ConvLayer* layer)
     cout<<"Conv-copy"<<endl;
 }
 
+
 /*
  * Deep copy constructor for convolution layers
  */
@@ -371,12 +372,70 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
     if(bFind)
     {
         CHECK(resultLayer);
-        MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
-        MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
-        MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
-        reverseArray(dev_Weight, kernelAmount, inputAmount, kernelSize, kernelSize);
+        //this->initRandom();
+        if(_name == "conv6")
+        {
+            epsilon = 0.01;
+            this->initRandom();
+            float* tWeight = NULL;
+            MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tWeight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+            MemoryMonitor::instanceObject()->gpu2gpu(tWeight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+            //MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+            //reverseArray(dev_Weight, kernelAmount, inputAmount, kernelSize, kernelSize);
+           // static int index = 0;
+           // float scalVal = 3;
+           // if(index == 1) scalVal = 1;
+           // if(index == 2) scalVal = 0.5;
+           // if(index == 3) scalVal = 0.1;
+           int size =  kernelAmount * inputAmount * kernelSize * kernelSize;
+           // checkCublasErrors(cublasSscal(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+           //                         size,
+           //                         &scalVal,
+           //                         dev_Weight,
+           //                         1));
+           // MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, resultLayer->dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+            float alpha = 1.0f;
+            checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+                                 size,
+                                 &alpha,
+                                 tWeight,
+                                 1,
+                                 dev_Weight,
+                                 1));
+        }else
+        {
+            MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+            MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+            MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+        //float* tWeight = NULL;
+        //MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tWeight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+        //MemoryMonitor::instanceObject()->gpu2gpu(tWeight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+        //MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+        //reverseArray(dev_Weight, kernelAmount, inputAmount, kernelSize, kernelSize);
+        //static int index = 0;
+        //float scalVal = 3;
+        //if(index == 1) scalVal = 1;
+        //if(index == 2) scalVal = 0.5;
+        //if(index == 3) scalVal = 0.1;
+        //int size =  kernelAmount * inputAmount * kernelSize * kernelSize;
+        //checkCublasErrors(cublasSscal(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+        //                          size,
+        //                          &scalVal,
+        //                          dev_Weight,
+        //                          1));
         //MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, resultLayer->dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+        //float alpha = 0.5f;
+       // checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+       //                           size,
+       //                           &alpha,
+       //                           tWeight,
+       //                           1,
+       //                           dev_Weight,
+       //                           1));
+        }
+
         MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+        cout<< _name<<endl;
         cout<<"copy weight"<<endl;
     }else
     {
@@ -407,9 +466,25 @@ ConvLayer::~ConvLayer()
     destroyHandles();
 }
 
+// ReShape the demension int the Forward
+void ConvLayer::ReShape()
+{
+    LayersBase* prev_Layer = (LayersBase*) Layers::instanceObject()->getLayer(_inputName);
+    inputAmount = prev_Layer->channels;
+    inputImageDim = prev_Layer->height;
+    prev_channels = prev_Layer->channels;
+    prev_height = prev_Layer->height;
+    prev_width = prev_Layer->width;
+    number = prev_num;
+    channels = kernelAmount;
+    height = (inputImageDim + 2 * pad_h - kernelSize) / stride_h + 1;
+    width = (inputImageDim + 2 * pad_w - kernelSize) / stride_w + 1;
+    outputSize = channels * height * width;
+}
+
 /*
  * Forward propagation add Bias
- * */
+ */
 void ConvLayer::addBias(const cudnnTensorDescriptor_t& dstTensorDesc, int c, float *data )
 {
 
@@ -432,13 +507,80 @@ void ConvLayer::addBias(const cudnnTensorDescriptor_t& dstTensorDesc, int c, flo
                               data));
 }
 
+void ConvLayer::copyWeight()
+{
+    int size =  kernelAmount * inputAmount * kernelSize * kernelSize;
+    if(_name == "conv6")
+    {
+        ConvLayer* prev_Layer = (ConvLayer*) Layers::instanceObject()->getLayer("conv5");
+        
+        float alpha = 1.0f;
+        checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+                                  size,
+                                  &alpha,
+                                  prev_Layer->dev_Weight,
+                                  1,
+                                  dev_Weight,
+                                  1));
+
+        cout<<"conv6 copy"<<endl;
+    }
+    if(_name == "conv5")
+    {
+        ConvLayer* prev_Layer = (ConvLayer*) Layers::instanceObject()->getLayer("conv4");
+        
+        float alpha = 1.0f;
+        checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+                                  size,
+                                  &alpha,
+                                  prev_Layer->dev_Weight,
+                                  1,
+                                  dev_Weight,
+                                  1));
+
+        cout<<"conv5 copy"<<endl;
+    }
+    if(_name == "conv4")
+    {
+        ConvLayer* prev_Layer = (ConvLayer*) Layers::instanceObject()->getLayer("conv3");
+        
+        float alpha = 1.0f;
+        checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+                                  size,
+                                  &alpha,
+                                  prev_Layer->dev_Weight,
+                                  1,
+                                  dev_Weight,
+                                  1));
+
+        cout<<"conv4 copy"<<endl;
+    }
+    if(_name == "conv3")
+    {
+        ConvLayer* prev_Layer = (ConvLayer*) Layers::instanceObject()->getLayer("conv2");
+        
+        float alpha = 1.0f;
+        checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+                                  size,
+                                  &alpha,
+                                  prev_Layer->dev_Weight,
+                                  1,
+                                  dev_Weight,
+                                  1));
+
+        cout<<"conv3 copy"<<endl;
+    }
+}
+
 /*
  * Convolution forward propagation
  * */
 void ConvLayer::forwardPropagation(string train_or_test)
 {
     srcData = prevLayer[0]->dstData;
-
+    // dynamic adjust demension
+    ReShape();
+    //reverseArray(dev_Weight, kernelAmount, inputAmount, kernelSize, kernelSize);
     checkCUDNN(cudnnSetTensor4dDescriptor(srcTensorDesc,
                                           cuDNN_netWork<float>::instanceObject()->GetTensorFormat(),
                                           cuDNN_netWork<float>::instanceObject()->GetDataType(),

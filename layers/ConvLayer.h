@@ -37,6 +37,8 @@ class ConvLayer:public LayersBase
     ConvLayer(const configBase* templateConfig);
     ~ConvLayer();
     void initRandom();
+    void ReShape();
+    void copyWeight();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);
     void saveWeight(FILE*file);

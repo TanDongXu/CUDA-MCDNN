@@ -27,6 +27,7 @@ class LayersBase
     virtual int getOutputSize() = 0;
     virtual void saveWeight(FILE*file) = 0;
     virtual void readWeight(FILE*file) = 0;
+    virtual void ReShape() = 0;
 
     void setCurBranchIndex(int nIndex = 0);
     void adjust_learnRate(int index, double lr_gamma, double lr_power);

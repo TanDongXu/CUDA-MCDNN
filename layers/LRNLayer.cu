@@ -158,6 +158,20 @@ LRNLayer::~LRNLayer()
     destroyHandles();
 }
 
+// ReShape the demesion
+void LRNLayer::ReShape()
+{
+    LayersBase* prev_Layer = (LayersBase*) Layers::instanceObject()->getLayer(_inputName);
+    inputAmount = prev_Layer->channels;
+    inputImageDim = prev_Layer->height;
+    number = prev_Layer->number;
+    channels = prev_Layer->channels;
+    height = prev_Layer->height;
+    width = prev_Layer->width;
+    inputSize = prev_Layer->getOutputSize();
+    outputSize = inputSize;
+}
+
 /*
  * LRN Forward propagation
  * */
@@ -165,6 +179,8 @@ void LRNLayer::forwardPropagation(string train_or_test)
 {
     srcData = prevLayer[0]->dstData;
 
+    // dynamic adjust demension
+    ReShape();
     checkCUDNN(cudnnSetLRNDescriptor(normDesc,
                                      lrnN,
                                      lrnAlpha,

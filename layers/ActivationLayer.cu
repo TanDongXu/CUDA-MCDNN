@@ -166,6 +166,20 @@ __global__ void LreluForward(float* srcData, float* dstData, int data_size)
 
 }
 
+// ReShape the demension
+void ActivationLayer::ReShape()
+{
+    
+    LayersBase* prev_Layer = (LayersBase*)Layers::instanceObject()->getLayer(_inputName);
+    inputAmount = prev_Layer->channels;
+    inputImageDim = prev_Layer->height;
+    number = prev_Layer->number;
+    channels =  prev_Layer->channels;
+    height = prev_Layer->height;
+    width = prev_Layer->width;
+    outputSize = channels * height * width;
+}
+
 /*
  * Activation forward propagation
  * */
@@ -173,6 +187,8 @@ void ActivationLayer::forwardPropagation(string train_or_test)
 {
     srcData = prevLayer[0]->dstData;
 
+    // dynamic adjust demension
+    ReShape();
     if(ActivationMode == ACTIVATION_LRELU)
     {
         int data_size = number * channels * height * width;

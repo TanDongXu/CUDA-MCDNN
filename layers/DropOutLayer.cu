@@ -162,11 +162,28 @@ void DropOutLayer::Dropout_TestSet(float* data, int size, float dropout_rate)
     cudaThreadSynchronize();
 }
 
+// ReShape the demension
+void DropOutLayer::ReShape()
+{
+    
+    LayersBase* prev_Layer = (LayersBase*) Layers::instanceObject()->getLayer(_inputName);
+
+    inputAmount = prev_Layer->channels;
+    inputImageDim = prev_Layer->height;
+    number = prev_Layer->number;
+    channels = prev_Layer->channels;
+    height = prev_Layer->height;
+    width = prev_Layer->width;
+    outputSize = channels * height * width;
+}
+
 void DropOutLayer::forwardPropagation(string train_or_test)
 {
     srcData =prevLayer[0]->dstData;
     dstData = srcData;
 
+    //dynamic adjust demensio
+    ReShape();
     /*use dropout in training, when testing multiply probability*/
     if(train_or_test == "train")
     {

@@ -26,6 +26,7 @@ class LRNLayer : public LayersBase
     LRNLayer(const LRNLayer* layer);
     LRNLayer(const configBase* templateConfig);
     ~LRNLayer();
+    void ReShape();
     void forwardPropagation(string train_or_test);
     void backwardPropagation(float Momentum);
     void saveWeight(FILE*file){}

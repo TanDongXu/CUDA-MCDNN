@@ -1,5 +1,6 @@
 #include"PoolLayer.h"
 #include<glog/logging.h>
+#include"common/utility.cuh"
 
 /*
  * Create CUDNN handles
@@ -215,6 +216,38 @@ PoolLayer::PoolLayer(const configBase* templateConfig)
     cout<<"Pool-copy"<<endl;
 }
 
+// ReShape the demension
+void PoolLayer::ReShape()
+{
+
+    configPooling* curConfig = (configPooling*) config::instanceObjtce()->getLayersByName(_name);
+    LayersBase* prev_Layer = (LayersBase*)Layers::instanceObject()->getLayer(_inputName);
+    prev_num = prev_Layer->number;
+    prev_channels = prev_Layer->channels;
+    prev_height = prev_Layer->height;
+    prev_width = prev_Layer->width;
+
+    inputImageDim = prev_Layer->height;
+    inputAmount = prev_Layer->channels;
+    number = prev_Layer->number;
+    channels = prev_Layer->channels;
+    height = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+    width = static_cast<int>(ceil(static_cast<float>(inputImageDim + 2 * pad_h - poolDim)/stride_h)) + 1 ;
+    outputSize = channels * height * width;
+
+    if(curConfig->_poolType == POOLING_AVERAGE_COUNT_INCLUDE_PADDING || curConfig->_poolType == POOLING_AVERAGE_COUNT_EXCLUDE_PADDING)
+    {
+        if(poolDim == stride_h && poolDim == stride_w)
+        {
+            poolDim = curConfig->_size;
+            pad_h = curConfig->_pad_h;
+            pad_w = curConfig->_pad_w;
+            stride_h = curConfig->_stride_h;
+            stride_w = curConfig->_stride_w;
+        }
+    }
+}
+
 /*
  * Pool layer Forward propagation
  * */
@@ -222,6 +255,8 @@ void PoolLayer::forwardPropagation(string train_or_test)
 {
     srcData = prevLayer[0]->dstData;
 
+    // dynamic adjust demension
+    ReShape();
     checkCUDNN(cudnnSetPooling2dDescriptor(poolingDesc,
                                            PoolingMode,
                                            CUDNN_PROPAGATE_NAN,

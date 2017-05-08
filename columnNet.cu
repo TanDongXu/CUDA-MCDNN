@@ -489,7 +489,7 @@ void globalRateAdjust(int epoch)
 }
 
 // 动态生成全局参数
-int g_nGenerateIndex = 30;
+int g_nGenerateIndex = 25;
 
 // Train dynamic generation model
 void dynamic_g_trainNet(cuMatrixVector<float> &trainData, 
@@ -579,12 +579,17 @@ void dynamic_g_trainNet(cuMatrixVector<float> &trainData,
 
             if(NULL != newConfig_prev && NULL != newConfig_next)
             {
+                static int nIndex = 0;
                 nodeGenerate(templateConfig, newConfig_prev, newConfig_next);
-                if((templateConfig->_type == string("CONV") || templateConfig->_type == string("HIDDEN")))
+                if((templateConfig->_type == string("CONV") || templateConfig->_type == string("HIDDEN")) && templateConfig->_next[0]->_type != string("CONV"))
                 {
                     continue;
                 }else if(2 == g_nCount)
                 {
+                    //++nIndex;
+                    //if(nIndex == 1)g_nGenerateIndex = 25;
+                    //if(nIndex == 2)g_nGenerateIndex = 20;
+                    //if(nIndex == 3)g_nGenerateIndex = 10;
                     g_nCount = 0;
                     break;
                 }

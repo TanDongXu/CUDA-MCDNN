@@ -7,14 +7,16 @@
 *              General Parameters Config
 *
 *NON_LINEARITY = NL_SIGMOID, NL_TANH, NL_RELU
+*LR_POLICY = INV, STEP, FIXED
 ********************************************************/
 
-BATCH_SIZE = 128;
+BATCH_SIZE = 100;
 NORMALIZED_WIDTH = 0;
 IMAGES_SIZE = 32;
 CNANNELS = 3;
 EPOCHS = 4000;
-ITER_PER_EPO = 400;
+ITER_PER_EPO = 500;
+LR_POLICY = INV;
 
 
 
@@ -30,172 +32,145 @@ NAME = data;
 
 [
 LAYER = CONV;
-NAME = conv10;
-INPUT =data;
-KERNEL_SIZE = 5;
+NAME = conv1;
+INPUT = data;
+KERNEL_SIZE = 3;
 KERNEL_AMOUNT = 192;
-PAD_H = 2;
-PAD_W = 2;
+PAD_H = 1;
+PAD_W = 1;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.1;
+INIT_W = 0.01;
 LEARN_RATE = 0.05;
-WEIGHT_DECAY = 1e-6;
+WEIGHT_DECAY = 0.0001;
 ]
-
-[
-LAYER = ACTIVATION;
-NAME = activation10;
-INPUT = conv10;
-NON_LINEARITY = NL_RELU;
-]
-
 [
 LAYER = CONV;
-NAME = conv11;
-INPUT = activation10;
-KERNEL_SIZE = 1;
-KERNEL_AMOUNT = 160;
-PAD_H = 0;
-PAD_W = 0;
+NAME = conv2;
+INPUT = conv1;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 1;
+PAD_W = 1;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.1;
+INIT_W = 0.01;
 LEARN_RATE = 0.05;
-WEIGHT_DECAY = 1e-6;
+WEIGHT_DECAY = 0.0001;
 ]
 
 [
 LAYER = ACTIVATION;
-NAME = activation11;
-INPUT = conv11;
+NAME = activation1;
+INPUT = conv2;
 NON_LINEARITY = NL_RELU;
 ]
-
-[
-LAYER = CONV;
-NAME = conv12;
-INPUT = activation11;
-KERNEL_SIZE = 1;
-KERNEL_AMOUNT = 96;
-PAD_H = 0;
-PAD_W = 0;
-STRIDE_H = 1;
-STRIDE_W = 1;
-INIT_W = 0.1;
-LEARN_RATE = 0.05;
-WEIGHT_DECAY = 1e-6;
-]
-
-[
-LAYER = ACTIVATION;
-NAME = activation12;
-INPUT = conv12;
-NON_LINEARITY = NL_RELU;
-]
-
 [
 LAYER = POOLING;
-NAME = pooling13;
-INPUT = activation12;
+NAME = pooling1;
+INPUT = activation1;
 POOLING_TYPE = POOL_MAX;
-POOLDIM = 3;
+POOLDIM = 2;
 PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 2;
 STRIDE_W = 2;
 ]
 
-/*
-[
-LAYER = INCEPTION;
-NAME = inception20;
-INPUT = pooling13;
-ONE = 64;
-THREE = 64;
-FIVE = 32;
-THREE_REDUCE = 48;
-FIVE_REDUCE = 16;
-POOL_PROJ = 32;
-INIT_W = 0.05;
-LEARN_RATE = 0.01;
-WEIGHT_DECAY = 1e-8;
-]
-*/
-
 [
 LAYER = CONV;
-NAME = conv20;
-INPUT = pooling13;
-KERNEL_SIZE = 5;
+NAME = conv3;
+INPUT = pooling1;
+KERNEL_SIZE = 3;
 KERNEL_AMOUNT = 192;
-PAD_H = 2;
-PAD_W = 2;
+PAD_H = 0;
+PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.1;
-LEARN_RATE = 0.05;
-WEIGHT_DECAY = 1e-6;
+INIT_W = 0.01;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
 ]
 
 [
 LAYER = ACTIVATION;
-NAME = activation21;
-INPUT = conv20;
+NAME = activation2;
+INPUT = conv3;
 NON_LINEARITY = NL_RELU;
 ]
 
 [
 LAYER = CONV;
-NAME = conv22;
-INPUT = activation21;
-KERNEL_SIZE = 1;
-KERNEL_AMOUNT = 196;
+NAME = conv4;
+INPUT = activation2;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
 PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
-INIT_W = 0.1;
-LEARN_RATE = 0.05;
-WEIGHT_DECAY = 1e-6;
+INIT_W = 0.01;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
 ]
-
 [
 LAYER = ACTIVATION;
-NAME = activation23;
-INPUT = conv22;
+NAME = activation3;
+INPUT = conv4;
 NON_LINEARITY = NL_RELU;
 ]
 
 [
 LAYER = CONV;
-NAME = conv24;
-INPUT = activation23;
-KERNEL_SIZE = 1;
-KERNEL_AMOUNT = 196;
+NAME = conv5;
+INPUT = activation3;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
 PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
 INIT_W = 0.1;
-LEARN_RATE = 0.05;
-WEIGHT_DECAY = 1e-6;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
 ]
 
 
 [
 LAYER = ACTIVATION;
-NAME = activation25;
-INPUT = conv24;
+NAME = activation4;
+INPUT = conv5;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = CONV;
+NAME = conv6;
+INPUT = activation4;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 1;
+PAD_W = 1;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation5;
+INPUT = conv6;
 NON_LINEARITY = NL_RELU;
 ]
 
 [
 LAYER = POOLING;
-NAME = pooling26;
-INPUT = activation25;
+NAME = pooling2;
+INPUT = activation5;
 POOLING_TYPE = POOL_MAX;
-POOLDIM = 3;
+POOLDIM = 2;
 PAD_H = 0;
 PAD_W = 0;
 STRIDE_H = 2;
@@ -204,15 +179,15 @@ STRIDE_W = 2;
 
 [
 LAYER = DROPOUT;
-NAME = dropout27;
-INPUT = pooling26;
+NAME = dropout1;
+INPUT = pooling2;
 DROP_RATE = 0.5;
 ]
 
 [
 LAYER = CONV;
-NAME = conv30;
-INPUT = dropout27;
+NAME = conv7;
+INPUT = dropout1;
 KERNEL_SIZE = 3;
 KERNEL_AMOUNT = 192;
 PAD_H = 1;
@@ -220,21 +195,21 @@ PAD_W = 1;
 STRIDE_H = 1;
 STRIDE_W = 1;
 INIT_W = 0.1;
-LEARN_RATE = 0.05;
-WEIGHT_DECAY = 1e-6;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
 ]
 
 [
 LAYER = ACTIVATION;
-NAME = activation31;
-INPUT = conv30;
+NAME = activation6;
+INPUT = conv7;
 NON_LINEARITY = NL_RELU;
 ]
 
 [
 LAYER = CONV;
-NAME = conv31;
-INPUT = activation31;
+NAME = conv8;
+INPUT = activation6;
 KERNEL_SIZE = 1;
 KERNEL_AMOUNT = 192;
 PAD_H = 0;
@@ -242,21 +217,43 @@ PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
 INIT_W = 0.1;
-LEARN_RATE = 0.05;
-WEIGHT_DECAY = 1e-6;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
 ]
 
 [
 LAYER = ACTIVATION;
-NAME = activation32;
-INPUT = conv31;
+NAME = activation7;
+INPUT = conv8;
 NON_LINEARITY = NL_RELU;
 ]
 
 [
 LAYER = CONV;
-NAME = conv33;
-INPUT = activation32;
+NAME = conv9;
+INPUT = activation7;
+KERNEL_SIZE = 1;
+KERNEL_AMOUNT = 192;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation8;
+INPUT = conv9;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = CONV;
+NAME = conv10;
+INPUT = activation8;
 KERNEL_SIZE = 1;
 KERNEL_AMOUNT = 10;
 PAD_H = 0;
@@ -264,33 +261,32 @@ PAD_W = 0;
 STRIDE_H = 1;
 STRIDE_W = 1;
 INIT_W = 0.1;
-LEARN_RATE = 0.05;
-WEIGHT_DECAY = 1e-6;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
 ]
 
 [
 LAYER = ACTIVATION;
-NAME = activation34;
-INPUT = conv33;
+NAME = activation9;
+INPUT = conv10;
 NON_LINEARITY = NL_RELU;
 ]
 
 [
 LAYER = POOLING;
-NAME = pooling40;
-INPUT = activation34;
-POOLING_TYPE = POOL_AVE_INCLUDE_PAD;
-POOLDIM = 8;
+NAME = pooling3;
+INPUT = activation9;
+POOLING_TYPE = POOL_AVE_EXCLUDE_PAD;
+POOLDIM = 5;
 PAD_H = 0;
 PAD_W = 0;
-STRIDE_H = 8;
-STRIDE_W = 8;
+STRIDE_H = 5;
+STRIDE_W = 5;
 ]
-
 [
 LAYER = SOFTMAX;
 NAME = softmax;
-INPUT = pooling40;
+INPUT = pooling3;
 NUM_CLASSES = 10;
-WEIGHT_DECAY = 1e-6;
+WEIGHT_DECAY = 0.0001;
 ]

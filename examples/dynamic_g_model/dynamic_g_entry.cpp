@@ -9,8 +9,8 @@
 #include<glog/logging.h>
 #include<string>
 #include<cudnn.h>
-#include"examples/mnist.h"
-#include"examples/cifar-10.h"
+#include"examples/mnist/mnist.h"
+#include"examples/cifar10/cifar-10.h"
 #include"common/cuMatrixVector.h"
 #include"common/cuMatrix.h"
 #include"readData/readMnistData.h"

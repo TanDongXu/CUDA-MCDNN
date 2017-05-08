@@ -5,8 +5,8 @@
 */
 #include<iostream>
 #include <cuda.h>
-#include"examples/mnist.h"
-#include"examples/cifar-10.h"
+#include"examples/mnist/mnist.h"
+#include"examples/cifar10/cifar-10.h"
 #include"examples/dynamic_g_model/dynamic_g_entry.hpp"
 #include<glog/logging.h>
 

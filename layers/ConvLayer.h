@@ -47,12 +47,15 @@ class ConvLayer:public LayersBase
     void createHandles();
     void destroyHandles();
     int getOutputSize();
+    void compute_cost();
 
     private:
     float *host_Weight, *dev_Weight;
     float *tmp_Wgrad, *tmp_Bgrad;
     float *host_Bias, *dev_Bias;
     float *dev_Wgrad, *dev_Bgrad;
+    float* dev_weightSquare;
+    float* host_weightSquare;
     float lambda;
     float epsilon;
     int kernelSize;

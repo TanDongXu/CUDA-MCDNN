@@ -21,7 +21,7 @@ using namespace std;
 class LayersBase
 {
     public:
-    LayersBase():m_nCurBranchIndex(0), m_fReduceRate(0), lrate( 123456 ){}
+    LayersBase():m_nCurBranchIndex(0), m_fReduceRate(0), lrate(123456), m_fCost(0.0f){}
     virtual void forwardPropagation(string train_or_test) = 0;
     virtual void backwardPropagation(float Momentum) = 0;
     virtual int getOutputSize() = 0;
@@ -44,6 +44,7 @@ class LayersBase
     int channels;
     int height;
     int width;
+    float m_fCost;
     int inputImageDim;
     int inputAmount;
     int m_nCurBranchIndex;

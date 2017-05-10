@@ -1,4 +1,5 @@
 #include"SoftMaxLayer.h"
+#include<math.h>
 
 /*
  * Create CUDNN Handles
@@ -74,6 +75,9 @@ SoftMaxLayer::SoftMaxLayer(string name)
     srcLabel = NULL;
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
+    m_devGroundTruth = NULL;
+    m_hostGroundTruth = NULL;
+    dev_logArray = NULL;
     nextLayer.clear();
     prevLayer.clear();
     flag = 0;
@@ -98,11 +102,14 @@ SoftMaxLayer::SoftMaxLayer(string name)
     height = prev_Layer->height;
     width = prev_Layer->width;
 
-    host_result = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height * width *sizeof(float));
+    host_result = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height * width * sizeof(float));
+    m_hostGroundTruth = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height *width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &srcDiff, number * channels * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &devLabel, batchSize * 1 * 1 * 1 * sizeof(int));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &m_devGroundTruth, number * channels * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_logArray, number * channels * height * width * sizeof(float));
 
     this->createHandles();
 }
@@ -118,10 +125,10 @@ SoftMaxLayer::SoftMaxLayer(const SoftMaxLayer* layer)
     diffData = NULL;
     devLabel = NULL;
     srcDiff = NULL;
-    host_result = NULL;
     srcLabel = NULL;
     srcTensorDesc = NULL;
     dstTensorDesc = NULL;
+    dev_logArray = NULL;
     nextLayer.clear();
     prevLayer.clear();
     flag = 0;
@@ -147,10 +154,13 @@ SoftMaxLayer::SoftMaxLayer(const SoftMaxLayer* layer)
     width = layer->width;
 
     host_result = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height * width * sizeof(float));
+    m_hostGroundTruth = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(number * channels * height *width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &srcDiff, number * channels * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &devLabel, batchSize * 1 * 1 * 1 * sizeof(int));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, number * channels * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, number * channels * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &m_devGroundTruth, number * channels * height * width * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_logArray, number * channels * height * width * sizeof(float));
     this->createHandles();
 }
 
@@ -208,6 +218,48 @@ void SoftMaxLayer::ReShape()
     height = prev_Layer->height;
 }
 
+// compute array log
+__global__ void compute_array_log(float* array, float* groundTruth, int size)
+{
+    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+    int num_threads = blockDim.x * gridDim.x;
+
+    for(int i = 0; i < size; i += num_threads)
+    {
+        int index = i + thread_index;
+        if(index < size)
+        {
+            groundTruth[index] = log(array[index]) * groundTruth[index];
+        }
+    }
+}
+
+
+void SoftMaxLayer::compute_cost()
+{
+    MemoryMonitor::instanceObject()->cpuMemoryMemset(m_hostGroundTruth, number * channels * height * width * sizeof(float));
+    
+    const int max_digit = nclasses;
+    for(int i = 0; i < batchSize; i++)
+    {
+        int index = srcLabel[i];
+        m_hostGroundTruth[i * max_digit + index] = 1.0f;
+    }
+
+    MemoryMonitor::instanceObject()->cpu2Gpu(m_devGroundTruth, m_hostGroundTruth, number * channels * height * width * sizeof(float));
+    int size = number * channels * height * width;
+    int threadsPerBlock = 256;
+    int blockPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
+    compute_array_log<<<blockPerGrid, threadsPerBlock>>>(dstData, m_devGroundTruth, size);
+    cudaThreadSynchronize();
+    MemoryMonitor::instanceObject()->gpu2cpu(m_hostGroundTruth, m_devGroundTruth, number * channels * height * width * sizeof(float));
+    float tmpSum = 0.0f;
+    for(int i = 0; i < batchSize * channels; i++)
+    {
+        tmpSum += m_hostGroundTruth[i];
+    }
+    m_fCost = -tmpSum / batchSize;
+}
 
 /*
  * Softmax layer forward propagation
@@ -249,6 +301,8 @@ void SoftMaxLayer::forwardPropagation(string train_or_test)
 
     if(train_or_test == "test" )
         ClassificationResults();
+    else
+        compute_cost();
 }
 
 /*

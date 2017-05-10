@@ -94,6 +94,8 @@ ConvLayer::ConvLayer(string name, int sign)
     tmp_Wgrad = NULL;
     tmp_Bgrad = NULL;
     diffData = NULL;
+    dev_weightSquare = NULL;
+    host_weightSquare = NULL;
     prevLayer.clear();
     nextLayer.clear();
 
@@ -142,6 +144,8 @@ ConvLayer::ConvLayer(string name, int sign)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, batchSize * kernelAmount * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, batchSize * inputAmount * inputImageDim * inputImageDim * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_weightSquare, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    host_weightSquare = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
 
     this->createHandles();
     if(sign == RANDOM)
@@ -172,6 +176,8 @@ ConvLayer::ConvLayer(string name, int sign, const param_tuple& args)
     tmp_Wgrad = NULL;
     tmp_Bgrad = NULL;
     diffData = NULL;
+    dev_weightSquare = NULL;
+    host_weightSquare = NULL;
     prevLayer.clear();
     nextLayer.clear();
 
@@ -203,6 +209,8 @@ ConvLayer::ConvLayer(string name, int sign, const param_tuple& args)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &tmp_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, batchSize * kernelAmount * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, batchSize * inputAmount * inputImageDim * inputImageDim * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_weightSquare, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    host_weightSquare = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
 
     this->createHandles();
     if(sign == RANDOM)
@@ -226,6 +234,8 @@ ConvLayer::ConvLayer(const ConvLayer* layer)
     tmp_Wgrad = NULL;
     tmp_Bgrad = NULL;
     diffData = NULL;
+    dev_weightSquare = NULL;
+    host_weightSquare = NULL;
     prevLayer.clear();
     nextLayer.clear();
 
@@ -270,6 +280,8 @@ ConvLayer::ConvLayer(const ConvLayer* layer)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tmp_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dstData, batchSize * kernelAmount * height * width * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, batchSize * inputAmount * inputImageDim * inputImageDim * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_weightSquare, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    host_weightSquare = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
     //    MemoryMonitor::instanceObject()->gpu2gpu(dev_Wgrad, layer->dev_Wgrad, kernelAmount * inputAmount * 1 * kernelSize * kernelSize * sizeof(float));
     //    MemoryMonitor::instanceObject()->gpu2gpu(dev_Bgrad, layer->dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
@@ -297,6 +309,8 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
     tmp_Wgrad = NULL;
     tmp_Bgrad = NULL;
     diffData = NULL;
+    dev_weightSquare = NULL;
+    host_weightSquare = NULL;
     prevLayer.clear();
     nextLayer.clear();
 
@@ -346,6 +360,8 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&diffData, batchSize * inputAmount * inputImageDim * inputImageDim * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_weightSquare, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    host_weightSquare = (float*) MemoryMonitor::instanceObject()->cpuMallocMemory(kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
     
     //find the same demension of conv layer weight from previous LayersBase
     configBase* findConfig = const_cast<configBase*>(templateConfig);
@@ -480,6 +496,41 @@ void ConvLayer::ReShape()
     height = (inputImageDim + 2 * pad_h - kernelSize) / stride_h + 1;
     width = (inputImageDim + 2 * pad_w - kernelSize) / stride_w + 1;
     outputSize = channels * height * width;
+}
+
+//__global__ void compute_array_square(float* array, float* outArray, int size)
+//{
+//    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+//    int num_threads = blockDim.x * gridDim.x;
+//    for(int i = 0; i < size; i += num_threads)
+//    {
+//        int index = i + thread_index;
+//        if(index < size)
+//        {
+//            outArray[index] = array[index] * array[index];
+//        }
+//    }
+//}
+
+//compute cost
+void ConvLayer::compute_cost()
+{
+    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_weightSquare, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->cpuMemoryMemset(host_weightSquare, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    int size = kernelAmount * inputAmount * kernelSize * kernelSize;
+    int threadsPerBlock = 256;
+    int blockPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
+    compute_array_square<<<blockPerGrid, threadsPerBlock>>>(dev_Weight, dev_weightSquare, size);
+    cudaThreadSynchronize();
+    MemoryMonitor::instanceObject()->gpu2cpu(host_weightSquare, dev_weightSquare, size * sizeof(float));
+
+    float tmpSum = 0.0f;
+    for(int i = 0; i < size; i++)
+    {
+        tmpSum += host_weightSquare[i];
+    }
+    m_fCost = tmpSum * lambda / 2;
+    //cout<<"conv: "<<m_fCost<<endl;
 }
 
 /*
@@ -806,6 +857,9 @@ void ConvLayer::backwardPropagation(float Momentum)
     {
     	checkCudaErrors(cudaFree(convBwdDataWorkSpace));
     }
+
+    //compute cost
+    compute_cost();
 
     /*
      * Update the weights in conv layer

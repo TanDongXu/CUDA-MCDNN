@@ -54,4 +54,6 @@ __global__ void MultiArrayAdd(float** inputs, float* outputs, int number,int cha
 __global__ void MultiChannelsSplit(float* inputs, float**outputs, int* channels, int* indexs, int row, int inChannels);
 __global__ void MultiChannelsSplit(float* inputs, float* outputs, int outChannels, int offset, int row, int inChannels);
 
+__global__ void compute_array_square(float* array, float* outArray, int size);
+
 #endif /* UTILITY_CUH_ */

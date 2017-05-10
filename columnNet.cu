@@ -328,6 +328,54 @@ void performFiss()
     }
 }
 
+// dfs printf loss
+void dfs_PrintfCost(configBase* curConfig)
+{
+    g_vQue.push_back(curConfig);
+    if( curConfig->_next.size() == 0 )
+    {
+        float fCost = 0.0f;
+        DataLayer* datalayer = static_cast<DataLayer*>( Layers::instanceObject()->getLayer("data"));
+
+        for(int j = 0; j < g_vQue.size(); j++)
+        {
+            LayersBase* layer = (LayersBase*)Layers::instanceObject()->getLayer(g_vQue[j]->_name);
+            fCost += layer->m_fCost;
+        }
+        cout << " ,Cost: " << fCost;
+    }
+
+    for(int i = 0; i < curConfig->_next.size(); i++){
+        configBase* tmpConfig = curConfig->_next[i];
+        dfs_PrintfCost(tmpConfig);
+    }
+    g_vQue.pop_back();
+}
+
+// printf loss
+void printfCost(float&fCost)
+{
+    configBase* config = (configBase*) config::instanceObjtce()->getLastLayer();
+    queue<configBase*>que;
+    que.push(config);
+    set<configBase*>hash;
+    hash.insert(config);
+    while(!que.empty()){
+        config = que.front();
+        que.pop();
+        LayersBase* layer = (LayersBase*)Layers::instanceObject()->getLayer(config->_name);
+        fCost += layer->m_fCost;;
+
+        for(int i = 0; i < config->_prev.size(); i++){
+            if( hash.find( config->_prev[i] ) == hash.end()){
+                hash.insert(config->_prev[i]);
+                que.push(config->_prev[i]);
+            }
+        }
+    }
+}
+
+
 /*training netWork*/
 void cuTrainNetWork(cuMatrixVector<float> &trainData, 
                     cuMatrix<int>* &trainLabel, 
@@ -409,7 +457,13 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
             if ( fMax < fTest ) fMax = fTest;
             printf(" test_result %f/%f ", fTest, fMax);
         }
-        cout<<" ,Momentum: "<<Momentum<<endl;
+        cout << " ,Momentum: " << Momentum;
+        //configBase* newConfig = (configBase*) config::instanceObjtce()->getFirstLayers();
+        //g_vQue.clear();
+        //dfs_PrintfCost(newConfig);
+        float cost = 0.0f;
+        printfCost(cost);
+        cout <<" ,Cost: "<< cost << endl;
 
         /*在进入下一次训练之前进行裂变*/
         if (DFS_TRAINING == true && FISS_TRAINING == true )

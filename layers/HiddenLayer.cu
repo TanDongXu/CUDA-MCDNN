@@ -88,6 +88,8 @@ HiddenLayer::HiddenLayer(string name, int sign)
     tmp_Wgrad = NULL;
     tmp_Bgrad = NULL;
     VectorOnes = NULL;
+    dev_weightSquare = NULL;
+    host_weightSquare = NULL;
 
     prevLayer.clear();
     nextLayer.clear();
@@ -127,6 +129,8 @@ HiddenLayer::HiddenLayer(string name, int sign)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &tmp_Bgrad,1 * 1 * outputSize * 1 * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dstData, outputSize * batchSize * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData,  inputSize * batchSize* sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_weightSquare,1 * 1 * outputSize * inputSize * sizeof(float));
+    host_weightSquare = (float*)MemoryMonitor::instanceObject()->cpuMallocMemory(1 * 1 * outputSize * inputSize * sizeof(float));
 
     this->createHandles();
     if(sign == RANDOM)
@@ -152,6 +156,8 @@ HiddenLayer::HiddenLayer(const HiddenLayer* layer)
     tmp_Wgrad = NULL;
     tmp_Bgrad = NULL;
     VectorOnes = NULL;
+    dev_weightSquare = NULL;
+    host_weightSquare = NULL;
 
     prevLayer.clear();
     nextLayer.clear();
@@ -195,6 +201,8 @@ HiddenLayer::HiddenLayer(const HiddenLayer* layer)
 
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_weightSquare,1 * 1 * outputSize * inputSize * sizeof(float));
+    host_weightSquare = (float*)MemoryMonitor::instanceObject()->cpuMallocMemory(1 * 1 * outputSize * inputSize * sizeof(float));
     
     this->createHandles();
     this->initRandom();
@@ -219,6 +227,8 @@ HiddenLayer::HiddenLayer(const configBase* templateConfig)
     tmp_Wgrad = NULL;
     tmp_Bgrad = NULL;
     VectorOnes = NULL;
+    dev_weightSquare = NULL;
+    host_weightSquare = NULL;
 
     prevLayer.clear();
     nextLayer.clear();
@@ -259,6 +269,8 @@ HiddenLayer::HiddenLayer(const configBase* templateConfig)
     MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &diffData, inputSize * batchSize * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, 1 * 1 * outputSize * inputSize * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * 1 * outputSize * 1 * sizeof(float));
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**) &dev_weightSquare,1 * 1 * outputSize * inputSize * sizeof(float));
+    host_weightSquare = (float*)MemoryMonitor::instanceObject()->cpuMallocMemory(1 * 1 * outputSize * inputSize * sizeof(float));
     
     configBase* findConfig = const_cast<configBase*>(templateConfig);
     HiddenLayer* resultLayer = NULL;
@@ -309,6 +321,40 @@ HiddenLayer::~HiddenLayer()
 	MemoryMonitor::instanceObject()->freeGpuMemory(diffData);
 	MemoryMonitor::instanceObject()->freeGpuMemory(VectorOnes);
 	destroyHandles();
+}
+
+//__global__ void compute_array_square(float* array, float* outArray, int size)
+//{
+//    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+//    int numThreads = blockDim.x * gridDim.x;
+//    for(int i = 0; i < size; i += numThreads)
+//    {
+//        int index = i + thread_index;
+//        if(index < size)
+//        {
+//            outArray[index] = array[index] * array[index];
+//        }
+//    }
+//}
+
+// compute cost 
+void HiddenLayer::compute_cost()
+{
+    MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_weightSquare, outputSize * inputSize * sizeof(float));
+    MemoryMonitor::instanceObject()->cpuMemoryMemset(host_weightSquare, outputSize * inputSize * sizeof(float));
+    //weight square
+    int size = 1 * 1 * outputSize * inputSize;
+    int threadsPerBlock = 256;
+    int blockPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
+    compute_array_square<<<blockPerGrid, threadsPerBlock>>>(dev_Weight, dev_weightSquare, size);
+    cudaThreadSynchronize();
+    MemoryMonitor::instanceObject()->gpu2cpu(host_weightSquare, dev_weightSquare, size * sizeof(float));
+    float tmpSum = 0.0f;
+    for(int i = 0; i < outputSize * inputSize; i++)
+    {
+        tmpSum += host_weightSquare[i];
+    }
+    m_fCost = tmpSum * lambda / 2;
 }
 
 /*
@@ -417,6 +463,9 @@ void HiddenLayer::backwardPropagation(float Momentum)
                                   &beta,
                                   diffData,
                                   dim_x));
+
+    // compute cost
+    compute_cost();
 
     float scalVal = Momentum;
     int size = 1 * 1 * outputSize * inputSize * 1;

@@ -39,6 +39,7 @@ public:
 	void createHandles();
 	void destroyHandles();
     int getOutputSize();
+    void compute_cost();
 
 private:
 
@@ -48,6 +49,8 @@ private:
 	float* dev_Bias, *host_Bias;
 	float* dev_Wgrad,*dev_Bgrad;
 	float*tmp_Wgrad, *tmp_Bgrad;
+    float* dev_weightSquare;
+    float* host_weightSquare;
 	float epsilon;
 	float* VectorOnes;
 	int inputSize;

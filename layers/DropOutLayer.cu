@@ -123,20 +123,30 @@ void DropOutLayer::createHandles()
 
 __global__ void dropout_train(float* data, float* outputPtr, int size, float probability)
 {
-    int idx = threadIdx.x + blockIdx.x * blockDim.x;
-    if(idx < size)
+    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+    int num_threads = blockDim.x * gridDim.x;
+    for(int  i = 0; i < size; i += num_threads)
     {
-        if(outputPtr[idx] < probability)
-        data[idx] = 0;
+        int index = i + thread_index;
+        if(index < size)
+        {
+            if(outputPtr[index] < probability)
+                data[index] = 0;
+        }
     }
 }
 
 __global__ void dropout_test(float* data, int size, float probability)
 {
-    int idx = threadIdx.x + blockIdx.x * blockDim.x;
-    if(idx < size)
+    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+    int num_threads = blockDim.x * gridDim.x;
+    for(int i = 0; i < size; i += num_threads)
     {
-        data[idx] = data[idx] * probability;
+        int index = i + thread_index;
+        if(index < size)
+        {
+            data[index] = data[index] * probability;
+        }
     }
 }
 

@@ -41,6 +41,7 @@ class SoftMaxLayer : public LayersBase
     void destroyHandles();
     int getOutputSize();
     int getCorrectNum();
+    void compute_cost();
 
     private:
     cudnnTensorDescriptor_t srcTensorDesc;
@@ -58,5 +59,8 @@ class SoftMaxLayer : public LayersBase
     float lambda;
     float* srcDiff;
     float* host_result;
+    float* m_devGroundTruth;
+    float* m_hostGroundTruth;
+    float* dev_logArray;
 };
 #endif /* SOFTMAXLAYER_H_ */

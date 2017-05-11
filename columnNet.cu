@@ -600,8 +600,11 @@ void dynamic_g_trainNet(cuMatrixVector<float> &trainData,
         // Test network
         cout<< "epochs: " << epo << " ,Time: " << (inEnd - inStart)/CLOCKS_PER_SEC << "s,";
         predictTestData( testData, testLabel, batchSize );
-        cout<< " ,Momentum: " << Momentum << endl;
-
+        cout<< " ,Momentum: " << Momentum;
+        // printf loss
+        float cost = 0.0f;
+        printfCost(cost);
+        cout <<" ,Cost: "<< cost << endl;
         
         /*在进入下一次训练之前动态生成下一层*/
         while(((epo + 1) % g_nGenerateIndex) == 0)

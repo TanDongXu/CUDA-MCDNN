@@ -388,10 +388,12 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
     if(bFind)
     {
         CHECK(resultLayer);
-        //this->initRandom();
-        if(_name == "conv6")
+        if(_name == "conv5" || _name == "conv7" || _name == "conv9")
         {
-            epsilon = 0.01;
+            //if(_name == "conv3") epsilon = 0.01;
+            if(_name == "conv5") epsilon = 0.01;
+            if(_name == "conv7") epsilon = 0.005;
+            if(_name == "conv9") epsilon = 0.005;
             this->initRandom();
             float* tWeight = NULL;
             MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tWeight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
@@ -423,34 +425,35 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
             MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
             MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
             MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
-        //float* tWeight = NULL;
-        //MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tWeight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
-        //MemoryMonitor::instanceObject()->gpu2gpu(tWeight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
-        //MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
-        //reverseArray(dev_Weight, kernelAmount, inputAmount, kernelSize, kernelSize);
-        //static int index = 0;
-        //float scalVal = 3;
-        //if(index == 1) scalVal = 1;
-        //if(index == 2) scalVal = 0.5;
-        //if(index == 3) scalVal = 0.1;
-        //int size =  kernelAmount * inputAmount * kernelSize * kernelSize;
-        //checkCublasErrors(cublasSscal(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
-        //                          size,
-        //                          &scalVal,
-        //                          dev_Weight,
-        //                          1));
-        //MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, resultLayer->dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
-        //float alpha = 0.5f;
-       // checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
-       //                           size,
-       //                           &alpha,
-       //                           tWeight,
-       //                           1,
-       //                           dev_Weight,
-       //                           1));
+            //float* tWeight = NULL;
+            //MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tWeight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+            //MemoryMonitor::instanceObject()->gpu2gpu(tWeight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+            //MemoryMonitor::instanceObject()->gpu2gpu(dev_Weight, resultLayer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+            //reverseArray(dev_Weight, kernelAmount, inputAmount, kernelSize, kernelSize);
+            //static int index = 0;
+            //float scalVal = 3;
+            //if(index == 1) scalVal = 1;
+            //if(index == 2) scalVal = 0.5;
+            //if(index == 3) scalVal = 0.1;
+            //int size =  kernelAmount * inputAmount * kernelSize * kernelSize;
+            //checkCublasErrors(cublasSscal(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+            //                          size,
+            //                          &scalVal,
+            //                          dev_Weight,
+            //                          1));
+            //MemoryMonitor::instanceObject()->gpu2gpu(dev_Bias, resultLayer->dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+            //float alpha = 0.5f;
+            // checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+            //                           size,
+            //                           &alpha,
+            //                           tWeight,
+            //                           1,
+            //                           dev_Weight,
+            //                           1));
         }
 
         MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bias, kernelAmount * 1 * 1 * 1 * sizeof(float));
+        cout<<epsilon<<endl;
         cout<< _name<<endl;
         cout<<"copy weight"<<endl;
     }else

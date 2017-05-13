@@ -1,5 +1,6 @@
 #include"readCifar10Data.h"
-#include"../common/utility.cuh"
+#include"common/utility.cuh"
+#include<glog/logging.h>
 
 void read_batch(string fileName,
                 cuMatrixVector<float>& image_data,
@@ -38,8 +39,7 @@ void read_batch(string fileName,
         }
     }else
     {
-        cout<<"ReadData: Can not find the data: "<< fileName << endl;
-        exit(-1);
+        LOG(FATAL) << "ReadData: Can not find the data: " << fileName;
     }
 }
 

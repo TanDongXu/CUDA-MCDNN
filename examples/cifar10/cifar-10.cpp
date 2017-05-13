@@ -16,11 +16,9 @@ void runCifar10()
 	read_Cifar10_Data(trainSetX, testSetX, trainSetY, testSetY);
 
 	 cout<<"*******************************************************"<<endl;
-	 cout<<"     Train_set : "<< trainSetX[0]->rows * trainSetX[0]->cols * trainSetX[0]->channels
-			                  <<" features and "<< trainSetX.size() <<" samples"<<endl;
+	 cout<<"     Train_set : "<< trainSetX[0]->rows * trainSetX[0]->cols * trainSetX[0]->channels <<" features and "<< trainSetX.size() <<" samples"<<endl;
 	 cout<<"   Train_label :   "<< trainSetY->cols                       <<"  features and "<< trainSetY->rows  <<" samples"<<endl;
-	 cout<<"      Test_set : "<< testSetX[0]->rows * testSetX[0]->cols  * testSetX[0]->channels
-			                  <<" features and "<<  testSetX.size() <<" samples"<<endl;
+	 cout<<"      Test_set : "<< testSetX[0]->rows * testSetX[0]->cols  * testSetX[0]->channels <<" features and "<<  testSetX.size() <<" samples"<<endl;
 	 cout<<"    Test_label :   "<< testSetY->cols                        <<"  features and "<<  testSetY->rows  <<" samples"<<endl;
 	 cout<<"*******************************************************"<<endl;
 

@@ -8,8 +8,8 @@
 #ifndef COLUMNNET_CUH_
 #define COLUMNNET_CUH_
 
-#include"./common/cuMatrix.h"
-#include"./common/cuMatrixVector.h"
+#include"common/cuMatrix.h"
+#include"common/cuMatrixVector.h"
 #include"config/config.h"
 
 void creatColumnNet(int sign);

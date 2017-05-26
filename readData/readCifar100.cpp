@@ -43,7 +43,7 @@ void read_batch(string filename, cuMatrixVector<float>& imageData, cuMatrix<int>
                     {
                         unsigned char temp = 0;
                         file.read((char*)&temp, sizeof(temp));
-                        channels->setValue(r, c, ch, (float)temp / 256.0f * 2.0f - 1.0f);
+                        channels->setValue(r, c, ch, (float)temp / 255.0f * 2.0f - 1.0f);
                     }
                 }
             }

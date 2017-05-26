@@ -388,12 +388,13 @@ ConvLayer::ConvLayer(const configBase* templateConfig)
     if(bFind)
     {
         CHECK(resultLayer);
-        if(_name == "conv5" || _name == "conv7" || _name == "conv9")
+        if(_name == "conv5" || _name == "conv7" || _name == "conv9" || _name == "conv11")
         {
             //if(_name == "conv3") epsilon = 0.01;
             if(_name == "conv5") epsilon = 0.01;
             if(_name == "conv7") epsilon = 0.005;
             if(_name == "conv9") epsilon = 0.005;
+            if(_name == "conv11") epsilon = 0.005;
             this->initRandom();
             float* tWeight = NULL;
             MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tWeight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));

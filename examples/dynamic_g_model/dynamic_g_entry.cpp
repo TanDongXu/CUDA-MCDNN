@@ -15,6 +15,7 @@
 #include"common/cuMatrix.h"
 #include"readData/readMnistData.h"
 #include"readData/readCifar10Data.h"
+#include"readData/readCifar100.h"
 #include"common/utility.cuh"
 #include"columnNet.cuh"
 
@@ -23,7 +24,7 @@ using namespace std;
 void dynamic_g_entry()
 {
     LOG(INFO) << "You Have Entered New Way To Generate Model, Please Select DataSet.";
-    LOG(INFO) << "1. MNIST      2.CIFAR-10";
+    LOG(INFO) << "1. MNIST      2.CIFAR-10      3.CIFAR-100";
     const string dirPath = "profile/dynamic_g_profile/";
     const string sPhase_begin = "dynamic_begin/";
     const string sPhase_end = "dynamic_end/";
@@ -80,7 +81,24 @@ void dynamic_g_entry()
         LOG(INFO) << "    Test_label :   " << testSetY->cols << " x " << testSetY->cols << " features and " <<  testSetY->rows  << " samples";
 	    LOG(INFO) << "*******************************************************";
     }
-    else
+    else if(3 == cmd)
+    {
+        const string sCifar10_begin_dir = dirPath + sPhase_begin + "Cifar100Config.txt";
+        const string sCifar10_end_dir = dirPath + sPhase_end + "Cifar100Config.txt";
+        //read the begin profile
+        config::instanceObjtce()->initConfig(sCifar10_begin_dir);
+        //read the end profile
+        endConfig->initConfig(sCifar10_end_dir);
+        //read Cifar-10 DataSet
+        readCifar100Data(trainSetX, testSetX, trainSetY, testSetY);
+
+	    LOG(INFO) << "*******************************************************";;
+        LOG(INFO) << "     Train_set : " << trainSetX[0]->rows << " x " << trainSetX[0]->cols << " features and " << trainSetX.size() << " samples";
+        LOG(INFO) << "   Train_label :   " << trainSetY->cols << " x " << trainSetY->cols << " features and " << trainSetY->rows << " samples";
+        LOG(INFO) << "      Test_set : " << testSetX[0]->rows << " x " << testSetX[0]->cols << " features and " <<  testSetX.size() << " samples";
+        LOG(INFO) << "    Test_label :   " << testSetY->cols << " x " << testSetY->cols << " features and " <<  testSetY->rows  << " samples";
+	    LOG(INFO) << "*******************************************************";
+    }else
     LOG(FATAL) << "DataSet Select Error.";
 	    
     int cuda_version = cudnnGetVersion();

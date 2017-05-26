@@ -444,7 +444,7 @@ void cuTrainNetWork(cuMatrixVector<float> &trainData,
         }
 
         /*test network*/
-        cout<<"epochs: "<<epo<<" ,Time: "<<(float)(inEnd - inStart)/CLOCKS_PER_SEC<<"s,";
+        cout<<"epochs: "<<epo<<" ,Time: "<<(float)(inEnd - inStart)/CLOCKS_PER_SEC<<"s, ";
         if( DFS_TEST == false){
             predictTestData( testData, testLabel, batchSize );
         }
@@ -598,7 +598,7 @@ void dynamic_g_trainNet(cuMatrixVector<float> &trainData,
         }
 
         // Test network
-        cout<< "epochs: " << epo << " ,Time: " << (float)(inEnd - inStart)/CLOCKS_PER_SEC << "s,";
+        cout<< "epochs: " << epo << " ,Time: " << (float)(inEnd - inStart)/CLOCKS_PER_SEC << "s, ";
         predictTestData( testData, testLabel, batchSize );
         cout<< " ,Momentum: " << Momentum;
         // printf loss

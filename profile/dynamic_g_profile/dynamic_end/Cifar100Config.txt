@@ -1,0 +1,336 @@
+/*
+*  Cifar10Config File
+*/
+
+/********************************************************
+*
+*              General Parameters Config
+*
+*NON_LINEARITY = NL_SIGMOID, NL_TANH, NL_RELU
+*LR_POLICY = INV, STEP, FIXED
+********************************************************/
+
+BATCH_SIZE = 100;
+NORMALIZED_WIDTH = 0;
+IMAGES_SIZE = 32;
+CNANNELS = 3;
+EPOCHS = 4000;
+ITER_PER_EPO = 500;
+LR_POLICY = INV;
+
+
+
+/********************************************************
+*
+*              Layers Config
+*
+********************************************************/
+[
+LAYER = DATA;
+NAME = data;
+]
+
+[
+LAYER = CONV;
+NAME = conv1;
+INPUT = data;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 1;
+PAD_W = 1;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.05;
+WEIGHT_DECAY = 0.0001;
+]
+[
+LAYER = CONV;
+NAME = conv2;
+INPUT = conv1;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 1;
+PAD_W = 1;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.05;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation1;
+INPUT = conv2;
+NON_LINEARITY = NL_RELU;
+]
+[
+LAYER = POOLING;
+NAME = pooling1;
+INPUT = activation1;
+POOLING_TYPE = POOL_MAX;
+POOLDIM = 2;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 2;
+STRIDE_W = 2;
+]
+
+[
+LAYER = CONV;
+NAME = conv3;
+INPUT = pooling1;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.01;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation2;
+INPUT = conv3;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = CONV;
+NAME = conv4;
+INPUT = activation2;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+[
+LAYER = ACTIVATION;
+NAME = activation3;
+INPUT = conv4;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = CONV;
+NAME = conv5;
+INPUT = activation3;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+
+[
+LAYER = ACTIVATION;
+NAME = activation4;
+INPUT = conv5;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = CONV;
+NAME = conv6;
+INPUT = activation4;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 1;
+PAD_W = 1;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation5;
+INPUT = conv6;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = DROPOUT;
+NAME = dropout1;
+INPUT = activation5;
+DROP_RATE = 0.5;
+]
+
+[
+LAYER = CONV;
+NAME = conv7;
+INPUT = dropout1;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 1;
+PAD_W = 1;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation6;
+INPUT = conv7;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = CONV;
+NAME = conv8;
+INPUT = activation6;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation7;
+INPUT = conv8;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = CONV;
+NAME = conv9;
+INPUT = activation7;
+KERNEL_SIZE = 3;
+KERNEL_AMOUNT = 192;
+PAD_H = 1;
+PAD_W = 1;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation8;
+INPUT = conv9;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = POOLING;
+NAME = pooling2;
+INPUT = activation8;
+POOLING_TYPE = POOL_MAX;
+POOLDIM = 2;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 2;
+STRIDE_W = 2;
+]
+
+[
+LAYER = CONV;
+NAME = conv10;
+INPUT = pooling2;
+KERNEL_SIZE = 1;
+KERNEL_AMOUNT = 192;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation9;
+INPUT = conv10;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = CONV;
+NAME = conv11;
+INPUT = activation9;
+KERNEL_SIZE = 1;
+KERNEL_AMOUNT = 192;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation10;
+INPUT = conv11;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = CONV;
+NAME = conv12;
+INPUT = activation10;
+KERNEL_SIZE = 1;
+KERNEL_AMOUNT = 100;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 1;
+STRIDE_W = 1;
+INIT_W = 0.1;
+LEARN_RATE = 0.02;
+WEIGHT_DECAY = 0.0001;
+]
+
+[
+LAYER = ACTIVATION;
+NAME = activation11;
+INPUT = conv12;
+NON_LINEARITY = NL_RELU;
+]
+
+[
+LAYER = POOLING;
+NAME = pooling3;
+INPUT = activation11;
+POOLING_TYPE = POOL_AVE_INCLUDE_PAD;
+POOLDIM = 4;
+PAD_H = 0;
+PAD_W = 0;
+STRIDE_H = 4;
+STRIDE_W = 4;
+]
+[
+LAYER = SOFTMAX;
+NAME = softmax;
+INPUT = pooling3;
+NUM_CLASSES = 100;
+WEIGHT_DECAY = 0.0001;
+]

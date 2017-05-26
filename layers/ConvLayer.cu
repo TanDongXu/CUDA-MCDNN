@@ -286,8 +286,25 @@ ConvLayer::ConvLayer(const ConvLayer* layer)
     //    MemoryMonitor::instanceObject()->gpu2gpu(dev_Bgrad, layer->dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Wgrad, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
     MemoryMonitor::instanceObject()->gpuMemoryMemset(dev_Bgrad, 1 * kernelAmount * 1 * 1 * sizeof(float));
+    
+    epsilon = 0.1;// use for cifar100
     this->createHandles();
     this->initRandom();
+
+    //use for cifar100
+    float* tWeight = NULL;
+    MemoryMonitor::instanceObject()->gpuMallocMemory((void**)&tWeight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    MemoryMonitor::instanceObject()->gpu2gpu(tWeight, layer->dev_Weight, kernelAmount * inputAmount * kernelSize * kernelSize * sizeof(float));
+    int size = kernelAmount * inputAmount * kernelSize * kernelSize;
+    float alpha = 1.0f;
+    checkCublasErrors(cublasSaxpy(cuDNN_netWork<float>::instanceObject()->GetcublasHandle(),
+                                 size,
+                                 &alpha,
+                                 tWeight,
+                                 1,
+                                 dev_Weight,
+                                 1));
+    
     LOG(INFO) << "(" << number <<","<< channels << "," << height << "," << width <<")";
     cout<<"Conv-copy"<<endl;
 }

@@ -1,5 +1,5 @@
 #include"mnist.h"
-#include "../layers/VoteLayer.h"
+#include "layers/VoteLayer.h"
 
 void runMnist()
 {

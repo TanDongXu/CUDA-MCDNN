@@ -9,12 +9,12 @@
 #define MNIST_H_
 
 #include<cudnn.h>
-#include"../common/cuMatrixVector.h"
-#include"../common/cuMatrix.h"
-#include"../readData/readMnistData.h"
-#include"../config/config.h"
-#include"../columnNet.cuh"
-#include"../common/utility.cuh"
+#include"common/cuMatrixVector.h"
+#include"common/cuMatrix.h"
+#include"readData/readMnistData.h"
+#include"config/config.h"
+#include"columnNet.cuh"
+#include"common/utility.cuh"
 
 
 void runMnist();

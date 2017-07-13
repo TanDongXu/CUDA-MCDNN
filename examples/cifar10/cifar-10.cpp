@@ -1,5 +1,5 @@
 #include"cifar-10.h"
-#include "../layers/VoteLayer.h"
+#include "layers/VoteLayer.h"
 
 void runCifar10()
 {
